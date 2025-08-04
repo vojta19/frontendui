@@ -57,7 +57,7 @@ export const Input_ = ({label,  ariaHidden=false , ...props}) => {
  *   onChange={(e) => console.log(e.target.value)} // Will log 25 as number
  * />
  */
-export const Input = ({ label, ariaHidden = false, ...props }) => {
+export const Input = ({ label, ariaHidden = false, children, ...props }) => {
     const { id, value, defaultValue, onChange = () => null, type } = props;
     const fired = useRef(false);
 
@@ -92,5 +92,5 @@ export const Input = ({ label, ariaHidden = false, ...props }) => {
 
     if (!label) return inputElement;
 
-    return <Label title={label}>{inputElement}</Label>;
+    return <Label title={label}>{inputElement}{children}</Label>;
 };

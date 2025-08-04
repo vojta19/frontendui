@@ -2,6 +2,8 @@ import Row from "react-bootstrap/Row"
 import { LeftColumn, MiddleColumn } from "@hrbolek/uoisfrontend-shared"
 import { UserCardCapsule } from "./UserCardCapsule"
 import { UserMediumCard } from "./UserMediumCard"
+import { UserRolesAttributeLazy } from "../Vectors/UserRolesAttribute"
+import { UserRolesOnAttributeLazy } from "../Vectors/UserRolesOnsAttribute"
 
 /**
  * A large card component for displaying detailed content and layout for an user entity.
@@ -32,7 +34,14 @@ export const UserLargeCard = ({user, children}) => {
         <UserCardCapsule user={user} >
             <Row>
                 <LeftColumn>
-                    <UserMediumCard user={user}/>
+                    <UserMediumCard user={user}>
+                        <hr />
+                        <UserRolesAttributeLazy user={user} />
+                        <hr />
+                        Nadřízení <br/>
+                        <UserRolesOnAttributeLazy user={user} />
+                        <hr />
+                    </UserMediumCard>
                 </LeftColumn>
                 <MiddleColumn>
                     {children}

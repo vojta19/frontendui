@@ -30,15 +30,15 @@ export const UserMediumContent = ({user, children}) => {
         <>
             {user?.email && <Row>
                 <Col>E-mail</Col>
-                <Col>{user.email}</Col>
+                <Col><a href={`mailto:${user.email}`}>{user.email}</a></Col>
             </Row>}
-            <hr />
+            {/* <hr />
             <UserRolesAttributeLazy user={user} />
             <hr />
             Nadřízení <br/>
             <UserRolesOnAttributeLazy user={user} />
             
-            <hr />
+            <hr /> */}
             {/* $UserMediumContent$ <br />
             {JSON.stringify(user)}
             $UserMediumContent$ */}

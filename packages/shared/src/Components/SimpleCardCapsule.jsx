@@ -41,6 +41,16 @@ const styles = {
         width: "100%", // Ensure children fill the width of the container
         textAlign: "left", // Align child content to the left
     },
+    capsuleRightCorner: {
+        position: "absolute",
+        top: "-10px",
+        right: "16px",
+        backgroundColor: "white",
+        padding: "0 8px",
+        fontSize: "0.85rem",
+        fontWeight: "bold",
+        color: "#6c757d",
+    },    
 };
 
 export const SimpleCardCapsule = ({ id, title, children, style, ...props }) => {
@@ -52,6 +62,10 @@ export const SimpleCardCapsule = ({ id, title, children, style, ...props }) => {
             </div>
         </div>
     );
+};
+
+export const SimpleCardCapsuleRightCorner = ({ children }) => {
+    return <span style={styles.capsuleRightCorner}>{children}</span>;
 };
 
 // export const SimpleCardCapsule = ({ title, children }) => {

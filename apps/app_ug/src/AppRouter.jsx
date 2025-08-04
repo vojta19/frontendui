@@ -25,7 +25,8 @@ import { StudyPlanLessonRouterSegments } from "../../../packages/all/src/StudyPl
 import { StateRouterSegments } from "../../../packages/all/src/StateGQLModel";
 
 import { ExamRouterSegments } from "../../../packages/all/src/ExamGQLModel";
-
+import { RequestRouterSegments } from "../../../packages/all/src/RequestGQLModel";
+import { RequestTypeRouterSegments } from "../../../packages/all/src/RequestTypeGQLModel";
 
 const Routes = [
     UserRouterSegmentUG2,
@@ -51,7 +52,10 @@ const Routes = [
     ...StudyPlanRouterSegments,
     ...StudyPlanLessonRouterSegments,
 
-    ...ExamRouterSegments
+    ...ExamRouterSegments,
+
+    ...RequestRouterSegments,
+    ...RequestTypeRouterSegments
 ]
 
 // const router = createBrowserRouter(Routes, {basename: "/ug"});

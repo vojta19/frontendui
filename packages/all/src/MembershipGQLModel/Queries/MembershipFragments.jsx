@@ -64,10 +64,6 @@ fragment MembershipMediumFragment on MembershipGQLModel {
     gdpr
     fullname
   }
-  rbacobject {
-    __typename
-    id
-  }
   user {
     __typename
     id

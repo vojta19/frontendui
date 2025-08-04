@@ -61,7 +61,7 @@ const GroupVisualiser = ({items}) => {
  */
 export const GroupVectorPage = ({children, Visualiser=GroupVisualiser}) => {
     const { search } = useLocation();
-    let actionParams = {};
+    let actionParams = { skip: 0, limit: 10};
     try {
         const params = new URLSearchParams(search);
         const where = params.get('where');        
@@ -72,6 +72,7 @@ export const GroupVectorPage = ({children, Visualiser=GroupVisualiser}) => {
     return (<>
         <MyNavbar onSearchChange={onSearchChange} />
         <InfiniteScroll
+            preloadedItems={[]} // No preloaded items for group
             actionParams={actionParams} 
             asyncAction={GroupReadPageAsyncAction}
             Visualiser={Visualiser}

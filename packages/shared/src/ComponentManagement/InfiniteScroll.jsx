@@ -200,7 +200,7 @@ export const InfiniteScroll = ({
                 {/* {_state.errors && <ErrorHandler errors={_state.errors} />} */}
                 {_state.errors && <ErrorHandler errors={_state.errors} />}
                 {_state.loading && <LoadingSpinner text="Nahrávám další..."/>}
-                {_state.hasMore && <div ref={containerRef} style={{ height: "50px", _backgroundColor: "#7F0000" }} />}
+                {_state.hasMore && <div ref={containerRef} style={{ height: "100px", _backgroundColor: "#7F0000" }} />}
             </>
         );
 };

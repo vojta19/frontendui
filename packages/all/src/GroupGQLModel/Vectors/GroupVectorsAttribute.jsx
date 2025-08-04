@@ -1,4 +1,4 @@
-import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGraphQLResult } from "@hrbolek/uoisfrontend-gql-shared"
+import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGraphQLResult, createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared"
 import { ErrorHandler, InfiniteScroll, LoadingSpinner } from "@hrbolek/uoisfrontend-shared"
 import { use, useEffect } from "react";
 
@@ -66,15 +66,19 @@ query GroupQueryRead($id: UUID!, $where: VectorInputFilter, $skip: Int, $limit: 
         vectors(skip: $skip, limit: $limit, where: $where) {
             __typename
             id
+            # ...GroupMedium
         }
     }
 }
 `
 
 const GroupVectorsAttributeAsyncAction = createAsyncGraphQLAction(
-    GroupVectorsAttributeQuery,
+    createQueryStrLazy(GroupVectorsAttributeQuery,
+        //GroupMediumFragment
+    ),
     processVectorAttributeFromGraphQLResult("vectors")
 )
+
 
 /**
  * A component for displaying the `vectors` attribute of a group entity.
@@ -109,7 +113,7 @@ const GroupVectorsAttributeAsyncAction = createAsyncGraphQLAction(
  *   filter={vector => vector.name.includes("1")}
  * />
  */
-export const GroupVectorsAttribute = ({group, filter=Boolean}) => {
+export const GroupVectorsAttribute_old = ({group, filter=Boolean, Visualiser=TrivialVisualiserDiv}) => {
     const { vectors: unfiltered } = group
     if (typeof unfiltered === 'undefined') return null
     const vectors = unfiltered.filter(filter)
@@ -117,12 +121,7 @@ export const GroupVectorsAttribute = ({group, filter=Boolean}) => {
     return (
         <>
             {vectors.map(
-                vector => <div id={vector.id} key={vector.id}>
-                    {/* <VectorMediumCard vector={vector} /> */}
-                    {/* <VectorLink vector={vector} /> */}
-                    Probably {'<VectorMediumCard vector={vector} />'} <br />
-                    <pre>{JSON.stringify(vector, null, 4)}</pre>
-                </div>
+                vector => <Visualiser id={vector.id} key={vector.id} vector={vector} />
             )}
         </>
     )
@@ -151,7 +150,7 @@ export const GroupVectorsAttribute = ({group, filter=Boolean}) => {
  * />
  */
 const VectorsVisualiser = ({ items, ...props }) => 
-    <GroupVectorsAttribute {...props} group={{ vectors: items }} />
+    <GroupVectorsAttribute_old {...props} group={{ vectors: items }} />
 
 /**
  * Infinite-scrolling component for the `vectors` attribute of a group entity.
@@ -220,7 +219,7 @@ export const GroupVectorsAttributeInfinite = ({group, actionParams={}, ...props}
  *   filter={(v) => v.status === "active"}
  * />
  */
-export const GroupVectorsAttributeLazy = ({group, filter=Boolean}) => {
+export const GroupVectorsAttributeLazy = ({group, filter=Boolean, ...props}) => {
     const {loading, error, entity, fetch} = useAsyncAction(GroupVectorsAttributeAsyncAction, group, {deferred: true})
     useEffect(() => {
         fetch(group)
@@ -229,5 +228,98 @@ export const GroupVectorsAttributeLazy = ({group, filter=Boolean}) => {
     if (loading) return <LoadingSpinner />
     if (error) return <ErrorHandler errors={error} />
 
-    return <GroupVectorsAttribute group={entity} filter={filter} />    
+    return <GroupVectorsAttribute_old group={entity} filter={filter} {...props}/>    
 }
+
+const TrivialVisualiserDiv = ({vector, children}) => <div>
+    Probably {'<VectorMediumCard vector={vector} />'} <br />
+    <pre>{JSON.stringify(vector, null, 4)}</pre>
+    {children}
+</div>
+
+/**
+ * Component to render the filtered `vectors` attribute of a group entity.
+ *
+ * Applies an optional filter function to the vectors array before rendering.
+ * Supports infinite scrolling to load more items lazily.
+ *
+ * The `Layout` prop is used as a wrapper component for each rendered item and
+ * is consistently applied in both static and infinite scroll rendering modes.
+ * If different layouts are desired for infinite vs static modes,
+ * consider conditionally passing different `Layout` props.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.group - The group entity containing the `vectors` array.
+ * @param {Array<object>} [props.group.vectors] - Array of vector items to render.
+ * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv] - Component to render each vector item.
+ *   Receives `vector` and optionally other props.
+ * @param {boolean} [props.infinite=true] - Whether to enable infinite scrolling.
+ * @param {React.ComponentType|string} [props.Layout=Col] - Wrapper component for each rendered item.
+ *   This component is used consistently for both static rendering and infinite scroll loading.
+ * @param {Function} [props.filter=Boolean] - Filter function to apply on vectors before rendering.
+ * @param {...any} props - Additional props forwarded to `Visualiser` and `InfiniteScroll`.
+ *
+ * @returns {JSX.Element|null} Rendered list or infinite scroll component, or null if no vectors.
+ *
+ * @example
+ * <GroupVectorsAttribute
+ *   group={group}
+ *   Visualiser={VectorMediumCard}
+ *   Layout={Col}
+ *   filter={(v) => v.active}
+ *   infinite={true}
+ * />
+ */
+export const GroupVectorsAttribute = ({
+    group,
+    Visualiser = TrivialVisualiserDiv,
+    infinite = true,
+    Layout = Col, // 'list' | 'grid' | 'infinite'
+    filter = Boolean,
+    ...props
+}) => {
+
+    const { vectors: unfiltered } = group
+    if (typeof unfiltered === 'undefined') return null
+    const vectors = unfiltered.filter(filter)
+    if (vectors.length === 0) return null
+
+
+
+    if (infinite) {
+        // Pro infinite scroll použijeme komponentu InfiniteScroll
+        // Visualiser zde je komponenta, která přijímá pole položek (items)
+        // a zobrazí je – proto vytvoříme wrapper, který předá Visualiser správně
+
+        const VisualiserWrapper = ({ items }) => ( 
+            <GroupVectorsAttribute 
+                {...props}    
+                group={{vectors: items}} 
+                Visualiser={Visualiser} 
+                infinite={false} 
+                Layout={Layout} 
+                filter={filter}
+            />
+        );
+
+        return (
+            <InfiniteScroll
+                actionParams={{ ...group, skip: 0, limit: 10 }}
+                asyncAction={GroupVectorsAttributeAsyncAction}
+                {...props}
+                Visualiser={VisualiserWrapper}
+                preloadedItems={vectors}
+            />
+        );
+    }
+
+    return (
+        <>
+        {vectors.map((vector) => (
+            <Layout key={vector.id}>
+                {vector && <Visualiser {...props} vector={vector} />}
+            </Layout>
+        ))}
+        </>
+    );
+};

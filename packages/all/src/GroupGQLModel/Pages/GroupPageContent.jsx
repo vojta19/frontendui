@@ -1,10 +1,13 @@
+import Row from "react-bootstrap/Row"
 import { HashContainer } from "@hrbolek/uoisfrontend-shared"
 import { GroupLargeCard } from "../Components"
 import { GroupPageNavbar } from "./GroupPageNavbar"
-import { GroupMembershipsAttribute, GroupMembershipsAttributeCardsInfinite, GroupMembershipsAttributeInfinite } from "../Vectors/GroupMembershipsAttribute"
+import { GroupMembershipsAttribute } from "../Vectors/GroupMembershipsAttribute"
 import { GroupCardCapsule } from "../Components"
 import { GroupSubgroupsAttribute } from "../Vectors/GroupSubgroupsAttribute"
 import { GroupAccreditedprogramsAttribute } from "../Vectors/GroupAccreditedProgramsAttribute"
+import { UserLink, UserMediumCard } from "../../UserGQLModel"
+import { MembershipUserAttributeCard, MembershipUserAttributeLink } from "../../MembershipGQLModel/Scalars/MembershipUserAttribute"
 
 /**
  * Renders a page layout for a single group entity, including navigation and detailed view.
@@ -29,7 +32,9 @@ export const GroupPageContent = ({group, children, ...props}) => {
     return (<>
         <GroupPageNavbar group={group} />
         <GroupLargeCard group={group} {...props} >
-            <GroupMembershipsAttributeCardsInfinite id="administration" group={group} />
+            <Row>
+                <GroupMembershipsAttribute id="administration" group={group} Visualiser={MembershipUserAttributeCard} md={4}/>
+            </Row>
             {/* <HashContainer firstAsDefault={false}>
                 <GroupCardCapsule id="administration" group={group} >
                     <GroupMembershipsAttributeInfinite id="administration" group={group} />

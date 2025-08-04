@@ -1,4 +1,4 @@
-import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGraphQLResult } from "@hrbolek/uoisfrontend-gql-shared"
+import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGraphQLResult, createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared"
 import { ErrorHandler, InfiniteScroll, LoadingSpinner } from "@hrbolek/uoisfrontend-shared"
 import { use, useEffect } from "react";
 
@@ -66,24 +66,19 @@ query GroupQueryRead($id: UUID!, $where: MastergroupInputFilter, $skip: Int, $li
         mastergroups(skip: $skip, limit: $limit, where: $where) {
             __typename
             id
-            lastchange
-            created
-            createdbyId
-            changedbyId
-            rbacobjectId
-            startdate
-            enddate
-            grouptypeId
-            mastergroupId
+            # ...GroupMedium
         }
     }
 }
 `
 
 const GroupMastergroupsAttributeAsyncAction = createAsyncGraphQLAction(
-    GroupMastergroupsAttributeQuery,
+    createQueryStrLazy(GroupMastergroupsAttributeQuery,
+        //GroupMediumFragment
+    ),
     processVectorAttributeFromGraphQLResult("mastergroups")
 )
+
 
 /**
  * A component for displaying the `mastergroups` attribute of a group entity.
@@ -118,7 +113,7 @@ const GroupMastergroupsAttributeAsyncAction = createAsyncGraphQLAction(
  *   filter={mastergroup => mastergroup.name.includes("1")}
  * />
  */
-export const GroupMastergroupsAttribute = ({group, filter=Boolean}) => {
+export const GroupMastergroupsAttribute_old = ({group, filter=Boolean, Visualiser=TrivialVisualiserDiv}) => {
     const { mastergroups: unfiltered } = group
     if (typeof unfiltered === 'undefined') return null
     const mastergroups = unfiltered.filter(filter)
@@ -126,12 +121,7 @@ export const GroupMastergroupsAttribute = ({group, filter=Boolean}) => {
     return (
         <>
             {mastergroups.map(
-                mastergroup => <div id={mastergroup.id} key={mastergroup.id}>
-                    {/* <MastergroupMediumCard mastergroup={mastergroup} /> */}
-                    {/* <MastergroupLink mastergroup={mastergroup} /> */}
-                    Probably {'<MastergroupMediumCard mastergroup={mastergroup} />'} <br />
-                    <pre>{JSON.stringify(mastergroup, null, 4)}</pre>
-                </div>
+                mastergroup => <Visualiser id={mastergroup.id} key={mastergroup.id} mastergroup={mastergroup} />
             )}
         </>
     )
@@ -160,7 +150,7 @@ export const GroupMastergroupsAttribute = ({group, filter=Boolean}) => {
  * />
  */
 const MastergroupsVisualiser = ({ items, ...props }) => 
-    <GroupMastergroupsAttribute {...props} group={{ mastergroups: items }} />
+    <GroupMastergroupsAttribute_old {...props} group={{ mastergroups: items }} />
 
 /**
  * Infinite-scrolling component for the `mastergroups` attribute of a group entity.
@@ -229,7 +219,7 @@ export const GroupMastergroupsAttributeInfinite = ({group, actionParams={}, ...p
  *   filter={(v) => v.status === "active"}
  * />
  */
-export const GroupMastergroupsAttributeLazy = ({group, filter=Boolean}) => {
+export const GroupMastergroupsAttributeLazy = ({group, filter=Boolean, ...props}) => {
     const {loading, error, entity, fetch} = useAsyncAction(GroupMastergroupsAttributeAsyncAction, group, {deferred: true})
     useEffect(() => {
         fetch(group)
@@ -238,5 +228,98 @@ export const GroupMastergroupsAttributeLazy = ({group, filter=Boolean}) => {
     if (loading) return <LoadingSpinner />
     if (error) return <ErrorHandler errors={error} />
 
-    return <GroupMastergroupsAttribute group={entity} filter={filter} />    
+    return <GroupMastergroupsAttribute_old group={entity} filter={filter} {...props}/>    
 }
+
+const TrivialVisualiserDiv = ({mastergroup, children}) => <div>
+    Probably {'<MastergroupMediumCard mastergroup={mastergroup} />'} <br />
+    <pre>{JSON.stringify(mastergroup, null, 4)}</pre>
+    {children}
+</div>
+
+/**
+ * Component to render the filtered `mastergroups` attribute of a group entity.
+ *
+ * Applies an optional filter function to the mastergroups array before rendering.
+ * Supports infinite scrolling to load more items lazily.
+ *
+ * The `Layout` prop is used as a wrapper component for each rendered item and
+ * is consistently applied in both static and infinite scroll rendering modes.
+ * If different layouts are desired for infinite vs static modes,
+ * consider conditionally passing different `Layout` props.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.group - The group entity containing the `mastergroups` array.
+ * @param {Array<object>} [props.group.mastergroups] - Array of mastergroup items to render.
+ * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv] - Component to render each mastergroup item.
+ *   Receives `mastergroup` and optionally other props.
+ * @param {boolean} [props.infinite=true] - Whether to enable infinite scrolling.
+ * @param {React.ComponentType|string} [props.Layout=Col] - Wrapper component for each rendered item.
+ *   This component is used consistently for both static rendering and infinite scroll loading.
+ * @param {Function} [props.filter=Boolean] - Filter function to apply on mastergroups before rendering.
+ * @param {...any} props - Additional props forwarded to `Visualiser` and `InfiniteScroll`.
+ *
+ * @returns {JSX.Element|null} Rendered list or infinite scroll component, or null if no mastergroups.
+ *
+ * @example
+ * <GroupMastergroupsAttribute
+ *   group={group}
+ *   Visualiser={MastergroupMediumCard}
+ *   Layout={Col}
+ *   filter={(v) => v.active}
+ *   infinite={true}
+ * />
+ */
+export const GroupMastergroupsAttribute = ({
+    group,
+    Visualiser = TrivialVisualiserDiv,
+    infinite = true,
+    Layout = Col, // 'list' | 'grid' | 'infinite'
+    filter = Boolean,
+    ...props
+}) => {
+
+    const { mastergroups: unfiltered } = group
+    if (typeof unfiltered === 'undefined') return null
+    const mastergroups = unfiltered.filter(filter)
+    if (mastergroups.length === 0) return null
+
+
+
+    if (infinite) {
+        // Pro infinite scroll použijeme komponentu InfiniteScroll
+        // Visualiser zde je komponenta, která přijímá pole položek (items)
+        // a zobrazí je – proto vytvoříme wrapper, který předá Visualiser správně
+
+        const VisualiserWrapper = ({ items }) => ( 
+            <GroupMastergroupsAttribute 
+                {...props}    
+                group={{mastergroups: items}} 
+                Visualiser={Visualiser} 
+                infinite={false} 
+                Layout={Layout} 
+                filter={filter}
+            />
+        );
+
+        return (
+            <InfiniteScroll
+                actionParams={{ ...group, skip: 0, limit: 10 }}
+                asyncAction={GroupMastergroupsAttributeAsyncAction}
+                {...props}
+                Visualiser={VisualiserWrapper}
+                preloadedItems={mastergroups}
+            />
+        );
+    }
+
+    return (
+        <>
+        {mastergroups.map((mastergroup) => (
+            <Layout key={mastergroup.id}>
+                {mastergroup && <Visualiser {...props} mastergroup={mastergroup} />}
+            </Layout>
+        ))}
+        </>
+    );
+};

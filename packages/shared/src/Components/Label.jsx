@@ -1,5 +1,10 @@
 import { SimpleCardCapsule } from "./SimpleCardCapsule"
 
-export const Label = ({...props}) => {
-    return <SimpleCardCapsule {...props} />
+export const Label = ({tools, children, ...props}) => {
+    return (
+        <SimpleCardCapsule {...props}>
+            {tools}
+            {children}
+        </SimpleCardCapsule>
+    )
 }

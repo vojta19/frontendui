@@ -1,6 +1,7 @@
 import { createAsyncGraphQLAction, useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared"
 import { ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared"
 
+import { UserMediumCard, UserLink } from "../../UserGQLModel"
 /**
  * A component for displaying the `user` attribute of an membership entity.
  *
@@ -33,6 +34,33 @@ export const MembershipUserAttribute = ({membership}) => {
         </>
     )
 }
+
+export const MembershipUserAttributeCard = ({membership}) => {
+    const {user} = membership
+    if (typeof user === 'undefined') return null
+    return (
+        <>
+            <UserMediumCard user={user} />
+            {/* <UserLink user={user} /> */}
+            {/* Probably {'<UserMediumCard user={user} />'} <br />
+            <pre>{JSON.stringify(user, null, 4)}</pre> */}
+        </>
+    )
+}
+
+export const MembershipUserAttributeLink = ({membership}) => {
+    const {user} = membership
+    if (typeof user === 'undefined') return null
+    return (
+        <>
+            {/* <UserMediumCard user={user} /> */}
+            <UserLink user={user} />
+            {/* Probably {'<UserMediumCard user={user} />'} <br />
+            <pre>{JSON.stringify(user, null, 4)}</pre> */}
+        </>
+    )
+}
+
 
 const MembershipUserAttributeQuery = `
 query MembershipQueryRead($id: UUID!) {

@@ -1,6 +1,7 @@
+import { useEffect } from "react";
+import { Col } from "react-bootstrap";
 import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGraphQLResult, createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared"
 import { ErrorHandler, InfiniteScroll, LoadingSpinner } from "@hrbolek/uoisfrontend-shared"
-import { use, useEffect } from "react";
 
 
 /**
@@ -66,7 +67,7 @@ query TemplateQueryRead($id: UUID!, $where: VectorInputFilter, $skip: Int, $limi
         vectors(skip: $skip, limit: $limit, where: $where) {
             __typename
             id
-            # ...TemplateMedium
+            # ...VectorMedium
         }
     }
 }
@@ -74,10 +75,11 @@ query TemplateQueryRead($id: UUID!, $where: VectorInputFilter, $skip: Int, $limi
 
 const TemplateVectorsAttributeAsyncAction = createAsyncGraphQLAction(
     createQueryStrLazy(TemplateVectorsAttributeQuery,
-        //TemplateMediumFragment
+        //VectorMediumFragment
     ),
     processVectorAttributeFromGraphQLResult("vectors")
 )
+
 
 /**
  * A component for displaying the `vectors` attribute of a template entity.
@@ -112,7 +114,7 @@ const TemplateVectorsAttributeAsyncAction = createAsyncGraphQLAction(
  *   filter={vector => vector.name.includes("1")}
  * />
  */
-export const TemplateVectorsAttribute = ({template, filter=Boolean}) => {
+export const TemplateVectorsAttribute_old = ({template, filter=Boolean, Visualiser=TrivialVisualiserDiv}) => {
     const { vectors: unfiltered } = template
     if (typeof unfiltered === 'undefined') return null
     const vectors = unfiltered.filter(filter)
@@ -120,12 +122,7 @@ export const TemplateVectorsAttribute = ({template, filter=Boolean}) => {
     return (
         <>
             {vectors.map(
-                vector => <div id={vector.id} key={vector.id}>
-                    {/* <VectorMediumCard vector={vector} /> */}
-                    {/* <VectorLink vector={vector} /> */}
-                    Probably {'<VectorMediumCard vector={vector} />'} <br />
-                    <pre>{JSON.stringify(vector, null, 4)}</pre>
-                </div>
+                vector => <Visualiser id={vector.id} key={vector.id} vector={vector} />
             )}
         </>
     )
@@ -154,7 +151,7 @@ export const TemplateVectorsAttribute = ({template, filter=Boolean}) => {
  * />
  */
 const VectorsVisualiser = ({ items, ...props }) => 
-    <TemplateVectorsAttribute {...props} template={{ vectors: items }} />
+    <TemplateVectorsAttribute_old {...props} template={{ vectors: items }} />
 
 /**
  * Infinite-scrolling component for the `vectors` attribute of a template entity.
@@ -223,7 +220,7 @@ export const TemplateVectorsAttributeInfinite = ({template, actionParams={}, ...
  *   filter={(v) => v.status === "active"}
  * />
  */
-export const TemplateVectorsAttributeLazy = ({template, filter=Boolean}) => {
+export const TemplateVectorsAttributeLazy = ({template, filter=Boolean, ...props}) => {
     const {loading, error, entity, fetch} = useAsyncAction(TemplateVectorsAttributeAsyncAction, template, {deferred: true})
     useEffect(() => {
         fetch(template)
@@ -232,5 +229,98 @@ export const TemplateVectorsAttributeLazy = ({template, filter=Boolean}) => {
     if (loading) return <LoadingSpinner />
     if (error) return <ErrorHandler errors={error} />
 
-    return <TemplateVectorsAttribute template={entity} filter={filter} />    
+    return <TemplateVectorsAttribute_old template={entity} filter={filter} {...props}/>    
 }
+
+const TrivialVisualiserDiv = ({vector, children}) => <div>
+    Probably {'<VectorMediumCard vector={vector} />'} <br />
+    <pre>{JSON.stringify(vector, null, 4)}</pre>
+    {children}
+</div>
+
+/**
+ * Component to render the filtered `vectors` attribute of a template entity.
+ *
+ * Applies an optional filter function to the vectors array before rendering.
+ * Supports infinite scrolling to load more items lazily.
+ *
+ * The `Layout` prop is used as a wrapper component for each rendered item and
+ * is consistently applied in both static and infinite scroll rendering modes.
+ * If different layouts are desired for infinite vs static modes,
+ * consider conditionally passing different `Layout` props.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.template - The template entity containing the `vectors` array.
+ * @param {Array<object>} [props.template.vectors] - Array of vector items to render.
+ * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv] - Component to render each vector item.
+ *   Receives `vector` and optionally other props.
+ * @param {boolean} [props.infinite=true] - Whether to enable infinite scrolling.
+ * @param {React.ComponentType|string} [props.Layout=Col] - Wrapper component for each rendered item.
+ *   This component is used consistently for both static rendering and infinite scroll loading.
+ * @param {Function} [props.filter=Boolean] - Filter function to apply on vectors before rendering.
+ * @param {...any} props - Additional props forwarded to `Visualiser` and `InfiniteScroll`.
+ *
+ * @returns {JSX.Element|null} Rendered list or infinite scroll component, or null if no vectors.
+ *
+ * @example
+ * <TemplateVectorsAttribute
+ *   template={template}
+ *   Visualiser={VectorMediumCard}
+ *   Layout={Col}
+ *   filter={(v) => v.active}
+ *   infinite={true}
+ * />
+ */
+export const TemplateVectorsAttribute = ({
+    template,
+    Visualiser = TrivialVisualiserDiv,
+    infinite = true,
+    Layout = Col, // 'list' | 'grid' | 'infinite'
+    filter = Boolean,
+    ...props
+}) => {
+
+    const { vectors: unfiltered } = template
+    if (typeof unfiltered === 'undefined') return null
+    const vectors = unfiltered.filter(filter)
+    if (vectors.length === 0) return null
+
+
+
+    if (infinite) {
+        // Pro infinite scroll použijeme komponentu InfiniteScroll
+        // Visualiser zde je komponenta, která přijímá pole položek (items)
+        // a zobrazí je – proto vytvoříme wrapper, který předá Visualiser správně
+
+        const VisualiserWrapper = ({ items }) => ( 
+            <TemplateVectorsAttribute 
+                {...props}    
+                template={{vectors: items}} 
+                Visualiser={Visualiser} 
+                infinite={false} 
+                Layout={Layout} 
+                filter={filter}
+            />
+        );
+
+        return (
+            <InfiniteScroll
+                actionParams={{ ...template, skip: 0, limit: 10 }}
+                asyncAction={TemplateVectorsAttributeAsyncAction}
+                {...props}
+                Visualiser={VisualiserWrapper}
+                preloadedItems={vectors}
+            />
+        );
+    }
+
+    return (
+        <>
+        {vectors.map((vector) => (
+            <Layout key={vector.id}>
+                {vector && <Visualiser {...props} vector={vector} />}
+            </Layout>
+        ))}
+        </>
+    );
+};
