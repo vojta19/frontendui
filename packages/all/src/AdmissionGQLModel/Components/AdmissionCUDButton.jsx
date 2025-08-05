@@ -67,7 +67,7 @@ import { AdmissionMediumEditableContent } from "./AdmissionMediumEditableContent
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const AdmissionButton = ({ operation, children, admission, onDone = () => {}, ...props }) => {
+export const AdmissionButton = ({ operation, children, admission, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: AdmissionInsertAsyncAction,
@@ -102,6 +102,7 @@ export const AdmissionButton = ({ operation, children, admission, onDone = () =>
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, admission, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...admission, ...params };
+        onOptimistic(fetchParams);
         const freshAdmission = await fetch(fetchParams);
         onDone(freshAdmission); // Pass the result to the external callback
     };

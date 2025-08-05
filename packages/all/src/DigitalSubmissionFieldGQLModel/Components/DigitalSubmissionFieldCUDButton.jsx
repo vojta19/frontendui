@@ -67,7 +67,7 @@ import { DigitalSubmissionFieldMediumEditableContent } from "./DigitalSubmission
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const DigitalSubmissionFieldButton = ({ operation, children, digitalsubmissionfield, onDone = () => {}, ...props }) => {
+export const DigitalSubmissionFieldButton = ({ operation, children, digitalsubmissionfield, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: DigitalSubmissionFieldInsertAsyncAction,
@@ -102,6 +102,7 @@ export const DigitalSubmissionFieldButton = ({ operation, children, digitalsubmi
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, digitalsubmissionfield, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...digitalsubmissionfield, ...params };
+        onOptimistic(fetchParams);
         const freshDigitalSubmissionField = await fetch(fetchParams);
         onDone(freshDigitalSubmissionField); // Pass the result to the external callback
     };

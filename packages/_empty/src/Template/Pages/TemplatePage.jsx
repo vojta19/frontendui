@@ -1,5 +1,6 @@
 import { useParams } from "react-router"
 import { TemplatePageContentLazy } from "./TemplatePageContentLazy"
+import { TemplateLargeContent } from "../Components/TemplateLargeContent"
 
 /**
  * A page component for displaying lazy-loaded content of a template entity.
@@ -42,6 +43,8 @@ export const TemplatePage = ({children}) => {
     const template = {id}
     return (
         <TemplatePageContentLazy template={template}>
+            {/* the parameters `template={template}` are injected in `TemplatePageContentLazy` */}
+            <TemplateLargeContent /> 
             {children}
         </TemplatePageContentLazy>
     )

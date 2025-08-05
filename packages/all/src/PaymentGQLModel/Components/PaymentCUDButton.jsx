@@ -67,7 +67,7 @@ import { PaymentMediumEditableContent } from "./PaymentMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const PaymentButton = ({ operation, children, payment, onDone = () => {}, ...props }) => {
+export const PaymentButton = ({ operation, children, payment, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: PaymentInsertAsyncAction,
@@ -102,6 +102,7 @@ export const PaymentButton = ({ operation, children, payment, onDone = () => {},
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, payment, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...payment, ...params };
+        onOptimistic(fetchParams);
         const freshPayment = await fetch(fetchParams);
         onDone(freshPayment); // Pass the result to the external callback
     };

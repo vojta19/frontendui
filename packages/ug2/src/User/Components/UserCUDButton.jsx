@@ -69,7 +69,7 @@ import { UserMediumEditableContent } from "./UserMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const UserButton = ({ operation, children, user, onDone = () => {}, ...props }) => {
+export const UserButton = ({ operation, children, user, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: UserInsertAsyncAction,
@@ -104,6 +104,7 @@ export const UserButton = ({ operation, children, user, onDone = () => {}, ...pr
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, user, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...user, ...params };
+        onOptimistic(fetchParams);
         const freshUser = await fetch(fetchParams);
         onDone(freshUser); // Pass the result to the external callback
     };

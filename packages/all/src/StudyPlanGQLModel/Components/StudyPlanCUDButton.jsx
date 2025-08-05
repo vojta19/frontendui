@@ -67,7 +67,7 @@ import { StudyPlanMediumEditableContent } from "./StudyPlanMediumEditableContent
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const StudyPlanButton = ({ operation, children, studyplan, onDone = () => {}, ...props }) => {
+export const StudyPlanButton = ({ operation, children, studyplan, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: StudyPlanInsertAsyncAction,
@@ -102,6 +102,7 @@ export const StudyPlanButton = ({ operation, children, studyplan, onDone = () =>
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, studyplan, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...studyplan, ...params };
+        onOptimistic(fetchParams);
         const freshStudyPlan = await fetch(fetchParams);
         onDone(freshStudyPlan); // Pass the result to the external callback
     };

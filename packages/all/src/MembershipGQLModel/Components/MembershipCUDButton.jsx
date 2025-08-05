@@ -67,7 +67,7 @@ import { MembershipMediumEditableContent } from "./MembershipMediumEditableConte
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const MembershipButton = ({ operation, children, membership, onDone = () => {}, ...props }) => {
+export const MembershipButton = ({ operation, children, membership, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: MembershipInsertAsyncAction,
@@ -102,6 +102,7 @@ export const MembershipButton = ({ operation, children, membership, onDone = () 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, membership, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...membership, ...params };
+        onOptimistic(fetchParams);
         const freshMembership = await fetch(fetchParams);
         onDone(freshMembership); // Pass the result to the external callback
     };

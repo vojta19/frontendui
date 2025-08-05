@@ -67,7 +67,7 @@ import { ProgramLevelTypeMediumEditableContent } from "./ProgramLevelTypeMediumE
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const ProgramLevelTypeButton = ({ operation, children, programleveltype, onDone = () => {}, ...props }) => {
+export const ProgramLevelTypeButton = ({ operation, children, programleveltype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: ProgramLevelTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const ProgramLevelTypeButton = ({ operation, children, programleveltype, 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, programleveltype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...programleveltype, ...params };
+        onOptimistic(fetchParams);
         const freshProgramLevelType = await fetch(fetchParams);
         onDone(freshProgramLevelType); // Pass the result to the external callback
     };

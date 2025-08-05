@@ -24,7 +24,7 @@ export const DigitalFormPageContent = ({digitalform, children, ...props}) => {
     return (<>
         <DigitalFormPageNavbar digitalform={digitalform} />
         <DigitalFormLargeCard digitalform={digitalform} {...props} >
-            DigitalForm {JSON.stringify(digitalform)}
+            {/* DigitalForm {JSON.stringify(digitalform)} */}
             {children}
         </DigitalFormLargeCard>
     </>)

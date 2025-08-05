@@ -67,7 +67,7 @@ import { LessonTypeMediumEditableContent } from "./LessonTypeMediumEditableConte
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const LessonTypeButton = ({ operation, children, lessontype, onDone = () => {}, ...props }) => {
+export const LessonTypeButton = ({ operation, children, lessontype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: LessonTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const LessonTypeButton = ({ operation, children, lessontype, onDone = () 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, lessontype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...lessontype, ...params };
+        onOptimistic(fetchParams);
         const freshLessonType = await fetch(fetchParams);
         onDone(freshLessonType); // Pass the result to the external callback
     };

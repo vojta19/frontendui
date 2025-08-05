@@ -66,7 +66,7 @@ import { RoleTypeListMediumEditableContent } from "./RoleTypeListMediumEditableC
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const RoleTypeListTypeCDButton = ({ operation, children, roletypelist, onDone = () => {}, ...props }) => {
+export const RoleTypeListTypeCDButton = ({ operation, children, roletypelist, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: RoleTypeListAddRoleAsyncAction,

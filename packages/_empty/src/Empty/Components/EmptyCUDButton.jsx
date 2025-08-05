@@ -67,7 +67,7 @@ import { EmptyMediumEditableContent } from "./EmptyMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const EmptyButton = ({ operation, children, empty, onDone = () => {}, ...props }) => {
+export const EmptyButton = ({ operation, children, empty, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: EmptyInsertAsyncAction,
@@ -102,6 +102,7 @@ export const EmptyButton = ({ operation, children, empty, onDone = () => {}, ...
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, empty, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...empty, ...params };
+        onOptimistic(fetchParams);
         const freshEmpty = await fetch(fetchParams);
         onDone(freshEmpty); // Pass the result to the external callback
     };

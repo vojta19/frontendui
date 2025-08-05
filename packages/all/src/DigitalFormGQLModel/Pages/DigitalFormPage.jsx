@@ -1,5 +1,6 @@
 import { useParams } from "react-router"
 import { DigitalFormPageContentLazy } from "./DigitalFormPageContentLazy"
+import { DigitalFormLargeContent } from "../Components/DigitalFormLargeContent"
 
 /**
  * A page component for displaying lazy-loaded content of a digitalform entity.
@@ -42,6 +43,7 @@ export const DigitalFormPage = ({children}) => {
     const digitalform = {id}
     return (
         <DigitalFormPageContentLazy digitalform={digitalform}>
+            <DigitalFormLargeContent />
             {children}
         </DigitalFormPageContentLazy>
     )

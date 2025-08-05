@@ -67,7 +67,7 @@ import { ProgramTitleTypeMediumEditableContent } from "./ProgramTitleTypeMediumE
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const ProgramTitleTypeButton = ({ operation, children, programtitletype, onDone = () => {}, ...props }) => {
+export const ProgramTitleTypeButton = ({ operation, children, programtitletype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: ProgramTitleTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const ProgramTitleTypeButton = ({ operation, children, programtitletype, 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, programtitletype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...programtitletype, ...params };
+        onOptimistic(fetchParams);
         const freshProgramTitleType = await fetch(fetchParams);
         onDone(freshProgramTitleType); // Pass the result to the external callback
     };

@@ -67,7 +67,7 @@ import { RequestTypeMediumEditableContent } from "./RequestTypeMediumEditableCon
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const RequestTypeButton = ({ operation, children, requesttype, onDone = () => {}, ...props }) => {
+export const RequestTypeButton = ({ operation, children, requesttype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: RequestTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const RequestTypeButton = ({ operation, children, requesttype, onDone = (
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, requesttype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...requesttype, ...params };
+        onOptimistic(fetchParams);
         const freshRequestType = await fetch(fetchParams);
         onDone(freshRequestType); // Pass the result to the external callback
     };

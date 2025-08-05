@@ -67,7 +67,7 @@ import { StateTransitionMediumEditableContent } from "./StateTransitionMediumEdi
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const StateTransitionButton = ({ operation, children, statetransition, onDone = () => {}, ...props }) => {
+export const StateTransitionButton = ({ operation, children, statetransition, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: StateTransitionInsertAsyncAction,
@@ -102,6 +102,7 @@ export const StateTransitionButton = ({ operation, children, statetransition, on
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, statetransition, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...statetransition, ...params };
+        onOptimistic(fetchParams);
         const freshStateTransition = await fetch(fetchParams);
         onDone(freshStateTransition); // Pass the result to the external callback
     };

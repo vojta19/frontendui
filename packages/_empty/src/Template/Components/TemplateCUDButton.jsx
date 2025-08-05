@@ -67,7 +67,7 @@ import { TemplateMediumEditableContent } from "./TemplateMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const TemplateButton = ({ operation, children, template, onDone = () => {}, ...props }) => {
+export const TemplateButton = ({ operation, children, template, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: TemplateInsertAsyncAction,
@@ -102,6 +102,7 @@ export const TemplateButton = ({ operation, children, template, onDone = () => {
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, template, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...template, ...params };
+        onOptimistic(fetchParams);
         const freshTemplate = await fetch(fetchParams);
         onDone(freshTemplate); // Pass the result to the external callback
     };

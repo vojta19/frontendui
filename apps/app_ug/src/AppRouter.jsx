@@ -28,6 +28,8 @@ import { ExamRouterSegments } from "../../../packages/all/src/ExamGQLModel";
 import { RequestRouterSegments } from "../../../packages/all/src/RequestGQLModel";
 import { RequestTypeRouterSegments } from "../../../packages/all/src/RequestTypeGQLModel";
 
+import { DigitalFormRouterSegments } from "../../../packages/all/src/DigitalFormGQLModel";
+
 const Routes = [
     UserRouterSegmentUG2,
     GroupRouterSegmentUG2,
@@ -55,7 +57,9 @@ const Routes = [
     ...ExamRouterSegments,
 
     ...RequestRouterSegments,
-    ...RequestTypeRouterSegments
+    ...RequestTypeRouterSegments,
+
+    ...DigitalFormRouterSegments
 ]
 
 // const router = createBrowserRouter(Routes, {basename: "/ug"});

@@ -67,7 +67,7 @@ import { FacilityMediumEditableContent } from "./FacilityMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const FacilityButton = ({ operation, children, facility, onDone = () => {}, ...props }) => {
+export const FacilityButton = ({ operation, children, facility, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: FacilityInsertAsyncAction,
@@ -102,6 +102,7 @@ export const FacilityButton = ({ operation, children, facility, onDone = () => {
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, facility, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...facility, ...params };
+        onOptimistic(fetchParams);
         const freshFacility = await fetch(fetchParams);
         onDone(freshFacility); // Pass the result to the external callback
     };

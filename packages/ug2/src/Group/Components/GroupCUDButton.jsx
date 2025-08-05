@@ -67,7 +67,7 @@ import { useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const GroupButton = ({ operation, children, group, onDone = () => {}, ...props }) => {
+export const GroupButton = ({ operation, children, group, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: GroupInsertAsyncAction,
@@ -102,6 +102,7 @@ export const GroupButton = ({ operation, children, group, onDone = () => {}, ...
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, group, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...group, ...params };
+        onOptimistic(fetchParams);
         const freshGroup = await fetch(fetchParams);
         onDone(freshGroup); // Pass the result to the external callback
     };

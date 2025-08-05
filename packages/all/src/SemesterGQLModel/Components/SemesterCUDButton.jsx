@@ -67,7 +67,7 @@ import { SemesterMediumEditableContent } from "./SemesterMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const SemesterButton = ({ operation, children, semester, onDone = () => {}, ...props }) => {
+export const SemesterButton = ({ operation, children, semester, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: SemesterInsertAsyncAction,
@@ -102,6 +102,7 @@ export const SemesterButton = ({ operation, children, semester, onDone = () => {
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, semester, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...semester, ...params };
+        onOptimistic(fetchParams);
         const freshSemester = await fetch(fetchParams);
         onDone(freshSemester); // Pass the result to the external callback
     };

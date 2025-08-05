@@ -67,7 +67,7 @@ import { MembershipMediumEditableContent } from "./MembershipMediumEditableConte
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const MembershipCUDButton = ({ operation, children, membership, onDone = () => {}, ...props }) => {
+export const MembershipCUDButton = ({ operation, children, membership, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const { user, group } = membership
     const { userId: user_id = user?.id, groupId: group_id = group?.id } = membership
     const operationConfig = {
@@ -104,6 +104,7 @@ export const MembershipCUDButton = ({ operation, children, membership, onDone = 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, membership, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...membership, ...params };
+        onOptimistic(fetchParams);
         const freshMembership = await fetch(fetchParams);
         onDone(freshMembership); // Pass the result to the external callback
     };

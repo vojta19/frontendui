@@ -67,7 +67,7 @@ import { useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const SubjectButton = ({ operation, children, subject, onDone = () => {}, ...props }) => {
+export const SubjectButton = ({ operation, children, subject, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: SubjectInsertAsyncAction,
@@ -102,6 +102,7 @@ export const SubjectButton = ({ operation, children, subject, onDone = () => {},
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, subject, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...subject, ...params };
+        onOptimistic(fetchParams);
         const freshSubject = await fetch(fetchParams);
         onDone(freshSubject); // Pass the result to the external callback
     };

@@ -175,7 +175,7 @@ export const DigitalFormField = ({ digitalformfield }) => {
                 </DigitalFormFieldButton>
                 <DigitalFormFieldButton 
                     operation="D" 
-                    className="btn btn-sm btn-outline-success"
+                    className="btn btn-sm btn-outline-danger"
                     digitalformfield={digitalformfield}
                     onDone={onDeleteDone}
                 >

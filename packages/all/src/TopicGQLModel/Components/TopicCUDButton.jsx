@@ -67,7 +67,7 @@ import { TopicMediumEditableContent } from "./TopicMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const TopicButton = ({ operation, children, topic, onDone = () => {}, ...props }) => {
+export const TopicButton = ({ operation, children, topic, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: TopicInsertAsyncAction,
@@ -102,6 +102,7 @@ export const TopicButton = ({ operation, children, topic, onDone = () => {}, ...
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, topic, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...topic, ...params };
+        onOptimistic(fetchParams);
         const freshTopic = await fetch(fetchParams);
         onDone(freshTopic); // Pass the result to the external callback
     };

@@ -67,7 +67,7 @@ import { useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const EvaluationButton = ({ operation, children, evaluation, onDone = () => {}, ...props }) => {
+export const EvaluationButton = ({ operation, children, evaluation, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: EvaluationInsertAsyncAction,
@@ -102,6 +102,7 @@ export const EvaluationButton = ({ operation, children, evaluation, onDone = () 
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, evaluation, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...evaluation, ...params };
+        onOptimistic(fetchParams);
         const freshEvaluation = await fetch(fetchParams);
         onDone(freshEvaluation); // Pass the result to the external callback
     };

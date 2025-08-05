@@ -1,15 +1,20 @@
 import { createAsyncGraphQLAction, createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
-import { DigitalFormLargeFragment } from "./DigitalFormFragments";
+import { DigitalFormLargeFragment, DigitalFormSectionsFragment } from "./DigitalFormFragments";
 
 const DigitalFormReadQueryStr = `
 query DigitalFormReadQuery($id: UUID!) {
   result: digitalDocumentById(id: $id) {
     ...DigitalFormLargeFragment
+    ...DigitalFormSectionsFragment
   }
 }
 `
 
-const DigitalFormReadQuery = createQueryStrLazy(`${DigitalFormReadQueryStr}`, DigitalFormLargeFragment)
+const DigitalFormReadQuery = createQueryStrLazy(
+    `${DigitalFormReadQueryStr}`, 
+    DigitalFormLargeFragment,
+    DigitalFormSectionsFragment
+  )
 
 /**
  * An async action for executing a GraphQL query to read digitalform entities.

@@ -67,7 +67,7 @@ import { DigitalFormMediumEditableContent } from "./DigitalFormMediumEditableCon
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const DigitalFormButton = ({ operation, children, digitalform, onDone = () => {}, ...props }) => {
+export const DigitalFormButton = ({ operation, children, digitalform, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: DigitalFormInsertAsyncAction,
@@ -102,6 +102,7 @@ export const DigitalFormButton = ({ operation, children, digitalform, onDone = (
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, digitalform, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...digitalform, ...params };
+        onOptimistic(fetchParams);
         const freshDigitalForm = await fetch(fetchParams);
         onDone(freshDigitalForm); // Pass the result to the external callback
     };

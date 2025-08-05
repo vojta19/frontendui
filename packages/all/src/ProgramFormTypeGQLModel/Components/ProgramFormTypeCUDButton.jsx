@@ -67,7 +67,7 @@ import { ProgramFormTypeMediumEditableContent } from "./ProgramFormTypeMediumEdi
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const ProgramFormTypeButton = ({ operation, children, programformtype, onDone = () => {}, ...props }) => {
+export const ProgramFormTypeButton = ({ operation, children, programformtype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: ProgramFormTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const ProgramFormTypeButton = ({ operation, children, programformtype, on
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, programformtype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...programformtype, ...params };
+        onOptimistic(fetchParams);
         const freshProgramFormType = await fetch(fetchParams);
         onDone(freshProgramFormType); // Pass the result to the external callback
     };

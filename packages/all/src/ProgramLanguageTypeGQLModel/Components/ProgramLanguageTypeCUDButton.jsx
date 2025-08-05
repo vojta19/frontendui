@@ -67,7 +67,7 @@ import { ProgramLanguageTypeMediumEditableContent } from "./ProgramLanguageTypeM
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const ProgramLanguageTypeButton = ({ operation, children, programlanguagetype, onDone = () => {}, ...props }) => {
+export const ProgramLanguageTypeButton = ({ operation, children, programlanguagetype, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: ProgramLanguageTypeInsertAsyncAction,
@@ -102,6 +102,7 @@ export const ProgramLanguageTypeButton = ({ operation, children, programlanguage
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, programlanguagetype, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...programlanguagetype, ...params };
+        onOptimistic(fetchParams);
         const freshProgramLanguageType = await fetch(fetchParams);
         onDone(freshProgramLanguageType); // Pass the result to the external callback
     };

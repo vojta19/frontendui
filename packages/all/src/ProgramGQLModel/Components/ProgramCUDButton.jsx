@@ -67,7 +67,7 @@ import { ProgramMediumEditableContent } from "./ProgramMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const ProgramButton = ({ operation, children, program, onDone = () => {}, ...props }) => {
+export const ProgramButton = ({ operation, children, program, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: ProgramInsertAsyncAction,
@@ -102,6 +102,7 @@ export const ProgramButton = ({ operation, children, program, onDone = () => {},
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, program, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...program, ...params };
+        onOptimistic(fetchParams);
         const freshProgram = await fetch(fetchParams);
         onDone(freshProgram); // Pass the result to the external callback
     };

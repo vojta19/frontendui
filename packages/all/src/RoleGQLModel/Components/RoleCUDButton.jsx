@@ -67,7 +67,7 @@ import { RoleMediumEditableContent } from "./RoleMediumEditableContent";
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const RoleButton = ({ operation, children, role, onDone = () => {}, ...props }) => {
+export const RoleButton = ({ operation, children, role, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: RoleInsertAsyncAction,
@@ -102,6 +102,7 @@ export const RoleButton = ({ operation, children, role, onDone = () => {}, ...pr
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, role, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...role, ...params };
+        onOptimistic(fetchParams);
         const freshRole = await fetch(fetchParams);
         onDone(freshRole); // Pass the result to the external callback
     };

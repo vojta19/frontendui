@@ -67,7 +67,7 @@ import { StateMachineMediumEditableContent } from "./StateMachineMediumEditableC
  *
  * @returns {JSX.Element} The dynamically selected button component for the specified operation.
  */
-export const StateMachineButton = ({ operation, children, statemachine, onDone = () => {}, ...props }) => {
+export const StateMachineButton = ({ operation, children, statemachine, onDone = () => {}, onOptimistic = () => {}, ...props }) => {
     const operationConfig = {
         C: {
             asyncAction: StateMachineInsertAsyncAction,
@@ -102,6 +102,7 @@ export const StateMachineButton = ({ operation, children, statemachine, onDone =
     const { error, loading, fetch, entity } = useAsyncAction(asyncAction, statemachine, { deferred: true });
     const handleClick = async (params = {}) => {
         const fetchParams = { ...statemachine, ...params };
+        onOptimistic(fetchParams);
         const freshStateMachine = await fetch(fetchParams);
         onDone(freshStateMachine); // Pass the result to the external callback
     };
