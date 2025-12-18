@@ -52,11 +52,14 @@ const useAsyncThunkActionFactory = (useDispatchHook, useSelectorHook) =>
     const entity = useSelectorHook((rootState) => {
         const result = id != null ? selectItemById(rootState, id) : null
         // console.log(id, rootState, result)
+        // console.log("useSelectorHook found", id, result)
         return result
     });
 
     const run = useCallback(
         (overrideVars) => {
+            // console.log("run.overrideVars", overrideVars, AsyncAction)
+
             if (!network || !AsyncAction) {
                 return Promise.resolve(null);
             }

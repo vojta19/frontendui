@@ -97,6 +97,7 @@ export function createGraphQLClient(options) {
      * @param {RequestInit} [init]
      */
     const request = async (request, init = {}) => {
+        // console.log("GraphQLClient request", request, init);
         const extraHeaders = getHeaders ? await getHeaders() : {};
         const res = await fetchGraphQL(endpoint, request, {
             ...init,

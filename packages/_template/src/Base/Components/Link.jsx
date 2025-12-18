@@ -2,9 +2,26 @@ import { ProxyLink } from "@hrbolek/uoisfrontend-shared";
 import { useGQLEntityContext } from "../Helpers/GQLEntityProvider";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 
-export const Link = ({ item, children }) => {
-    const { fetch } = useGQLEntityContext() || {};
 
+const RegisterofLinks = {};
+export const registerLink = (__typename, Link) => {
+    const registeredLink = RegisterofLinks[__typename];
+    if (!registeredLink) {
+        RegisterofLinks[__typename] = Link;
+    } else {
+        // throw new Error(`Link for typename ${__typename} is already registered.`);
+        console.warn(`Link for typename ${__typename} is already registered.`);
+    }
+}
+
+export const Link = ({ item, action, children }) => {
+    const { fetch } = useGQLEntityContext() || {};
+    const registeredLink = item?.__typename ? RegisterofLinks[item.__typename] : null;
+    if (registeredLink && registeredLink !== Link) {
+        const SpecificLink = registeredLink;
+        return <SpecificLink item={item} action={action}>{children}</SpecificLink>;
+    }
+    
     const label =
         children || item?.fullname || item?.name || item?.id || "Data Error";
 

@@ -101,6 +101,7 @@ export const LiveEdit = ({ item, children }) => {
     const {
         draft,
         dirty,
+        loading: saving,
         onChange, 
         onBlur,
         onCancel,
@@ -110,39 +111,21 @@ export const LiveEdit = ({ item, children }) => {
         // onCommit: contextOnChange
     })
 
-    // const handleConfirm = useCallback(async () => {
-    //     const result = await onConfirm();
-    //     console.log("ConfirmEdit handleConfirm result", result, "draft", draft)
-    //     if (result) {
-    //         const event = { target: { value: result } };
-    //         // důležité: použij params z kontextu (provider si je drží jako "poslední vars")
-    //         await contextOnChange(event);
-    //     }
-    //     return result;
-    // }, [onConfirm, contextOnChange]);
+    // const [dirty, setDirty] = useState(false);
+    // const handleChange = useCallback(async () => {
+    //     setDirty(true);
+    //     const result = await onChange();
+    //     setDirty(false);
+    //     // console.log("LiveEdit handleConfirm result", result, "draft", draft)
+    // })
 
-    const className=!dirty || loading?"border rounded":"border border-warning rounded"
+    const className=dirty || loading?"border border-danger rounded":"border rounded"
     return (
-        <div className={className}>
+        
         <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} >
+            {saving && <LoadingSpinner/>}
             {children}
-            {/* <hr /> */}
-            {/* <pre>{JSON.stringify(item, null, 2)}</pre> */}
-            {/* <button 
-                className="btn btn-warning form-control" 
-                onClick={onCancel}
-                disabled={!dirty || loading}
-            >
-                Zrušit změny
-            </button>
-            <button 
-                className="btn btn-primary form-control" 
-                onClick={handleConfirm}
-                disabled={!dirty || loading}
-            >
-                Uložit změny
-            </button> */}
         </MediumEditableContent>
-        </div>
+        
     )
 }

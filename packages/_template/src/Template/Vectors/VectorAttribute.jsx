@@ -17,7 +17,7 @@ export const VectorAttributeFactory = (attribute_name) => ({ item }) => {
     )
 }
 
-export const VectorAttribute = ({ attribute_name, item }) => {
+export const VectorAttribute_ = ({ attribute_name, item }) => {
     const attribute_value = item?.[attribute_name] || []
     return (
         <Row key={attribute_name}>
@@ -30,6 +30,16 @@ export const VectorAttribute = ({ attribute_name, item }) => {
         </Row>
     )
 }
+
+export const VectorAttribute = ({ attribute_name, item }) => {
+    const attribute_value = item?.[attribute_name] || []
+    return (
+        <CardCapsule item={item} title={attribute_name+'[]'}>
+            <Table data={attribute_value} />
+        </CardCapsule>
+    )
+}
+
 
 export const MediumCardVectors = ({ item }) => {
     return (

@@ -54,6 +54,10 @@ export const AsyncActionProvider = ({
 
     children, 
 }) => {
+    if (queryAsyncAction == null) {
+        throw new Error("AsyncActionProvider: queryAsyncAction is required");
+    }
+
     const [contextid] = useState(crypto.randomUUID() || null)
     const { run , error, loading, entity, data } = useAsyncThunkAction(queryAsyncAction, item, options)
     const [delayer] = useState(() => CreateDelayer())
@@ -79,7 +83,8 @@ export const AsyncActionProvider = ({
         onChange: onEvent(onChange), 
         onBlur: onEvent(onBlur) 
     }
-    console.log("GQLEntityProvider item", contextid, entity)
+    // console.log("GQLEntityProvider item", contextid, entity, data)
+    // console.log("GQLEntityProvider contextValue", contextid, contextValue)
     // if (!item) return null;
     return (
         <GQLEntityContext.Provider value={contextValue}>
@@ -88,6 +93,8 @@ export const AsyncActionProvider = ({
             {error && <ErrorHandler errors={error} />}
             {/* {(!loading && !error) && children} */}
             {contextValue.item && children}
+            {/* {!contextValue.item && <pre>{JSON.stringify(contextValue)}</pre>} */}
+            {/* <pre>{JSON.stringify(contextValue, null, 2)}</pre> */}
         </GQLEntityContext.Provider>
     );
 };

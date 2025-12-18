@@ -52,6 +52,7 @@ export const useEditAction = (
     // baseline = poslední "uložený" stav (primárně z entity)
     const [baseline, setBaseline] = useState(item || {});
     const [draft, setDraft] = useState(item || {});
+    
 
     // reset lokálního stavu při změně entity (jiné id / refetch / update ze store)
     useEffect(() => {
@@ -86,12 +87,13 @@ export const useEditAction = (
 
     const commitNow = useCallback(
         async (nextDraft) => {
-            console.log("useEditAction commitNow", nextDraft);
+            console.log("useEditAction commitNow", dirty, nextDraft);
             // posíláme přes run() -> thunk -> gqlClient.request(...)
             const result = await run(toVars(nextDraft));
             // po úspěchu nastav baseline; entity se stejně typicky aktualizuje přes middleware do store
-            setBaseline(nextDraft);
+            // setBaseline(nextDraft);
             onCommit(nextDraft, result);
+            // setDraft(nextDraft)
             return result;
         },
         [run, toVars]
@@ -99,7 +101,7 @@ export const useEditAction = (
 
     const scheduleCommit = useCallback(
         (nextDraft) => {
-            console.log("useEditAction scheduleCommit delayMs", nextDraft, delayMs);
+            // console.log("useEditAction scheduleCommit delayMs", nextDraft, delayMs);
             clearTimer();
             timerRef.current = setTimeout(() => {
                 commitNow(nextDraft).catch(() => {

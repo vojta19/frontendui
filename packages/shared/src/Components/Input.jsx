@@ -230,6 +230,10 @@ export const Input = ({ label, ariaHidden = false, children, ...props }) => {
     } else {
         inputProps.defaultValue = coerceValue(defaultValue);
     }
+
+    if (value !== value_) {
+        inputProps.className = (inputProps.className ? inputProps.className + " " : "") + "bg-warning";
+    }
     // console.log("Input default", isControlled, defaultValue, inputProps)
     const inputElement = <input {...inputProps} />;
 

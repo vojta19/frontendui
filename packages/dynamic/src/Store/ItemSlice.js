@@ -68,7 +68,7 @@ export const ItemSlice = createSlice({
          * payload: { ...item }
          */
         item_add: (state, action) => {
-            console.log("item_add", action)
+            // console.log("item_add", action)
             upsertItem(state, action.payload);
         },
 
@@ -77,7 +77,7 @@ export const ItemSlice = createSlice({
          * payload: { ...item, id }
          */
         item_replace: (state, action) => {
-            console.log("item_replace", action)
+            // console.log("item_replace", action)
             const item = action.payload;
             const id = item.id || generateId();
             const next = {
@@ -94,7 +94,7 @@ export const ItemSlice = createSlice({
          * payload: { ...partialItem, id }
          */
         item_update: (state, action) => {
-            console.log("item_update", action)
+            // console.log("item_update", action)
             const newItem = action.payload;
             const id = newItem.id;
             if (!id) return;

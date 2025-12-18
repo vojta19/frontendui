@@ -8,6 +8,7 @@ import { GQLEntityProvider, useGQLEntityContext } from '../Helpers/GQLEntityProv
 import { Row } from '../Helpers/Row';
 import { MediumCardScalars } from '../Scalars/ScalarAttribute';
 import { MediumCardVectors } from '../Vectors/VectorAttribute';
+import { LargeCard } from "../Components/LargeCard";
 
 const HomeLink = () => {
     const { goToHome } = useGQLEntityContext();
@@ -25,18 +26,12 @@ const HomeLink = () => {
 export const PageContent = ({ children }) => {
     const { data } = useGQLEntityContext()
     return (
+
         <div className="container-fluid mt-5">
             <div><HomeLink /></div>
-            <Row>
-                <Col className="col-4">
-                    <MediumCard item={data} />
-                </Col>
-                <Col className="col-8">
-                    <MediumCardScalars item={data} />
-                    <MediumCardVectors item={data} />
-                </Col>
-            </Row>
-            {children}
+            <LargeCard item={data}>
+                {children}
+            </LargeCard>
         </div>
     );
 }

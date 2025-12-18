@@ -14,6 +14,7 @@ export const createAsyncGraphQLAction2 = (graphQLQuery, params=addItemsFromGraph
         graphQLQueryStr = graphQLQuery?.__metadata?.queryStr
         // nodes = graphQLQuery?.__metadata?.nodes
         graphQLQuery = graphQLQuery()
+        graphQLQueryStr = graphQLQueryStr || graphQLQuery
     }
 
     // If `params` is a function, treat it as middleware

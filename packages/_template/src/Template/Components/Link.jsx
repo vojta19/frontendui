@@ -1,5 +1,5 @@
 import { ProxyLink } from "@hrbolek/uoisfrontend-shared"
-import { URIRoot } from "../uriroot";
+import { URIRoot } from "../../uriroot";
 
 export const LinkURI = `${URIRoot}/template/view/`;
 
@@ -30,8 +30,9 @@ export const LinkURI = `${URIRoot}/template/view/`;
  *
  * @see ProxyLink - The base component used for rendering the link.
  */
-export const Link = ({ item, children, ...props}) => {
-    return <ProxyLink to={LinkURI + item?.id} {...props}>{children || item?.fullname || item?.name || item?.id || "Nevim"}</ProxyLink>
+export const Link = ({ item, LinkURI: LinkURI_ = LinkURI, action="view", children, ...props}) => {
+    const targetURI = LinkURI_.replace('view', action);
+    return <ProxyLink to={targetURI + item?.id} {...props}>{children || item?.fullname || item?.name || item?.id || "Nevim"}</ProxyLink>
     // return <BaseUI.Link item={item} />
     // return <a>{children || item?.fullname || item?.name || item?.id || "Nevim"}</a>
 }
