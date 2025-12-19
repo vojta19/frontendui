@@ -1,7 +1,7 @@
-import { GenericURIRoot } from "../Components/Link"
-// import { LinkURI } from "../Components/Link"
-import { Page } from "./Page"
-// import { VectorPage } from "./VectorPage"
+import { LinkURI } from "../Components/Link"
+import { Page, PageMediumCard } from "./Page"
+import { PageEdit } from "./PageEdit"
+import { VectorPage } from "./VectorPage"
 
 /**
  * Definice segmentů rout pro Template stránky.
@@ -32,17 +32,21 @@ import { Page } from "./Page"
  *   element: <TemplateEditPage />
  * }
  */
-export const BaseRouterSegments = [
+export const RoleRouterSegments = [
     {
-        path: `/${GenericURIRoot}/:typename/view/:id`,
+        path: `/${LinkURI}:id`,
         element: (<Page />),
     },
     // {
     //     path: `/${LinkURI}`,
     //     element: (<VectorPage />),
     // },
-    // {
-    //     path: `/${LinkURI.replace('view', 'edit')}:id`,
-    //     element: (<PageEdit />),
-    // }
+    {
+        path: `/${LinkURI.replace('view', 'edit')}:id`,
+        element: (<PageEdit />),
+    },
+    {
+        path: `/${LinkURI.replace('view', 'view2')}:id`,
+        element: (<PageMediumCard />),
+    }    
 ]

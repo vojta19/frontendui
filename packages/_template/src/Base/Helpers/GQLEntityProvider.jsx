@@ -5,7 +5,13 @@ import { useState } from "react";
 import { CreateDelayer, ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
 
 const GQLEntityContext = createContext(null);
-export const useGQLEntityContext = () => useContext(GQLEntityContext)
+export const useGQLEntityContext = () => {
+    const result = useContext(GQLEntityContext)
+    if (result == null) {
+        throw new Error("useGQLEntityContext must be used within a GQLEntityProvider")
+    }
+    return result
+}
        
 
 /**

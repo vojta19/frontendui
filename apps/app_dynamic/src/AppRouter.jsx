@@ -5,10 +5,10 @@ import {
 
 // import { BaseUI } from "../../../packages/_template/src/Base";
 import { BaseRouterSegments } from "../../../packages/_template/src/Base/Pages/RouterSegment";
-import { TemplateRouterSegments } from "../../../packages/_template/src/Template/Pages/RouterSegment";
+import { TemplateRouterSegments } from "../../../packages/_template/src/_Template/Pages/RouterSegment";
 // import { UserRouterSegments } from "../../../packages/_template/src/UserGQLModel/Pages/RouterSegment";
-// import { GroupRouterSegments } from "../../../packages/_template/src/GroupGQLModel/Pages/RouterSegment";
-// import { RoleRouterSegments } from "../../../packages/_template/src/RoleGQLModel/Pages/RouterSegment";
+import { GroupRouterSegments } from "../../../packages/_template/src/GroupGQLModel2/Pages/RouterSegment";
+import { RoleRouterSegments } from "../../../packages/_template/src/RoleGQLModel2/Pages/RouterSegment";
 // import { TemplateRouterSegments } from "../../../packages/_template/src/Template";
 
 const Routes = [
@@ -20,8 +20,8 @@ const Routes = [
     // },
     ...TemplateRouterSegments,
     // ...UserRouterSegments,
-    // ...GroupRouterSegments,
-    // ...RoleRouterSegments
+    ...GroupRouterSegments,
+    ...RoleRouterSegments
 
 ]
 const router = createBrowserRouter(Routes);

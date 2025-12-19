@@ -1,4 +1,4 @@
-import { URIRoot } from "../../uriroot";
+// import { URIRoot } from "../../uriroot";
 import { ProxyLink } from "./ProxyLink";
 
 const RegisterofLinks = {};
@@ -12,6 +12,8 @@ export const registerLink = (__typename, Link) => {
     }
 }
 
+export const GenericURIRoot = "/generic";
+
 export const Link = ({ item, action, children }) => {
     const registeredLink = item?.__typename ? RegisterofLinks[item.__typename] : null;
     if (registeredLink && registeredLink !== Link) {
@@ -23,7 +25,7 @@ export const Link = ({ item, action, children }) => {
         children || item?.fullname || item?.name || item?.id || "Data Error";
 
     const to = item?.__typename && item?.id
-        ? `${URIRoot}/${item.__typename}/view/${item.id}`
+        ? `${GenericURIRoot}/${item.__typename}/view/${item.id}`
         : "#";
 
     return <ProxyLink to={to}>{label}</ProxyLink>;

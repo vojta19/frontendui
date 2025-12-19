@@ -1,7 +1,10 @@
-import { GenericURIRoot } from "../Components/Link"
-// import { LinkURI } from "../Components/Link"
+import { LinkURI } from "../Components/Link"
 import { Page } from "./Page"
-// import { VectorPage } from "./VectorPage"
+import { PageEdit } from "./PageEdit"
+import { PageFakulta } from "./SpecificPages/Fakulta"
+import { PageKatedra } from "./SpecificPages/Katedra"
+import { PageVector } from "./PageVector"
+import { PageUpdateItem } from "./PageUpdateItem"
 
 /**
  * Definice segmentů rout pro Template stránky.
@@ -32,17 +35,34 @@ import { Page } from "./Page"
  *   element: <TemplateEditPage />
  * }
  */
-export const BaseRouterSegments = [
+export const GroupRouterSegments = [
     {
-        path: `/${GenericURIRoot}/:typename/view/:id`,
+        path: `/${LinkURI}:id`,
         element: (<Page />),
     },
     // {
     //     path: `/${LinkURI}`,
     //     element: (<VectorPage />),
     // },
+    {
+        path: `/${LinkURI.replace('view', 'edit')}:id`,
+        element: (<PageUpdateItem />),
+    },
     // {
-    //     path: `/${LinkURI.replace('view', 'edit')}:id`,
-    //     element: (<PageEdit />),
-    // }
+    //     path: `/${LinkURI.replace('group', 'fakulta')}:id`,
+    //     element: (<PageFakulta />),
+    // },
+    // {
+    //     path: `/${LinkURI.replace('group', 'katedra')}:id`,
+    //     element: (<PageKatedra />),
+    // },
+    // {
+    //     path: `/${LinkURI.replace('view', 'view2')}:id`,
+    //     element: (<PageMediumCard />),
+    // },
+    {
+        path: `/${LinkURI.replace('/:id', '')}`,
+        element: (<PageVector />),
+    },   
+    
 ]
