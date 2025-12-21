@@ -9,11 +9,15 @@ const mergeArraysById = (array1 = [], array2 = []) => {
     return Array.from(mergedMap.values());
 };
 
-const defaultCalculateNewFilter = (oldfilter) => ({
-    ...oldfilter,
-    skip: (oldfilter.skip || 0) + (oldfilter.limit || 10),
-    limit: oldfilter.limit || 10,
-});
+const defaultCalculateNewFilter = (oldfilter) => {
+    const newFilter = ({
+        ...oldfilter,
+        skip: (oldfilter.skip || 0) + (oldfilter.limit || 10),
+        limit: oldfilter.limit || 10,
+    });
+    console.log("newFilter", newFilter)
+    return newFilter
+}
 
 const extractArrayFromThunkResult = (thunkResult) => {
     // očekáváš { data: { something: [...] } } nebo podobně
@@ -115,6 +119,7 @@ export const useInfiniteScroll = ({
         const params = filterRef.current;
 
         try {
+            console.log("calling with", params)
             const result = await dispatch(asyncAction(params, gqlClient));
             const fetched = extractArrayFromThunkResult(result);
 

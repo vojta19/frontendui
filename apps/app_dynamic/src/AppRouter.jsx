@@ -9,6 +9,7 @@ import { BaseRouterSegments } from "../../../packages/_template/src/Base/Pages/R
 import { UserRouterSegments } from "../../../packages/_template/src/UserGQLModel/Pages/RouterSegment";
 import { GroupRouterSegments } from "../../../packages/_template/src/GroupGQLModel2/Pages/RouterSegment";
 import { RoleRouterSegments } from "../../../packages/_template/src/RoleGQLModel2/Pages/RouterSegment";
+import { GroupTypeRouterSegments } from "../../../packages/_template/src/GroupType/Pages/RouterSegment";
 // import { TemplateRouterSegments } from "../../../packages/_template/src/Template";
 
 const Routes = [
@@ -21,6 +22,7 @@ const Routes = [
     // ...TemplateRouterSegments,
     ...UserRouterSegments,
     ...GroupRouterSegments,
+    ...GroupTypeRouterSegments,
     ...RoleRouterSegments
 
 ]

@@ -87,8 +87,8 @@ fragment Role on RoleGQLModel {
     createdbyId
     changedbyId
     rbacobjectId
-    createdby { id __typename }
-    changedby { id __typename }
+    createdby { id __typename fullname}
+    changedby { id __typename fullname}
     rbacobject { id __typename }
     valid
     deputy

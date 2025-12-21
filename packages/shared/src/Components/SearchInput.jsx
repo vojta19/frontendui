@@ -51,7 +51,9 @@ export const SearchInput = ({label="search", phrase: phrase_="", skip=0, limit=1
     useEffect( () => {
         const lowercase = phrase.toLowerCase()
         if (lowercase.length > 2) {
-            dispatch(FetchByPatternAsyncAction({pattern: `%${lowercase}%`, skip:skip, limit: limit}))
+            const asyncAction = FetchByPatternAsyncAction({pattern: `%${lowercase}%`, skip:skip, limit: limit})
+            console.log("asyncAction", asyncAction)
+            dispatch(asyncAction)
             .then(
                 (json) => {
                     const data = json?.data || {}

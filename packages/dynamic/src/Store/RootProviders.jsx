@@ -26,5 +26,8 @@ const GQLClientProvider = ({children, clientOptions={}}) => {
 }
 
 export const useGQLClient = () => {
-    return useContext(GQLClientContext)
+    const result = useContext(GQLClientContext)
+    if (!result )
+        throw Error("useGQLClient not in GQLClientContext")
+    return result
 }

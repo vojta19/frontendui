@@ -3,7 +3,7 @@ import { Attribute } from "../../Base/Components/Attribute"
 import { CardCapsule } from "../Components"
 
 export const UserMemberships = ({ item }) => {
-    const { memberships } = item || []
+    const { memberships=[] } = item || {}
 
     return (
         <CardCapsule item={item} title="Členství">

@@ -1,4 +1,5 @@
 // updateItemsFromGraphQLResult.js
+import { data } from "react-router-dom";
 import { ItemActions } from "../ItemSlice";
 
 /**
@@ -10,41 +11,56 @@ import { ItemActions } from "../ItemSlice";
  * @param {Array<Object>} acc
  * @returns {Array<Object>}
  */
-const collectEntities = (node, acc = []) => {
+const collectEntities = (node, acc = [], level) => {
     if (!node || typeof node !== "object") {
         return acc;
     }
 
     if (Array.isArray(node)) {
         for (const item of node) {
-            collectEntities(item, acc);
+            collectEntities(item, acc, level+1);
         }
         return acc;
     }
 
     // Objekt
-    if (node.id != null) {
-        if (!node.__typename) {
-            // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
-            // (error boundary / log si uděláš podle sebe)
-            // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
-            throw new Error(
-                `GraphQL entity with id='${node.id}' is missing __typename. ` +
-                `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
-            );
+    // if (node.id != null) {
+        if (true) {
+        // console.log("node", level, node)
+        if (level === 1) {
+            if (!node.__typename) {
+                if (node.id != null) 
+                    // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
+                    // (error boundary / log si uděláš podle sebe)
+                    // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
+                    throw new Error(
+                        `GraphQL entity with id='${node.id}' is missing __typename. ` +
+                        `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
+                    );           
+            } else {
+                // console.log("node", node)
+                const __typename = node?.__typename || ""
+                if (__typename.endsWith("Error")) {
+                    const err = Error(`Požadavek vrátil řízený chybový stav\n${JSON.stringify(node, null, 2)}`)
+                    err.errors = node
+                    throw err
+                    // console.log("Error", node)
+                }
+            }
         }
+        
         acc.push(node);
     }
 
     for (const value of Object.values(node)) {
-        collectEntities(value, acc);
+        collectEntities(value, acc, level+1);
     }
 
     return acc;
 };
 
 
-export const ItemsFromGraphQLResultFactory = (ItemAction=ItemActions.item_update) => (result) => async (
+export const ItemsFromGraphQLResultFactory = (ItemAction = ItemActions.item_update) => (result) => async (
     dispatch,
     getState,
     next
@@ -56,9 +72,43 @@ export const ItemsFromGraphQLResultFactory = (ItemAction=ItemActions.item_update
             : result;
 
     if (dataRoot && typeof dataRoot === "object") {
+
+        // if (dataRoot.id != null) {
+        //     if (Array.isArray(dataRoot)) {
+        //         for (const item of dataRoot) {
+        //             if (!item.__typename) {
+        //                 // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
+        //                 // (error boundary / log si uděláš podle sebe)
+        //                 // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
+        //                 throw new Error(
+        //                     `GraphQL entity with id='${item.id}' is missing __typename. ` +
+        //                     `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
+        //                 );
+        //             }
+        //         }
+        //     } else {
+        //         if (!dataRoot.__typename) {
+        //             // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
+        //             // (error boundary / log si uděláš podle sebe)
+        //             // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
+        //             throw new Error(
+        //                 `GraphQL entity with id='${dataRoot.id}' is missing __typename. ` +
+        //                 `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
+        //             );
+        //         }
+        //     }
+        // }
+        // console.log("dataRoot", dataRoot)
+        // const __typename = dataRoot?.__typename || ""
+        // if (__typename.includes("Error")) {
+        //     throw new Error(
+        //         `Požadavek vrátil řízený chybový stav\n${JSON.stringify(dataRoot, null, 2)}`
+        //     );
+        // }
+
         let entities = [];
         try {
-            entities = collectEntities(dataRoot, []);
+            entities = collectEntities(dataRoot, [], 0);
         } catch (err) {
             // Tady máš tvrdý assert na __typename – můžeš případně logovat nebo dispatchnout error akci
             console.error("ItemsFromGraphQLResult: normalization failed", err);
@@ -71,7 +121,7 @@ export const ItemsFromGraphQLResultFactory = (ItemAction=ItemActions.item_update
         for (const entity of entities) {
             // dispatch(ItemActions.item_add(entity));
             dispatch(ItemAction(entity));
-            
+
         }
     }
 
