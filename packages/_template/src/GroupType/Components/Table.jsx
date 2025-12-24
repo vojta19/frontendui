@@ -1,7 +1,7 @@
 import { Table as BaseTable, KebabMenu } from "../../Base/Components/Table" 
 import { Link, LinkURI } from "./Link"
 import { useNavigate } from "react-router"
-import { UpdateLink } from "../InteractiveMutations/Update"
+import { UpdateLink } from "../Mutations/Update"
 
 const CellName = ({ row, name }) => (
     <td key={name}>

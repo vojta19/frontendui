@@ -1,9 +1,9 @@
 import { DeleteAsyncAction } from "../Queries"
 import { LinkURI } from "../Components";
 import { PageBase } from "./PageBase";
-import { DeleteBody } from "../InteractiveMutations/Delete";
+import { DeleteBody } from "../Mutations/Delete";
 
-export const DeleteItemURI = `${LinkURI.replace('view', 'delete')}`
+export { DeleteURI } from "../Mutations/Delete"
 
 export const PageDeleteItem = ({ children, queryAsyncAction=DeleteAsyncAction, ...props }) => {
     return (

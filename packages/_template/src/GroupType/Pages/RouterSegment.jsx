@@ -3,9 +3,9 @@ import { PageUpdateItem } from "./PageUpdateItem"
 import { PageCreateItem } from "./PageCreateItem"
 import { PageReadItem, ReadItemURI } from "./PageReadItem"
 import { PageDeleteItem } from "./PageDeleteItem"
-import { DeleteURI } from "../InteractiveMutations/Delete"
-import { CreateURI } from "../InteractiveMutations/Create"
-import { UpdateURI } from "../InteractiveMutations/Update"
+import { DeleteURI } from "../Mutations/Delete"
+import { CreateURI } from "../Mutations/Create"
+import { UpdateURI } from "../Mutations/Update"
 
 /**
  * Definice segmentů rout pro Template stránky.

@@ -13,6 +13,8 @@ export const registerLink = (__typename, Link) => {
 }
 
 export const GenericURIRoot = "/generic";
+export const LinkURI = GenericURIRoot + "/view/";
+
 
 export const Link = ({ item, action, children }) => {
     const SpecificLink = item?.__typename ? RegisterofLinks[item.__typename] : null;

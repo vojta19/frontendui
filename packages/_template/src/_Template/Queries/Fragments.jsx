@@ -87,5 +87,5 @@ export const RBACFragment = createQueryStrLazy(`${RBACFragmentStr}`)
 
 export const LinkFragment = createQueryStrLazy(`${LinkFragmentStr}`)
 export const MediumFragment = createQueryStrLazy(`${MediumFragmentStr}`, LinkFragment, RBACFragment)
-export const LargeFragment = createQueryStrLazy(`${LargeFragmentStr}`, MediumFragment, RoleFragment)
+export const LargeFragment = createQueryStrLazy(`${LargeFragmentStr}`, MediumFragment)
   

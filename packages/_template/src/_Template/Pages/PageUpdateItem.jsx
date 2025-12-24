@@ -1,7 +1,7 @@
 import { LargeCard, LinkURI } from "../Components"
 import { ReadAsyncAction } from "../Queries"
 import { PageItemBase } from "./PageBase"
-import { UpdateBody } from "../InteractiveMutations/Update"
+import { UpdateBody } from "../Mutations/Update"
 import { useGQLEntityContext } from "../../Base/Helpers/GQLEntityProvider"
 
 export const UpdateItemURI = `${LinkURI.replace('view', 'edit')}:id`

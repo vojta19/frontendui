@@ -1,17 +1,17 @@
 import { useGQLEntityContext } from "../../Base/Helpers/GQLEntityProvider"
 import { MediumCardScalars } from "../../Base/Scalars/ScalarAttribute"
 import { MediumCardVectors } from "../../Base/Vectors/VectorAttribute"
-import { LargeCard } from "../Components"
+import { LargeCard, LinkURI } from "../Components"
 import { ReadAsyncAction } from "../Queries"
-import { PageBase } from "./PageBase"
+import { PageItemBase } from "./PageBase"
 
 export const ReadItemURI = `${LinkURI}:id`
 
 export const PageReadItem = ({ children, queryAsyncAction=ReadAsyncAction, ...props }) => {
     return (
-        <PageBase queryAsyncAction={queryAsyncAction}>
+        <PageItemBase queryAsyncAction={queryAsyncAction}>
             <Read {...props} />
-        </PageBase>
+        </PageItemBase>
     )
 }
 

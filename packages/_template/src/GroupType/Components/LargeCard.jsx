@@ -5,7 +5,7 @@ import { Row } from "../../Base/Components/Row"
 import { LeftColumn, MiddleColumn } from "@hrbolek/uoisfrontend-shared"
 import { MediumContent as MediumContent_ } from "./MediumContent"
 import { RBACObject } from "../../RoleGQLModel2/Components/RBACObject"
-import { InteractiveMutations } from "../InteractiveMutations/InteractiveMutations"
+import { InteractiveMutations } from "../Mutations/InteractiveMutations"
 
 /**
  * A large card component for displaying detailed content and layout for an template entity.

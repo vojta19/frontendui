@@ -9,6 +9,7 @@ import { PageItemBase } from "./PageBase"
 export const ReadItemURI = `${LinkURI}:id`
 
 export const PageReadItem = ({ children, queryAsyncAction=ReadAsyncAction, ...props }) => {
+    
     return (
         <PageItemBase queryAsyncAction={queryAsyncAction}>
             <Read {...props} />
