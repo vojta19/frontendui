@@ -42,6 +42,11 @@ const upsertItem = (state, item) => {
     return next;
 };
 
+const asArray = (payload) => {
+    if (!payload) return [];
+    return Array.isArray(payload) ? payload : [payload];
+};
+
 /**
  * RTK Slice pro normalizované items.
  *
@@ -68,8 +73,10 @@ export const ItemSlice = createSlice({
          * payload: { ...item }
          */
         item_add: (state, action) => {
-            // console.log("item_add", action)
-            upsertItem(state, action.payload);
+            const items = asArray(action.payload);
+            for (const item of items) {
+                upsertItem(state, item);
+            }
         },
 
         /**
@@ -94,9 +101,34 @@ export const ItemSlice = createSlice({
          * payload: { ...partialItem, id }
          */
         item_update: (state, action) => {
-            // console.log("item_update", action)
-            const newItem = action.payload;
-            const id = newItem.id;
+            const items = asArray(action.payload);
+            if (items.length === 0) return;
+
+            // batch větev
+            if (items.length > 1) {
+                const updates = [];
+                for (const newItem of items) {
+                    const id = newItem?.id;
+                    if (!id) continue;
+
+                    const prev = state.entities[id] || {};
+                    updates.push({
+                        id,
+                        changes: {
+                            ...newItem,
+                            _updatedAt: Date.now(),
+                            _version: (prev._version ?? 0) + 1,
+                        },
+                    });
+                }
+
+                if (updates.length > 0) itemsAdapter.updateMany(state, updates);
+                return;
+            }
+
+            // single větev (stejné jako dřív)
+            const newItem = items[0];
+            const id = newItem?.id;
             if (!id) return;
 
             const prev = state.entities[id] || {};
@@ -106,14 +138,7 @@ export const ItemSlice = createSlice({
                 _version: (prev._version ?? 0) + 1,
             };
 
-            // itemsAdapter.upsertOne(state, {
-            //     id,
-            //     changes,
-            // });
-            itemsAdapter.updateOne(state, {
-                id,
-                changes,
-            });
+            itemsAdapter.updateOne(state, { id, changes });
         },
 
         /**

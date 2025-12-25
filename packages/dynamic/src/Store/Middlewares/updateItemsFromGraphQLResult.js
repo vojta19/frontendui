@@ -73,39 +73,6 @@ export const ItemsFromGraphQLResultFactory = (ItemAction = ItemActions.item_upda
 
     if (dataRoot && typeof dataRoot === "object") {
 
-        // if (dataRoot.id != null) {
-        //     if (Array.isArray(dataRoot)) {
-        //         for (const item of dataRoot) {
-        //             if (!item.__typename) {
-        //                 // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
-        //                 // (error boundary / log si uděláš podle sebe)
-        //                 // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
-        //                 throw new Error(
-        //                     `GraphQL entity with id='${item.id}' is missing __typename. ` +
-        //                     `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
-        //                 );
-        //             }
-        //         }
-        //     } else {
-        //         if (!dataRoot.__typename) {
-        //             // "assert" – fail fast, protože bez __typename se ti to rozbije všude jinde
-        //             // (error boundary / log si uděláš podle sebe)
-        //             // Můžeš změnit na `console.error` + return, pokud nechceš shazovat celý request.
-        //             throw new Error(
-        //                 `GraphQL entity with id='${dataRoot.id}' is missing __typename. ` +
-        //                 `Add __typename to your query/fragment, otherwise normalizace nebude fungovat.`
-        //             );
-        //         }
-        //     }
-        // }
-        // console.log("dataRoot", dataRoot)
-        // const __typename = dataRoot?.__typename || ""
-        // if (__typename.includes("Error")) {
-        //     throw new Error(
-        //         `Požadavek vrátil řízený chybový stav\n${JSON.stringify(dataRoot, null, 2)}`
-        //     );
-        // }
-
         let entities = [];
         try {
             entities = collectEntities(dataRoot, [], 0);
@@ -118,11 +85,11 @@ export const ItemsFromGraphQLResultFactory = (ItemAction = ItemActions.item_upda
         }
 
         // Normalizace do ItemSlice – každá entita jde přes item_add (upsert)
-        for (const entity of entities) {
-            // dispatch(ItemActions.item_add(entity));
-            dispatch(ItemAction(entity));
-
-        }
+        dispatch(ItemAction(entities));
+        // for (const entity of entities) {
+        //     // dispatch(ItemActions.item_add(entity));
+        //     dispatch(ItemAction(entity));
+        // }
     }
 
     // Předáme výsledek dál v chainu (např. do dalšího middleware nebo volajícího)
