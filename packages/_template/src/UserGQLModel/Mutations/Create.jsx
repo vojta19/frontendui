@@ -16,8 +16,8 @@ const DefaultContent = MediumEditableContent
 const mutationAsyncAction = InsertAsyncAction
 
 const permissions = {
-    oneOfRoles: ["superadmin"],
-    mode: "absolute",
+    oneOfRoles: ["administrátor", "personalista"],
+    mode: "item",
 }
 
 export const CreateLink = ({...props}) => (
@@ -49,7 +49,6 @@ export const CreateBody = ({...props}) => {
         DefaultContent={DefaultContent} 
         readItemURI={ReadItemURI}
         mutationAsyncAction={mutationAsyncAction}
-
     />
 };
 

@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 
 import { CardCapsule } from "../Components/CardCapsule"
 import { MediumCard } from "../Components/MediumCard"
+import { Col } from "../../Base/Components/Col"
+import { Row } from "../../Base/Components/Row"
 import { selectItemById } from "../../../../dynamic/src/Store";
 import { useMemo } from "react";
-import { Row } from "../../Base/Components/Row";
-import { Col } from "../../Base/Components/Col";
 
 export const ScalarAttributeCapsule = ({ attribute_name, item, children }) => {
     return (

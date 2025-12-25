@@ -6,9 +6,9 @@ import { LeftColumn, MiddleColumn } from "@hrbolek/uoisfrontend-shared"
 import { MediumContent as MediumContent_ } from "./MediumContent"
 import { UserRoles } from "../Vectors/UserRoles"
 import { RBACObject } from "../../RoleGQLModel2/Components/RBACObject"
-import { UserUpdate } from "../InteractiveMutations/UserUpdate"
-import { UserGDPR } from "../InteractiveMutations/UserGDPR"
+import { UpdateLink } from "../Mutations/Update"
 import { UserMemberships } from "../Vectors/UserMemberships"
+import { InteractiveMutations, PageLink } from "../Mutations/InteractiveMutations"
 
 /**
  * A large card component for displaying detailed content and layout for an template entity.
@@ -46,10 +46,8 @@ export const LargeCard = ({ item, children, CardCapsule=CardCapsule_, MediumCont
                     <UserMemberships item={item} />
                     <UserRoles item={item} />
                     <RBACObject item={item} />
-                    <CardCapsule item={item} title="Nástroje">
-                        <UserUpdate className="btn btn-outline-success" item={item} buttonLabel={"Update"}/>
-                        <UserGDPR className="btn btn-outline-success" item={item} buttonLabel={"GDPR"}/>
-                    </CardCapsule>
+                    <InteractiveMutations item={item} />
+                    
                 </LeftColumn>
                 <MiddleColumn>
                     {children}

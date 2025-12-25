@@ -28,7 +28,7 @@ export const UpdateLink = ({
     }, [uriPattern, item?.id]);
 
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
             <ProxyLink
                 to={to}
                 preserveHash={preserveHash}
@@ -42,7 +42,8 @@ export const UpdateLink = ({
 const DefaultContent = MediumEditableContent
 
 export const UpdateButton = ({ 
-    children, 
+    children,
+    item, 
     mutationAsyncAction = UpdateAsyncAction, 
     oneOfRoles=["superadmin"],
     mode="absolute",
@@ -53,7 +54,7 @@ export const UpdateButton = ({
     const toggle = () => setVisible(v => !v);
     const hide = () => setVisible(v => false)
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
             <button {...props} onClick={toggle}>{children || "Editovat"}</button>
             {visible && (
                 <UpdateDialog 
@@ -139,7 +140,7 @@ export const UpdateBody = ({
     if (!item) return null
 
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
             <LiveEdit 
                 item={item} 
                 mutationAsyncAction={mutationAsyncAction} 

@@ -5,6 +5,7 @@ import { UpdateAsyncAction } from "../Queries";
 import { MediumEditableContent } from "./MediumEditableContent";
 import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
 import { LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
+import { AsyncStateIndicator } from "../Helpers/AsyncStateIndicator";
 
 /**
  * TemplateLiveEdit Component
@@ -35,27 +36,29 @@ import { LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
  * @returns {JSX.Element}
  *   Interaktivní komponenta pro live editaci šablony, včetně spinneru a error handleru.
  */
-export const LiveEdit = ({ item, children, asyncMutationAction=UpdateAsyncAction }) => {
+export const LiveEdit = ({ 
+    item, 
+    children, 
+    mutationAsyncAction=UpdateAsyncAction,
+    DefaultContent=MediumEditableContent
+}) => {
     // const { run , error, loading, entity, data, onChange: contextOnChange, onBlur: contextOnBlur } = useGQLEntityContext()
     const {
-        draft,
-        dirty,
         loading: saving,
+        error,
         onChange, 
         onBlur,
-        onCancel,
-        onConfirm,
-    } = useEditAction(asyncMutationAction, item, {
+    } = useEditAction(mutationAsyncAction, item, {
         mode: "live", 
         // onCommit: contextOnChange
     })
 
     return (
         
-        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} >
-            {saving && <LoadingSpinner />}
+        <DefaultContent item={item} onChange={onChange} onBlur={onBlur} >
+            <AsyncStateIndicator loading={saving} error={error} text={"Ukládám"} />
             {children}
-        </MediumEditableContent>
+        </DefaultContent>
         
     )
 }

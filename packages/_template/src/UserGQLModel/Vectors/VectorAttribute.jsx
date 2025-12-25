@@ -1,5 +1,5 @@
 import { CardCapsule } from "../Components/CardCapsule"
-import { Table } from "../../Template/Components/Table"
+import { Table } from "../Components/Table"
 import { Col } from "../../Base/Components/Col"
 import { Row } from "../../Base/Components/Row"
 

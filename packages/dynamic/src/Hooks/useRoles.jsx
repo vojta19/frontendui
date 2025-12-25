@@ -76,10 +76,14 @@ export const useItemRoles = ({ item = {}, oneOfRoles = [], caseInsensitive = fal
         return oneOfRoles.some(r => userSet.has(norm(r)));
     }, [currentUserRoles, oneOfRoles, caseInsensitive, roleNames]);
 
-    const error =
-        currentUserRoles == null
-            ? `Nelze posoudit práva, data nejsou k dispozici.\n${JSON.stringify(item?.rbacobject)}`
-            : null;
+    if (currentUserRoles == null) {
+        console.error(`Nelze posoudit práva, data nejsou k dispozici.`, item?.rbacobject)
+    }
+    const error = null
+    // const error =
+    //     currentUserRoles == null
+    //         ? `Nelze posoudit práva, data nejsou k dispozici.\n${JSON.stringify(item?.rbacobject)}`
+    //         : null;
 
     return { can, roleNames, loading: false, error };
 };

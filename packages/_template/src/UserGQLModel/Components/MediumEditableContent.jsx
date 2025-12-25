@@ -27,10 +27,30 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
     return (
         <>           
         {/* defaultValue={item?.name|| "Název"}  */}
-            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "Jméno"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"surname"} label={"Příjmení"} className="form-control" value={item?.surname|| "Příjmení"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"email"} label={"Email"} className="form-control" value={item?.email|| "Email"} onChange={onChange} onBlur={onBlur} />
-            
+            <Input 
+                id={"name"} 
+                label={"Jméno"} 
+                className="form-control" 
+                value={item?.name|| "Jméno"} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
+            <Input 
+                id={"surname"} 
+                label={"Příjmení"} 
+                className="form-control" 
+                value={item?.surname|| "Příjmení"} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
+            <Input 
+                id={"email"} 
+                label={"Email"} 
+                className="form-control" 
+                value={item?.email|| "Email"} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
             {children}
         </>
     )

@@ -33,10 +33,11 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
                 id={"name"} 
                 label={"Jméno"} 
                 className="form-control" 
-                value={item?.name|| "Název"} 
+                value={item?.name|| "Jméno"} 
                 onChange={onChange} 
                 onBlur={onBlur} 
             />
+            
             <EntityLookup 
                 id={"mastertypeId"}
                 label="Nadřízený typ"

@@ -1,18 +1,27 @@
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared"
 
 const LinkFragmentStr = `
-fragment Link on UserGQLModel {
+fragment Link on RoleTypeGQLModel {
   __typename
   id
   lastchange
-  name
-  surname
-  email
+  created
+  createdbyId
+  changedbyId
+  rbacobjectId
+    name
+  nameEn
+  path
+  mastertypeId
+  mastertype {
+    __typename
+  }
+  
 }
 `
 
 const MediumFragmentStr = `
-fragment Medium on UserGQLModel {
+fragment Medium on RoleTypeGQLModel {
   ...Link
   rbacobject {
     ...RBRoles
@@ -21,10 +30,10 @@ fragment Medium on UserGQLModel {
 `
 
 const LargeFragmentStr = `
-fragment Large on UserGQLModel {
+fragment Large on RoleTypeGQLModel {
   ...Medium
-  rolesOn {
-    ...Role
+  subtypes {
+    __typename
   }
 }
 `

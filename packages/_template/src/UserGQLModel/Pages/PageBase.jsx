@@ -4,7 +4,7 @@ import { PlaceChild } from "../../Base/Helpers/PlaceChild"
 import { PageNavbar } from "./PageNavbar"
 import { ReadAsyncAction } from "../Queries"
 
-export const PageBase = ({ children, queryAsyncAction=ReadAsyncAction }) => {
+export const PageItemBase = ({ children, queryAsyncAction=ReadAsyncAction }) => {
     const {id} = useParams()
     const item = {id}
     return (
@@ -12,5 +12,15 @@ export const PageBase = ({ children, queryAsyncAction=ReadAsyncAction }) => {
             <PlaceChild Component={PageNavbar} />
             {children}
         </AsyncActionProvider>
+    )
+}
+
+
+export const PageBase = ({ children }) => {
+    return (
+        <>
+            <PageNavbar />
+            {children}
+        </>
     )
 }

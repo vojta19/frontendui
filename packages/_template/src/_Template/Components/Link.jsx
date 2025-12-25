@@ -2,7 +2,7 @@ import { ProxyLink } from "@hrbolek/uoisfrontend-shared"
 import { URIRoot } from "../../uriroot";
 import { registerLink } from "../../Base/Components/Link";
 
-export const LinkURI = `${URIRoot}/template/view/`;
+export const LinkURI = `${URIRoot}/roletype/view/`;
 
 /**
  * A React component that renders a `ProxyLink` to an "template" entity's view page.
@@ -38,4 +38,4 @@ export const Link = ({ item, LinkURI: LinkURI_ = LinkURI, action="view", childre
     // return <a>{children || item?.fullname || item?.name || item?.id || "Nevim"}</a>
 }
 
-registerLink('UserGQLModel', Link)
+registerLink('RoleTypeGQLModel', Link)

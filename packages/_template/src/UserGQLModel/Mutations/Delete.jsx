@@ -15,10 +15,9 @@ const DefaultContent = MediumContent
 const mutationAsyncAction = DeleteAsyncAction
 
 const permissions = {
-    oneOfRoles: ["superadmin"],
-    mode: "absolute",
+    oneOfRoles: ["administrátor", "personalista"],
+    mode: "item",
 }
-
 export const DeleteLink = ({ ...props }) => {
     return (
         <BaseDeleteLink 

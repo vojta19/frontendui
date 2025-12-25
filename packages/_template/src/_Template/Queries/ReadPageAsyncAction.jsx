@@ -3,8 +3,8 @@ import { LargeFragment } from "./Fragments";
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
 const ReadPageQueryStr = `
-query ReadPageQuery($skip: Int, $limit: Int, $where: UserWhereInputFilter) {
-  result: userPage(skip: $skip, limit: $limit, where: $where) {
+query roleTypePage($skip: Int, $limit: Int, $orderby: String, $where: RoleTypeInputWhereFilter) {
+  roleTypePage(skip: $skip, limit: $limit, orderby: $orderby, where: $where) {
     ...Large
   }
 }

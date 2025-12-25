@@ -1,11 +1,10 @@
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 import { LargeFragment } from "./Fragments";
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
-import { reduceToFirstEntity } from "../../../../dynamic/src/Store";
 
 const ReadQueryStr = `
-query ReadQuery($id: UUID!) {
-  result: userById(id: $id) {
+query roleTypeById($id: UUID!) {
+  roleTypeById(id: $id) {
     ...Large
   }
 }

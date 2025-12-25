@@ -46,6 +46,7 @@ const DefaultContent = MediumContent
 
 export const DeleteButton = ({ 
     children, 
+    item,
     mutationAsyncAction = DeleteAsyncAction, 
     oneOfRoles=["superadmin"],
     mode="absolute",
@@ -66,7 +67,7 @@ export const DeleteButton = ({
     }
 
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
             <button {...props} onClick={togleVisible}>{children || "Odstranit"}</button>
             {visible && (
                 <DeleteDialog 

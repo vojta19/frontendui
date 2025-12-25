@@ -36,7 +36,7 @@ import { UpdateURI } from "../Mutations/Update"
  *   element: <TemplateEditPage />
  * }
  */
-export const GroupTypeRouterSegments = [
+export const RoleTypeRouterSegments = [
     {
         path: CreateURI,
         element: (<PageCreateItem />),

@@ -33,6 +33,7 @@ export const MediumContent = ({ item, children}) => {
             <Attribute attribute_name="id" label="ID" item={item} />
             <Attribute attribute_name="name" label="Jméno" item={item} />
             <Attribute attribute_name="surname" label="Příjmení" item={item} />
+            <Attribute attribute_name="fullname" label="Celé jméno" item={item} />
             <Attribute attribute_name="email" label="Email" item={item} />
             {children}
         </div>

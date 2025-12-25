@@ -7,6 +7,7 @@ fragment Link on UserGQLModel {
   lastchange
   name
   surname
+  fullname
   email
 }
 `

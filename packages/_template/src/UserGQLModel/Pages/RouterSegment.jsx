@@ -1,6 +1,11 @@
-import { LinkURI } from "../Components/Link"
-import { Page } from "./Page"
+import { PageVector, VectorItemsURI } from "./PageVector"
 import { PageUpdateItem } from "./PageUpdateItem"
+import { PageCreateItem } from "./PageCreateItem"
+import { PageReadItem, ReadItemURI } from "./PageReadItem"
+import { PageDeleteItem } from "./PageDeleteItem"
+import { DeleteURI } from "../Mutations/Delete"
+import { CreateURI } from "../Mutations/Create"
+import { UpdateURI } from "../Mutations/Update"
 
 /**
  * Definice segmentů rout pro Template stránky.
@@ -33,15 +38,25 @@ import { PageUpdateItem } from "./PageUpdateItem"
  */
 export const UserRouterSegments = [
     {
-        path: `/${LinkURI}:id`,
-        element: (<Page />),
+        path: CreateURI,
+        element: (<PageCreateItem />),
     },
-    // {
-    //     path: `/${LinkURI}`,
-    //     element: (<VectorPage />),
-    // },
     {
-        path: `/${LinkURI.replace('view', 'edit')}:id`,
+        path: VectorItemsURI,
+        element: (<PageVector />),
+    },
+    {
+        path: ReadItemURI,
+        element: (<PageReadItem />),
+    },
+    {
+        path: UpdateURI,
         element: (<PageUpdateItem />),
-    }
+    },   
+    {
+        path: DeleteURI,
+        element: (<PageDeleteItem />),
+    },   
+    
+    
 ]

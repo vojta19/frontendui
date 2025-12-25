@@ -68,6 +68,10 @@ export const useInfiniteScroll = ({
     const dispatch = useDispatch();
     const gqlClient = useGQLClient();
 
+    if (typeof asyncAction !== "function") {
+        throw Error("useInfiniteScroll.asyncAction must be a function, typically pageRead")
+    }
+    // console.log("useInfiniteScroll", reset, actionParams)
     const initialFilter = useMemo(() => ({ ...(actionParams || {}) }), [actionParams]);
 
     const [state, setState] = useState(() => ({

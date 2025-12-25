@@ -26,11 +26,13 @@ function safeParseWhere(sp, paramName = "where") {
     }
 }
 
+// 
+const filterParameterName = "where"
 export const PageVector = ({ children, queryAsyncAction = ReadPageAsyncAction }) => {
     
     const [sp] = useSearchParams();
 
-    const whereFromUrl = useMemo(() => safeParseWhere(sp, "usWhere"), [sp.toString()]);
+    const whereFromUrl = useMemo(() => safeParseWhere(sp, filterParameterName), [sp.toString()]);
 
     const { items, loading, error, hasMore, sentinelRef, loadMore, restart } = useInfiniteScroll(
         {
@@ -56,13 +58,13 @@ export const PageVector = ({ children, queryAsyncAction = ReadPageAsyncAction })
                 <Filter>
                     <FilterButton 
                         className="form-control btn btn-outline-success"
-                        paramName="gtWhere"
+                        paramName={filterParameterName}
                     >
                         Filtrovat
                     </FilterButton>
                     <ResetFilterButton 
                         className="form-control btn btn-warning"
-                        paramName="gtWhere"
+                        paramName={filterParameterName}
                     >
                         Vymazat filtr
                     </ResetFilterButton>

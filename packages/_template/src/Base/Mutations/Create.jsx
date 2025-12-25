@@ -26,7 +26,8 @@ export const CreateLink = ({
 
 const DefaultContent = MediumEditableContent
 export const CreateButton = ({ 
-    children, 
+    children,
+    rbacitem,
     mutationAsyncAction=InsertAsyncAction,
     oneOfRoles=["superadmin"],
     mode="absolute",
@@ -40,7 +41,7 @@ export const CreateButton = ({
     }
 
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={rbacitem}>
             <button {...props} onClick={handleClick}>{children || "Vytvořit nový"}</button>
             {visible && (
                 <CreateDialog
@@ -57,6 +58,7 @@ export const CreateButton = ({
 
 const dummyFunc = () => null
 export const CreateDialog = ({
+    
     title = "Nový typ",
     oklabel = "Ok",
     cancellabel = "Zrušit",
@@ -94,6 +96,7 @@ export const CreateDialog = ({
 
 export const CreateBody = ({
     children,
+    rbacitem,
     mutationAsyncAction = InsertAsyncAction,
     onOk,
     onCancel,
@@ -117,7 +120,7 @@ export const CreateBody = ({
     });
 
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={rbacitem}>
             <DefaultContent_
                 item={session.draft}
                 onChange={session.onChange}

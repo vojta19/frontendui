@@ -16,16 +16,9 @@ const DefaultContent = MediumEditableContent
 const mutationAsyncAction = UpdateAsyncAction
 
 const permissions = {
-    oneOfRoles: ["superadmin"],
-    mode: "absolute",
+    oneOfRoles: ["administrátor", "personalista"],
+    mode: "item",
 }
-
-// ALTERNATIVE, CHECK GQLENDPOINT
-// const permissions = {
-//     oneOfRoles: ["administrátor", "personalista"],
-//     mode: "item",
-// }
-
 
 export const UpdateLink = ({...props}) => {
     return <BaseUpdateLink 

@@ -94,7 +94,7 @@ export const ItemSlice = createSlice({
          * payload: { ...partialItem, id }
          */
         item_update: (state, action) => {
-            console.log("item_update", action)
+            // console.log("item_update", action)
             const newItem = action.payload;
             const id = newItem.id;
             if (!id) return;

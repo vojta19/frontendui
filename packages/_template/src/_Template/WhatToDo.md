@@ -7,7 +7,7 @@
 ## Adapt to new type
 - in Link.jsx file (see subdir ./components/) change LinkURI
 - in Link.jsx file change registerLink('YourGQLModel)
-- use http://localhost:8001/doc and graphiql at http://localhost:8001/gql to get queries and update AsyncActions, fragments, etc. in directory Queries
+- use http://localhost:8001/doc to get queries and update AsyncActions, fragments, etc. in directory Queries
   - readById
   - readPage
   - mutations (CUD)
@@ -21,16 +21,11 @@
   - UserAbsoluteAccessControlExtension or RbacProviderExtension
   - set
 
-- Change LargeCard, add there more buttons
 
-- Update MediumContent.jsx file to show more or less data related to you entity
+- Update MediumContent.jsx file to show more or less data
 - Update MediumEditableContent.jsx file to allow edit of more or less data
 
 
 ## Add new Mutations
 
-- check gqlendpoint to cover all available mutations with appropriate permissions
-  
-### Update filters
-
-- Set Filter component, correct it at PageVector, do not forget to use appropriate name for query param in url
+### Update
