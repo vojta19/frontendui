@@ -129,6 +129,7 @@ export const KebabMenu = ({ actions = [] }) => {
                         boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                         zIndex: 1000,
                         minWidth: 140,
+                        minHeight: 20
                     }}
                 >
                     {actions.map((action, i) => {
