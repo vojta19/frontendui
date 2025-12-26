@@ -20,6 +20,7 @@ export const UpdateLink = ({
     oneOfRoles=["superadmin"],
     mode="absolute",
     uriPattern=UpdateURI,
+    children,
     ...props 
 }) => {
     const to = useMemo(() => {
@@ -34,7 +35,9 @@ export const UpdateLink = ({
                 preserveHash={preserveHash}
                 preserveSearch={preserveSearch}
                 {...props}
-            />
+            >
+                {children || "Editovat"}
+            </ProxyLink>
         </PermissionGate>
     );
 };
