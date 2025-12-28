@@ -57,5 +57,13 @@ export const RoleRouterSegments = [
         element: (<PageDeleteItem />),
     },   
     
-    
+    {
+        path: VectorItemsURI.replace("list", ":any"),
+        element: (<PageVector />),
+    },
+    {
+        path: ReadItemURI.replace("view", ":any"),
+        element: (<PageReadItem />),
+    }
+
 ]

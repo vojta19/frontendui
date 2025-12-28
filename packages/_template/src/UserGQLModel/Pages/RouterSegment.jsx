@@ -64,6 +64,14 @@ export const UserRouterSegments = [
     {
         path: UserRolesURI,
         element: (<PageReadUserRoles />)
+    },   
+    {
+        path: VectorItemsURI.replace("list", ":any"),
+        element: (<PageVector />),
+    },
+    {
+        path: ReadItemURI.replace("view", ":any"),
+        element: (<PageReadItem />),
     }
     
 ]

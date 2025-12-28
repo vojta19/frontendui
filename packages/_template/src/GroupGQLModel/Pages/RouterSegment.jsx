@@ -68,5 +68,14 @@ export const GroupRouterSegments = [
     {
         path: SubgroupsURI,
         element: (<PageReadItemSubgroups />)
-    }
+    },
+    {
+        path: ListURI.replace("list", ":any"),
+        element: (<PageVector />),
+    },
+    {
+        path: ReadItemURI.replace("view", ":any"),
+        element: (<PageReadItem />),
+    },
+
 ]
