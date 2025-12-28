@@ -7,8 +7,12 @@ import { MediumContent as MediumContent_ } from "./MediumContent"
 import { UserRoles } from "../Vectors/UserRoles"
 import { RBACObject } from "../../RoleGQLModel/Components/RBACObject.jsx"
 // import { UpdateLink } from "../Mutations/Update"
-import { UserMemberships } from "../Vectors/UserMemberships"
+import { UserMembershipsCard } from "../Vectors/UserMemberships"
 import { InteractiveMutations } from "../Mutations/InteractiveMutations"
+import { UpdateButton } from "../Mutations/Update.jsx"
+import { SimpleCardCapsuleRightCorner } from "../../Base/Components/CardCapsule.jsx"
+import { MegaphoneFill, PencilFill } from "react-bootstrap-icons"
+import { Link } from "./Link.jsx"
 
 /**
  * A large card component for displaying detailed content and layout for an template entity.
@@ -40,11 +44,31 @@ export const LargeCard = ({ item, children, CardCapsule=CardCapsule_, MediumCont
         <CardCapsule item={item} >
             <Row>
                 <LeftColumn>
-                    <CardCapsule item={item} title="Detail">
-                        <MediumContent item={item} />
-                    </CardCapsule>
-                    <UserMemberships item={item} />
-                    <UserRoles item={item} />
+                    <MediumCard item={item} title="Detail">
+                        <SimpleCardCapsuleRightCorner>
+                            <Link className={"btn btn-sm btn-link"} item={item} action="edit">
+                                <PencilFill />
+                            </Link>
+                            {/* <UpdateButton className={"btn btn-sm btn-link"} item={item}>
+                                <PencilFill />
+                            </UpdateButton> */}
+                        </SimpleCardCapsuleRightCorner>
+                    </MediumCard>
+                    
+                    <UserMembershipsCard item={item}>
+                        <SimpleCardCapsuleRightCorner>
+                            <Link className={"btn btn-sm btn-link"} item={item} action="memberships">
+                                <MegaphoneFill />
+                            </Link>
+                        </SimpleCardCapsuleRightCorner>
+                    </UserMembershipsCard>
+                    <UserRoles item={item}>
+                        <SimpleCardCapsuleRightCorner>
+                            <Link className={"btn btn-sm btn-link"} item={item} action="roles">
+                                <MegaphoneFill />
+                            </Link>
+                        </SimpleCardCapsuleRightCorner>
+                    </UserRoles>
                     <RBACObject item={item} />
                     <InteractiveMutations item={item} />
                     

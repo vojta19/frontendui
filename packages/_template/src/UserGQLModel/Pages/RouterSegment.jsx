@@ -4,7 +4,8 @@ import { PageCreateItem } from "./PageCreateItem"
 import { PageReadItem } from "./PageReadItem"
 import { PageDeleteItem } from "./PageDeleteItem"
 
-import { CreateURI, DeleteURI, ListURI, ReadItemURI, UpdateURI, VectorItemsURI } from "../Components"
+import { CreateURI, DeleteItemURI, DeleteURI, ListURI, ReadItemURI, UpdateItemURI, UpdateURI, VectorItemsURI } from "../Components"
+import { PageReadUserMemberships, PageReadUserRoles, UserMembershipsURI, UserRolesURI } from "./PageReadItemEx"
 
 /**
  * Definice segmentů rout pro Template stránky.
@@ -49,13 +50,20 @@ export const UserRouterSegments = [
         element: (<PageReadItem />),
     },
     {
-        path: UpdateURI,
+        path: UpdateItemURI,
         element: (<PageUpdateItem />),
     },   
     {
-        path: DeleteURI,
+        path: DeleteItemURI,
         element: (<PageDeleteItem />),
     },   
-    
+    {
+        path: UserMembershipsURI,
+        element: (<PageReadUserMemberships />),
+    },   
+    {
+        path: UserRolesURI,
+        element: (<PageReadUserRoles />)
+    }
     
 ]

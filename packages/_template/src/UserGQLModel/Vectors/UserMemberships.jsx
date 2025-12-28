@@ -1,18 +1,19 @@
 import { BaseUI } from "../../Base"
 import { Attribute } from "../../Base/Components/Attribute"
+import { Table } from "../../Base/Components/Table"
 import { CardCapsule } from "../Components"
 
-export const UserMemberships = ({ item }) => {
+export const UserMembershipsCard = ({ item, children }) => {
     const { memberships=[] } = item || {}
 
     return (
         <CardCapsule item={item} title="Členství">
+            {children}
             <Memberships memberships={memberships} />
             {/* <AllRoles roles={rolesOn} /> */}
         </CardCapsule>
     )
 }
-
 
 export const Memberships = ({ memberships }) => {
     const groups = memberships.map(m => m?.group || {})
@@ -39,5 +40,17 @@ export const Memberships = ({ memberships }) => {
                 </Attribute>
             ))}
         </>
+    )
+}
+
+
+export const UserMembershipsTable = ({ item, title="Členství", children }) => {
+    const { memberships=[] } = item || {}
+    const groups = memberships.map(m => m?.group).filter(Boolean)
+    return (
+        <CardCapsule title={title} item={item}>
+            {children}
+            <Table data={groups} />
+        </CardCapsule>
     )
 }

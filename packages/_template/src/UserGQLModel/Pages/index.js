@@ -1,4 +1,3 @@
-export * from './Page'
 export * from './PageBase'
 export * from './PageVector'
 

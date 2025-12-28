@@ -1,12 +1,14 @@
 import { BaseUI } from "../../Base"
 import { Attribute } from "../../Base/Components/Attribute"
+import { Table } from "../../Base/Components/Table"
 import { CardCapsule } from "../Components"
 
-export const UserRoles = ({ item }) => {
-    const { rolesOn } = item || []
+export const UserRoles = ({ item, children }) => {
+    const { rolesOn=[] } = item || {}
 
     return (
         <CardCapsule item={item} title="Vedoucí">
+            {children}
             <Roles roles={rolesOn} />
             {/* <AllRoles roles={rolesOn} /> */}
         </CardCapsule>
@@ -66,3 +68,14 @@ export const Roles = ({ roles }) => {
     )
 }
 
+export const UserRolesTable = ({ item, children }) => {
+    const { roles=[], rolesOn=[] } = item || {}
+    return (
+        <CardCapsule item={item} title="Vedoucí">
+            {children}
+            <Table data={roles} />
+            <hr/>
+            <Table data={rolesOn} />
+        </CardCapsule>
+    )
+}
