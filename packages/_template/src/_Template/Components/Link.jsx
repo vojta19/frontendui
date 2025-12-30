@@ -1,6 +1,6 @@
-import { ProxyLink } from "@hrbolek/uoisfrontend-shared"
 import { URIRoot } from "../../uriroot";
 import { registerLink } from "../../Base/Components/Link";
+import { ProxyLink } from "../../Base/Components/ProxyLink";
 
 const modelURI = `${URIRoot}/template`
 export const ListURI = `${modelURI}/list/`;
