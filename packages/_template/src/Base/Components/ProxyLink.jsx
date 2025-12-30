@@ -108,13 +108,25 @@ export const useLink = ({
  * <ProxyLink to="/local-path">Local Link</ProxyLink>
  * <ProxyLink to="https://external-site.com">External Link</ProxyLink>
  */
-export const ProxyLink = ({ to, children, preserveHash = true, preserveSearch = true, ...others }) => {
+export const ProxyLink = ({ 
+    to, 
+    children, 
+    preserveHash = true, 
+    preserveSearch = true, 
+    disabled = false,
+    ...others 
+}) => {
     const { href, reloadDocument } = useLink({ to, preserveHash, preserveSearch });
 
     return (
-        <Link to={href} reloadDocument={reloadDocument} {...others}>
-            {children}
-        </Link>
+        <>
+        {disabled && children}
+        {!disabled && (
+            <Link to={href} reloadDocument={reloadDocument} {...others}>
+                {children}
+            </Link>
+        )}
+        </>
     );
 };
 
