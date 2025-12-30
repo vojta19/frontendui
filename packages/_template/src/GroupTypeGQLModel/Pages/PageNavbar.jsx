@@ -1,7 +1,10 @@
 import Nav from 'react-bootstrap/Nav'
 import { ProxyLink, MyNavbar, useHash } from '@hrbolek/uoisfrontend-shared';
 
-import { LinkURI } from '../Components'
+import { LinkURI, VectorItemsURI } from '../Components'
+import { UpdateLink } from '../Mutations/Update';
+import { CreateLink } from '../Mutations/Create';
+import { NavDropdown } from 'react-bootstrap';
 
 /**
  * Allow to use HashContainer for determination which component at page will be rendered.
@@ -108,3 +111,38 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
         </div>
     );
 };
+
+
+export const MyNavDropdown = ({ item }) => {
+    const { __typename } = item || {}
+    const hasProperType = __typename === "GroupTypeGQLModel"
+    return (
+        <NavDropdown title="Typy skupin">
+            <NavDropdown.Item as={ProxyLink} to={VectorItemsURI}>
+                Seznam všech typů skupin
+            </NavDropdown.Item>
+            
+            <NavDropdown.Divider />
+            
+            <NavDropdown.Item 
+                as={UpdateLink} 
+                item={item} 
+                disabled={!hasProperType}
+            >
+                Upravit aktuální
+            </NavDropdown.Item>
+            <NavDropdown.Item 
+                as={CreateLink} 
+                item={item} 
+                initialItem={{
+                    name: "Nový typ",
+                }}
+                disabled={!hasProperType}
+            >
+                Nový typ
+            </NavDropdown.Item>
+            
+            
+        </NavDropdown>
+    )
+}

@@ -3,6 +3,7 @@ import { ReadAsyncAction } from "../Queries"
 import { PageItemBase as PageItemBase_} from "../../Base/Pages/Page"
 import { LargeCard } from "../Components"
 
+
 /**
  * Base wrapper pro stránky pracující s jedním entity itemem podle `:id` z routy.
  *
@@ -29,7 +30,7 @@ import { LargeCard } from "../Components"
  */
 export const PageItemBase = ({ 
     queryAsyncAction=ReadAsyncAction,
-    PageNavbar=null,
+    PageNavbar=PageNavbar_,
     ItemLayout=LargeCard,
     SubPage=null,
     ...props
@@ -49,7 +50,7 @@ export const PageItemBase = ({
 export const PageBase = ({ children }) => {
     return (
         <>
-            {/* <PageNavbar_ /> */}
+            <PageNavbar_ />
             {children}
         </>
     )

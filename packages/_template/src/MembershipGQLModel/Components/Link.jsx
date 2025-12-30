@@ -2,7 +2,7 @@ import { ProxyLink } from "@hrbolek/uoisfrontend-shared"
 import { URIRoot } from "../../uriroot";
 import { registerLink } from "../../Base/Components/Link";
 
-const modelURI = `${URIRoot}/role`
+const modelURI = `${URIRoot}/template`
 export const ListURI = `${modelURI}/list/`;
 export const CreateURI = `${modelURI}/create/`;
 export const ReadURI = `${modelURI}/view/`;
@@ -17,7 +17,6 @@ export const ReadItemURI = `${LinkURI}${idParam}`;
 export const UpdateItemURI = `${UpdateURI}${idParam}`;
 export const DeleteItemURI = `${DeleteURI}${idParam}`;
 
-export const AddRoleOnGroupURI = `${modelURI}/createongroup/`
 /**
  * A React component that renders a `ProxyLink` to an "template" entity's view page.
  *
@@ -52,4 +51,4 @@ export const Link = ({ item, LinkURI: LinkURI_ = LinkURI, action="view", childre
     // return <a>{children || item?.fullname || item?.name || item?.id || "Nevim"}</a>
 }
 
-registerLink('RoleGQLModel', Link)
+registerLink('TemplateGQLModel', Link)

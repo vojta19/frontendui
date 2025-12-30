@@ -1,4 +1,4 @@
-import { MegaphoneFill, PencilFill } from "react-bootstrap-icons"
+import { MegaphoneFill, PencilFill, PlusLg } from "react-bootstrap-icons"
 import { SimpleCardCapsuleRightCorner } from "../../Base/Components"
 import { ReadItemURI } from "../Components"
 import { UpdateLink } from "../Mutations/Update"
@@ -6,6 +6,7 @@ import { ReadAsyncAction } from "../Queries"
 import { UserMembershipsTable } from "../Vectors/UserMemberships"
 import { PageReadItem } from "./PageReadItem"
 import { UserRolesTable } from "../Vectors/UserRoles"
+import { CreateUserInserMembershipButton } from "../Mutations/AddMembership"
 
 export const UserMembershipsURI = ReadItemURI.replace("view", "memberships")
 
@@ -15,15 +16,32 @@ export const PageReadUserMemberships = ({
     <PageReadItem queryAsyncAction={queryAsyncAction} SubPage={UserMembershipsTableSubPage}/>
 )
 
-const UserMembershipsTableSubPage = ({ item }) => (
-    <UserMembershipsTable item={item}>
-        <SimpleCardCapsuleRightCorner>
-            <UpdateLink item={item} className="btn btn-sm btn-link">
-                <PencilFill />
-            </UpdateLink>
-        </SimpleCardCapsuleRightCorner>
-    </UserMembershipsTable>
-)
+const UserMembershipsTableSubPage = ({ item }) => {
+    const isoNow = new Date().toISOString()
+    const isoNowZ = isoNow.slice(0, isoNow.length - 1)
+
+    const initialItem = {
+        userId: item?.id,
+        user: item,
+        startdate: isoNowZ
+    }
+    console.log("initialItem", initialItem)
+    return (
+        <UserMembershipsTable item={item}>
+            {/* <SimpleCardCapsuleRightCorner>
+                ČLENSTVÍ
+                <CreateUserInserMembershipButton 
+                    item={{...item, __token: "CreateUserInserMembershipButton"}} 
+                    className="btn btn-sm btn-link"
+                    initialItem={initialItem}
+                >
+                    <PlusLg />
+                </CreateUserInserMembershipButton>
+                
+            </SimpleCardCapsuleRightCorner> */}
+        </UserMembershipsTable>
+    )
+}
 
 export const UserRolesURI = ReadItemURI.replace("view", "roles")
 

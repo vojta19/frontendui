@@ -1,9 +1,7 @@
 import Nav from 'react-bootstrap/Nav'
 import { ProxyLink, MyNavbar, useHash } from '@hrbolek/uoisfrontend-shared';
 
-import { Link, LinkURI, VectorItemsURI } from '../Components'
-import { UpdateLink } from '../Mutations/Update';
-import { NavDropdown } from 'react-bootstrap';
+import { LinkURI } from '../Components'
 
 /**
  * Allow to use HashContainer for determination which component at page will be rendered.
@@ -110,37 +108,3 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
         </div>
     );
 };
-
-export const MyNavDropdown = ({ item }) => {
-    const { __typename } = item || {}
-    const hasProperType = __typename === "UserGQLModel"
-    return (
-        <NavDropdown title="Osoby">
-            <NavDropdown.Item as={ProxyLink} to={VectorItemsURI}>
-                Seznam všech osob
-            </NavDropdown.Item>
-            
-                <NavDropdown.Item as={Link} item={item} action="memberships" disabled={!hasProperType}>
-                    Členství<br/><Link item={item} />
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} item={item} action="roles" disabled={!hasProperType}>
-                    Role<br/><Link item={item} />
-                </NavDropdown.Item>
-            
-            
-            <NavDropdown.Divider />
-            
-                <NavDropdown.Item 
-                    as={UpdateLink} 
-                    item={item} 
-                    disabled={!hasProperType}
-                >
-                    Upravit<br/><Link item={item} />
-                </NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item as={ProxyLink} to={`/generic/${item?.__typename}/__def/${item?.id}`} reloadDocument={false}>Definice</NavDropdown.Item >
-            
-            
-        </NavDropdown>
-    )
-}

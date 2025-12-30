@@ -1,11 +1,12 @@
 import { PageVector } from "./PageVector"
 import { PageUpdateItem } from "./PageUpdateItem"
 import { PageCreateItem } from "./PageCreateItem"
-import { PageReadItem } from "./PageReadItem"
+import { PageReadItem, ReadItemURI } from "./PageReadItem"
 import { PageDeleteItem } from "./PageDeleteItem"
 
-import { CreateURI, DeleteItemURI, DeleteURI, ListURI, ReadItemURI, UpdateItemURI, UpdateURI, VectorItemsURI } from "../Components"
-import { PageReadUserMemberships, PageReadUserRoles, UserMembershipsURI, UserRolesURI } from "./PageReadItemEx"
+import { PageReadItemRolesOn } from './PageReadItemEx'
+import { DeleteItemURI, UpdateItemURI } from "../Components"
+import { CreateURI, ReadItemURI, VectorItemsURI } from "../Components"
 
 /**
  * Definice segmentů rout pro Template stránky.
@@ -36,7 +37,7 @@ import { PageReadUserMemberships, PageReadUserRoles, UserMembershipsURI, UserRol
  *   element: <TemplateEditPage />
  * }
  */
-export const UserRouterSegments = [
+export const TemplateRouterSegments = [
     {
         path: CreateURI,
         element: (<PageCreateItem />),
@@ -47,7 +48,7 @@ export const UserRouterSegments = [
     },
     {
         path: ReadItemURI,
-        element: (<PageReadUserMemberships />),
+        element: (<PageReadItem />),
     },
     {
         path: UpdateItemURI,
@@ -57,14 +58,10 @@ export const UserRouterSegments = [
         path: DeleteItemURI,
         element: (<PageDeleteItem />),
     },   
-    {
-        path: UserMembershipsURI,
-        element: (<PageReadUserMemberships />),
-    },   
-    {
-        path: UserRolesURI,
-        element: (<PageReadUserRoles />)
-    },   
+    // {
+    //     path: "sad",
+    //     element: (<PageReadItemRolesOn />)
+    // },
     {
         path: VectorItemsURI.replace("list", ":any"),
         element: (<PageVector />),
@@ -72,6 +69,5 @@ export const UserRouterSegments = [
     {
         path: ReadItemURI.replace("view", ":any"),
         element: (<PageReadItem />),
-    }
-    
+    }    
 ]

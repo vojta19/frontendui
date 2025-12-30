@@ -1,4 +1,7 @@
-import { Input } from "@hrbolek/uoisfrontend-shared"
+import { EntityLookup } from "../../Base/FormControls/EntityLookup"
+import { SearchAsyncAction as SearchUserAsyncAction } from "../../UserGQLModel/Queries/SearchAsyncAction"
+import { SearchAsyncAction as SearchGroupAsyncAction } from "../../GroupGQLModel/Queries/SearchAsyncAction"
+import { Input } from "../../Base/FormControls/Input"
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -27,8 +30,42 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
     return (
         <>           
         {/* defaultValue={item?.name|| "Název"}  */}
-            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "Název"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"nameEn"} label={"Anglický název"} className="form-control" value={item?.nameEn|| "Anglický název"} onChange={onChange} onBlur={onBlur} />
+            <Input 
+                id={"startdate"} 
+                type={"datetime-local"}
+                label={"Počáteční datum"} 
+                className="form-control" 
+                value={item?.startdate} // || isoNowZ } //|| new Date().toISOString()} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
+            <Input 
+                id={"enddate"} 
+                type={"datetime-local"}
+                label={"Koncové datum"} 
+                className="form-control" 
+                value={item?.enddate} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
+            <EntityLookup 
+                asyncAction={SearchUserAsyncAction} //SearchGroupAsyncAction
+                id={"userId"} 
+                label={"Uživatel"} 
+                className="form-control" 
+                value={item?.user} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
+            <EntityLookup 
+                asyncAction={SearchGroupAsyncAction} //SearchGroupAsyncAction
+                id={"userId"} 
+                label={"Uživatel"} 
+                className="form-control" 
+                value={item?.user} 
+                onChange={onChange} 
+                onBlur={onBlur} 
+            />
             {children}
         </>
     )

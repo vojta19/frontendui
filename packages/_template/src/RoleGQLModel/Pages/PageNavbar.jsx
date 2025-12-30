@@ -1,7 +1,12 @@
 import Nav from 'react-bootstrap/Nav'
 import { ProxyLink, MyNavbar, useHash } from '@hrbolek/uoisfrontend-shared';
 
-import { LinkURI } from '../Components'
+import { LinkURI, VectorItemsURI } from '../Components'
+import { CreateLink } from '../Mutations/Create';
+import { UpdateLink } from '../Mutations/Update';
+import { NavDropdown } from 'react-bootstrap';
+import { AddRoleOnGroupButton } from '../Mutations/AddRoleonGroup';
+import { Link } from '../../Base/Components';
 
 /**
  * Allow to use HashContainer for determination which component at page will be rendered.
@@ -108,3 +113,49 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
         </div>
     );
 };
+
+export const MyNavDropdown = ({ item }) => {
+    const { __typename } = item || {}
+    const hasProperType = __typename === "RoleGQLModel"
+    return (
+        <NavDropdown title="Oprávnění">
+            <NavDropdown.Item as={ProxyLink} to={VectorItemsURI}>
+                Seznam všech oprávnění
+            </NavDropdown.Item>
+            
+            <NavDropdown.Divider />
+            
+            <NavDropdown.Item 
+                as={UpdateLink} 
+                item={item} 
+                disabled={!hasProperType}
+            >
+                Upravit aktuální
+            </NavDropdown.Item>
+            <NavDropdown.Item 
+                as={CreateLink} 
+                item={item} 
+                initialItem={{
+                    name: "Nové oprávnění",
+                }}
+                disabled={!hasProperType}
+            >
+                Nové oprávnění
+            </NavDropdown.Item>
+            
+            <NavDropdown.Item 
+                as={AddRoleOnGroupButton} 
+                item={item} 
+                rbacitem={item}
+                initialItem={{
+                    group: item,
+                    groupId: item?.id,
+                }}
+                disabled={(item?.__typename !== "GroupGQLModel")}
+            >
+                Nové oprávnění na <br/><Link item={item} />
+            </NavDropdown.Item>
+            
+        </NavDropdown>
+    )
+}
