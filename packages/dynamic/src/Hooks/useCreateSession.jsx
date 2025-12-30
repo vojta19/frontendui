@@ -60,7 +60,7 @@ export function useCreateSession({
         }
 
         // default: navigace na read
-        // console.log("going to navigate", readUri, navigate)
+        console.log("going to navigate", readUri, navigate)
         if (readUri && navigate) {
             const newId = result?.id ?? draft?.id;
             if (newId != null) {
@@ -74,8 +74,9 @@ export function useCreateSession({
         onCancel?.();
         if (onAfterCancel) {
             await onAfterCancel();
-            // return;
+            return;
         }
+        console.log("going to navigate", -1, navigate)
         navigate?.(-1);
     }, [navigate, onAfterCancel, onCancel]);
 

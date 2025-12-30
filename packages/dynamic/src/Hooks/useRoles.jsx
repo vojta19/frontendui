@@ -4,6 +4,8 @@ import { useCallback } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { AsyncStateIndicator } from "../../../_template/src/Base/Helpers/AsyncStateIndicator";
+import { useContext } from "react";
+import { createContext } from "react";
 
 /**
  * Normalizace názvů rolí pro porovnávání.
@@ -77,8 +79,10 @@ export const useItemRoles = ({ item = {}, oneOfRoles = [], caseInsensitive = fal
     }, [currentUserRoles, oneOfRoles, caseInsensitive, roleNames]);
 
     if (currentUserRoles == null) {
-        console.error(`Nelze posoudit práva, data nejsou k dispozici.`, item?.rbacobject)
+        console.error(`Nelze posoudit práva, data nejsou k dispozici.`, item)
     }
+    // if (item?.__typename === "GroupGQLModel")
+    //     console.log("useItemRoles.GroupGQLModel", can, item, currentUserRoles)
     const error = null
     // const error =
     //     currentUserRoles == null
@@ -98,21 +102,35 @@ export const ItemPermissionGate = ({
         throw Error("(Item)PermissionGate must have item property it is missing now")
 
     const { can, loading, error } = useItemRoles({ item, oneOfRoles });
-
+    const contextValue = {
+        allowed: can, 
+        loading, 
+        error,
+        oneOfRoles,
+        item
+    }
+    // if (item?.__token)
+    //     console.log("ItemPermissionGate.can", can, item)
     if (loading || error) {
         return (
-            <AsyncStateIndicator
-                loading={loading}
-                error={error}
-                text="Ověřuji oprávnění"
-            />
-        );
-    }
+            <PermissionGateContext.Provider value={contextValue}>
+                <AsyncStateIndicator
+                    loading={loading}
+                    error={error}
+                    text="Ověřuji oprávnění"
+                />
+            </PermissionGateContext.Provider>
+        )}
+    
 
-    if (can === false) return (<>{deniedFallback}</>); // default null
+    // if (can === false) return (<>{deniedFallback}</>); // default null
 
     // can === true (nebo když can vrací true/false a loading už je false)
-    return <>{children}</>;
+    return (
+        <PermissionGateContext.Provider value={contextValue}>
+            {children}
+        </PermissionGateContext.Provider>
+    );
 };
 
 const cache = new Map(); // Map<string, CacheEntry<any>>
@@ -295,13 +313,27 @@ export const AbsolutePermissionGate = ({
     const { loading, allowed, error } = useAbsoluteRoles({ oneOfRoles });
 
     return (
-        <>
+        <PermissionGateContext.Provider 
+            value={{
+                oneOfRoles,
+                loading, 
+                allowed, 
+                error}}
+        >
             <AsyncStateIndicator error={error} loading={loading} text="Ověřuji oprávnění" />
             {allowed === true && children}
             {allowed === false && deniedFallback}
-        </>
+        </PermissionGateContext.Provider>
     );
 };
+
+const PermissionGateContext = createContext(null);
+export const usePermissionGateContext = () => {
+    const result = useContext(PermissionGateContext)
+    if (result == null)
+        throw Error("usePermissionGateContext must be used within PermissionGate")
+    return result
+}
 
 export const PermissionGate = ({ oneOfRoles, mode = "absolute", ...props }) => {
     if (!oneOfRoles) throw Error("PermissionGate.oneOfRoles must be specified");

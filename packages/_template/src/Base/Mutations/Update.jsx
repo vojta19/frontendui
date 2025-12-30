@@ -1,4 +1,4 @@
-import { PermissionGate } from "../../../../dynamic/src/Hooks/useRoles"
+import { PermissionGate, usePermissionGateContext } from "../../../../dynamic/src/Hooks/useRoles"
 import { UpdateAsyncAction } from "../Queries"
 import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction"
 import { useState } from "react"
@@ -10,6 +10,7 @@ import { ProxyLink } from "../../Base/Components/ProxyLink"
 import { AsyncStateIndicator } from "../../Base/Helpers/AsyncStateIndicator"
 import { Dialog } from "../../Base/FormControls/Dialog"
 import { makeMutationURI } from "./helpers"
+import { Lock } from "react-bootstrap-icons"
 
 export const UpdateURI = makeMutationURI(LinkURI, "edit", { withId: true });
 
@@ -23,24 +24,65 @@ export const UpdateLink = ({
     children,
     ...props 
 }) => {
+    return (
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
+            <UpdateLinkBody
+                item={item}
+                preserveHash={preserveHash}
+                preserveSearch={preserveSearch}
+                uriPattern={uriPattern}
+                children={children}
+                {...props}
+            />
+        </PermissionGate>
+    );
+};
+
+const UpdateLinkBody = ({ 
+    item, 
+    preserveHash = true, 
+    preserveSearch = true, 
+    uriPattern=UpdateURI,
+    disabled,
+    children,
+    ...props 
+}) => {
+    const { allowed } = usePermissionGateContext()
     const to = useMemo(() => {
         const id = item?.id ?? "";
         return uriPattern.replace(":id", String(id));
     }, [uriPattern, item?.id]);
-
-    return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
+    if (allowed) {
+        return (<>
             <ProxyLink
                 to={to}
                 preserveHash={preserveHash}
                 preserveSearch={preserveSearch}
+                disabled={disabled}
                 {...props}
             >
-                {children || "Editovat"}
+                {children}
             </ProxyLink>
-        </PermissionGate>
+        </>
     );
+    } else {
+        return (<>
+            <ProxyLink
+                to={to}
+                preserveHash={preserveHash}
+                preserveSearch={preserveSearch}
+                disabled={true}
+                {...props}
+            >
+                <Lock />
+                {children}
+            </ProxyLink>
+        </>
+    );
+    }
 };
+
+
 
 const DefaultContent = MediumEditableContent
 
@@ -51,24 +93,51 @@ export const UpdateButton = ({
     oneOfRoles=["superadmin"],
     mode="absolute",
     DefaultContent: DefaultContent_ = DefaultContent,
+    Dialog=UpdateDialog,
     ...props 
 }) => {
+    return (
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
+            <UpdateButtonBody 
+                item={item}
+                mutationAsyncAction={mutationAsyncAction}
+                DefaultContent={DefaultContent_}
+                Dialog={Dialog}
+                {...props}
+            />
+        </PermissionGate>
+    )
+}
+
+const UpdateButtonBody = ({
+    children,
+    item, 
+    mutationAsyncAction,
+    DefaultContent,
+    Dialog,
+    ...props 
+}) => {
+    const { allowed } = usePermissionGateContext()
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(v => !v);
     const hide = () => setVisible(v => false)
-    return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
+    if (allowed) {
+        return (<>
             <button {...props} onClick={toggle}>{children || "Editovat"}</button>
             {visible && (
-                <UpdateDialog 
+                <Dialog 
                     onOk={hide} 
                     onCancel={hide} 
                     mutationAsyncAction={mutationAsyncAction}
-                    DefaultContent={DefaultContent_}
+                    DefaultContent={DefaultContent}
                 />
             )}
-        </PermissionGate>
-    )
+        </>)
+        
+    } else {
+        return <button {...props} onClick={toggle} ><Lock />{children || "Editovat"}</button>
+    }
+    
 }
 
 const dummyFunc = () => null
@@ -129,7 +198,6 @@ export const UpdateDialog = ({
     )
 }
 
-
 export const UpdateBody = ({ 
     children,
     mutationAsyncAction = UpdateAsyncAction,
@@ -139,20 +207,43 @@ export const UpdateBody = ({
 }) => {
     const { item } = useGQLEntityContext()
     // const { can, roleNames } = useRolePermission(item, ["administrátor"])
-
     if (!item) return null
-
     return (
         <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
+            <UpdateBodyBody 
+                item={item} 
+                mutationAsyncAction={mutationAsyncAction} 
+                DefaultContent={DefaultContent_}
+                children={children}
+            />
+        </PermissionGate>
+    )
+}
+
+const UpdateBodyBody = ({ 
+    item,
+    children,
+    mutationAsyncAction = UpdateAsyncAction,
+    DefaultContent: DefaultContent_=DefaultContent,
+}) => {
+    const { allowed } = usePermissionGateContext()
+    // const { can, roleNames } = useRolePermission(item, ["administrátor"])
+
+    if (allowed) {
+        return (<>
             <LiveEdit 
                 item={item} 
                 mutationAsyncAction={mutationAsyncAction} 
                 DefaultContent={DefaultContent_}
             />
             {children}
-        </PermissionGate>
-
-    )
+    </>)
+    } else {
+        return (<>
+            <div>Nemáte oprávnění</div>
+        </>)
+    }
+    
 }
 
 const onDone_ = () => null;
