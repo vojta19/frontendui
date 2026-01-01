@@ -1,7 +1,7 @@
 
 export * from './CardCapsule'
 export * from './Children'
-export * from './CUDButton'
+
 export * from './LargeCard'
 export * from './Link'
 export * from './MediumContent'

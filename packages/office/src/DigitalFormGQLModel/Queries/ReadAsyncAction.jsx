@@ -3,10 +3,10 @@ import { LargeFragment } from "./Fragments";
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
 const ReadQueryStr = `
-query roleTypeById($id: UUID!) {
-  roleTypeById(id: $id) {
-    ...Large
-  }
+query digitalFormById($id: UUID!) {
+  digitalFormById(id: $id) {
+  ...Large
+}
 }
 `
 
