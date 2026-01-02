@@ -333,7 +333,7 @@ const normalizeSubsectionsForSection = (section, formSectionDef) => {
  *  Components: UpdateField, UpdateFormSection, UpdateForm
  * ============================================================================= */
 
-const DefaultDefinitionPreview = ({ fieldDef, digital_submission_field, onSubmissionFieldChange, mode }) => (
+const DefaultSubmissionFieldDefinitionPreview = ({ fieldDef, digital_submission_field, onSubmissionFieldChange, mode }) => (
     <div className="mb-2">
         <div className="text-muted small">
             {fieldDef?.description && <div>{fieldDef.description}</div>}
@@ -352,14 +352,14 @@ const DefaultSubmissionRead = ({
         onSubmissionFieldChange,
         mode,
     } = props
-    return (<>{(mode==="design") && <DefaultDefinitionPreview {...props} />}
+    return (<>{(mode==="design") && <DefaultSubmissionFieldDefinitionPreview {...props} />}
         <div className="py-2">
             {digital_submission_field?.value ?? <span className="text-muted">--</span>}
         </div>
     </>);
 }
 
-const DefaultSubmissionEdit = ({
+const SubmissionFieldEdit = ({
     children, ...props
 }) => {
     const {
@@ -382,7 +382,7 @@ const DefaultSubmissionEdit = ({
         });
     };
 
-    return (<>{(mode==="design") && <DefaultDefinitionPreview {...props} />}
+    return (<>{(mode==="design") && <DefaultSubmissionFieldDefinitionPreview {...props} />}
         <Input
             className="form-control"
             value={resolvedValue}
@@ -398,10 +398,10 @@ export const UpdateField = ({
     digital_submission_field,
     // onFieldValueChange,
     onSubmissionFieldChange,
-    onRemoveField,
+    reRead,
     mode = "design",
     children,
-    SubmissionComponent = DefaultSubmissionEdit
+    SubmissionFieldComponent = SubmissionFieldEdit
 }) => {
     
     // const handleFieldDefChange = useCallback(())
@@ -409,25 +409,14 @@ export const UpdateField = ({
         run: deleteField, error: errorDeleteField, loading: deletingField,
         // entity, data 
     } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, { deferred: true })
-    const {
-        run: updateField, error: errorUpdateField, loading: updatingField,
-        // entity, data 
-    } = useAsyncThunkAction(UpdateFieldAsyncAction, empty, { deferred: true })
+
     const handleDelete = useCallback(async () => {
         const result = await deleteField({
             id: fieldDef?.id,
             lastchange: fieldDef?.lastchange
         })
-        onRemoveField()
-    }, [deleteField, onRemoveField])
-
-    const handleUpdate = useCallback(async () => {
-        const result = await updateField({
-            id: fieldDef?.id,
-            lastchange: fieldDef?.lastchange
-        })
-        // onRemoveField()
-    }, [deleteField, onRemoveField])
+        reRead()
+    }, [deleteField])
 
     const normalizeSubmissionField = useCallback(
         (partial) => ({
@@ -454,6 +443,7 @@ export const UpdateField = ({
 
     return (
         <AsyncActionProvider item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
+            <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
             <SimpleCardCapsule
                 className="border-start border-2 border-success"
                 title={<>
@@ -486,7 +476,7 @@ export const UpdateField = ({
                     placeholder="Enter value…"
                 /> */}
                 
-                <SubmissionComponent
+                <SubmissionFieldComponent
                     onSubmissionFieldChange={handleSubmissionChange}
                     fieldDef={fieldDef}
                     digital_submission_field={digital_submission_field}
@@ -500,14 +490,13 @@ export const UpdateField = ({
 
 const empty = {}
 const dummy = () => { }
-export const UpdateFormSectionFields = ({
+export const FormSectionFields = ({
     formSectionDefFields = [],
     digital_submission_sectionFields = [],
     reRead,
     mode,
-    onRemoveField,
     onSubmissionFieldChange,
-    SubmissionComponent = DefaultSubmissionEdit
+    SubmissionFieldComponent = SubmissionFieldEdit
 }) => {
     const formfieldsSorted = useMemo(
         () => formSectionDefFields?.toSorted((a, b) => (a?.order || 0) - (b?.order || 0)) ?? [],
@@ -518,6 +507,7 @@ export const UpdateFormSectionFields = ({
         [digital_submission_sectionFields]
     )
     return (<>
+        {/* <br/>F{JSON.stringify(formfieldsSorted.length)}/D{JSON.stringify(digital_submission_sectionFields.length)} */}
         {(formfieldsSorted || []).map(
             form_field => {
                 const submission_fields = digital_submission_sectionFieldsSorted
@@ -533,9 +523,8 @@ export const UpdateFormSectionFields = ({
                             reRead={reRead}
                             mode={mode}
                             digital_submission_field={submission_field}
-                            onRemoveField={onRemoveField}
                             onSubmissionFieldChange={onSubmissionFieldChange}
-                            SubmissionComponent={SubmissionComponent}
+                            SubmissionFieldComponent={SubmissionFieldComponent}
                         />
                     )}
                 </div>)
@@ -545,7 +534,7 @@ export const UpdateFormSectionFields = ({
     </>)
 }
 
-const UpdateFormSectionSections = ({
+const FormSectionSections = ({
     formSections = [],
     submissionSections = [],
     level,
@@ -554,7 +543,8 @@ const UpdateFormSectionSections = ({
     onSubmissionSectionChange,
     onAddSubmissionSection,
     onRemoveSubmissionSection,
-    SubmissionComponent = DefaultSubmissionEdit,
+    SubmissionFieldComponent = SubmissionFieldEdit,
+    FormSectionComponent = UpdateFormSection
 }) => {
     const handleAddSubmissionSection = useCallback(
         (formSectionDef) => {
@@ -594,6 +584,7 @@ const UpdateFormSectionSections = ({
     )
     return (
         <>
+            {/* S{JSON.stringify(formSectionsSorted.length)}/Ds{JSON.stringify(submissionSectionsSorted.length)} */}
             {formSectionsSorted.map((form_section) => {
                 const filtered = submissionSectionsSorted.filter(
                     (s) => s?.formSectionId === form_section?.id
@@ -610,7 +601,8 @@ const UpdateFormSectionSections = ({
                                     mode={mode}
                                     digital_submission_sections={[sectionInstance]}
                                     onSubmissionSectionChange={onSubmissionSectionChange}
-                                    SubmissionComponent={SubmissionComponent}
+                                    SubmissionFieldComponent={SubmissionFieldComponent}
+                                    FormSectionComponent={FormSectionComponent}
                                 />
                                 {mode === "view" && filtered.length > (form_section?.repeatableMin ?? 0) && (
                                     <button
@@ -648,7 +640,7 @@ export const ReadFormSection = ({
     mode = "design",
     digital_submission_section = empty,
     onSubmissionSectionChange = dummy,
-    SubmissionComponent= DefaultSubmissionEdit,
+    SubmissionFieldComponent= SubmissionFieldEdit,
     children
 }) => {
 
@@ -698,86 +690,14 @@ export const ReadFormSection = ({
     const repeatable = formSectionDef?.repeatable ?? (max > 1);
 
     const H = headingIndex[clamp(level, 1, 6)] ?? headingIndex[6];
-    const {
-        run: update, error: errorUpdate, loading: updating,
-        // entity, data 
-    } = useAsyncThunkAction(UpdateAsyncAction, empty, { deferred: true })
-    const {
-        run: insertSection, error: errorInsertSection, loading: creatingSection,
-        // entity, data 
-    } = useAsyncThunkAction(InsertSectionAsyncAction, empty, { deferred: true })
-    const {
-        run: deleteSection, error: errorDeleteSection, loading: deletingSection,
-        // entity, data 
-    } = useAsyncThunkAction(DeleteSectionAsyncAction, empty, { deferred: true })
-    const {
-        run: insertField, error: errorInsertField, loading: creatingField,
-        // entity, data 
-    } = useAsyncThunkAction(InsertFieldAsyncAction, empty, { deferred: true })
+   
     const {
         run: deleteField, error: errorDeleteField, loading: deletingField,
         // entity, data 
     } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, { deferred: true })
 
     const { reRead } = useGQLEntityContext()
-    const onAddSubSection = useCallback(async (id) => {
-        console.log("onAddSubSection", id)
-        const itemid = crypto.randomUUID();
-        const result = await insertSection({
-            sectionId: formSectionDef?.id,
-            id: itemid,
-            formId: formSectionDef?.formId,
-            name: "sekce",
-            label: "Nová sekce",
-            labelEn: "New section",
-            description: `Sekce úrovně ${level}`,
-            repeatableMin: 1,
-            repeatableMax: 1,
-            fields: [
-                {
-                    id: crypto.randomUUID(),
-                    formSectionId: itemid,
-                    formId: formSectionDef?.formId,
-                    label: "Nová položka",
-                    labelEn: "New field",
-                    name: "field"
-                }
-            ]
-        })
-        console.log("onAddSubSection.result", result)
-    }, [insertSection])
-
-    const onRemoveSection = useCallback(async (e) => {
-        console.log("onRemoveSection", e)
-        const result = await deleteSection({
-            id: formSectionDef?.id,
-            lastchange: formSectionDef?.lastchange
-        })
-        console.log("onRemoveSection.result", result)
-        reRead()
-    }, [reRead, deleteSection])
-
-    const onAddField = useCallback(async (e) => {
-        console.log("onAddField", e)
-        const itemid = crypto.randomUUID();
-        const result = await insertField({
-            formSectionId: formSectionDef?.id,
-            id: itemid,
-            formId: formSectionDef?.formId,
-            name: "field",
-            label: "Nová položka",
-            labelEn: "New field",
-        })
-        console.log("onAddField.result", result)
-    }, [insertField])
-
-    const onRemoveField = useCallback(async (e) => {
-        console.log("onRemoveField", e)
-        const result = await deleteField(e)
-        console.log("onRemoveField.result", result)
-        reRead()
-    }, [reRead, deleteField])
-
+    
 
     useEffect(() => {
         // bezpečně: bez id nemá cenu normalizovat
@@ -857,71 +777,46 @@ export const ReadFormSection = ({
     );
 
     return (
-        <AsyncActionProvider item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
-            <AsyncStateIndicator error={errorUpdate} loading={updating} text="Ukládám" />
-            <AsyncStateIndicator error={errorInsertSection} loading={creatingSection} text="Vytvářím sekci" />
-            <AsyncStateIndicator error={errorDeleteSection} loading={deletingSection} text="Odstraňuji sekci" />
-            <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
+        <SimpleCardCapsule title={<>
+            {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
+            {(mode === "design") && <small>({formSectionDef?.name})</small>}
+        </>}
+            // className="border-start border-danger ps-3"
+            style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}
+        >
 
-            <SimpleCardCapsule title={<>
-                {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
-                {(mode === "design") && <small>({formSectionDef?.name})</small>}
-            </>}
-                // className="border-start border-danger ps-3"
-                style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}
-            >
+            <div>
+                <H>{formSectionDef?.label ?? "--NEOZNAČEN--"}</H>
+                {(mode === "design") && (<div>
+                    repeat: {formSectionDef?.repeatableMin ?? "undef"}-
+                    {formSectionDef?.repeatableMax ?? "undef"} ({repeatable ? "repeatable" : "single"})
+                </div>)}
+                {formSectionDef?.description ?? "--NEPOPSÁN--"}
 
-                {(mode === "design") &&
-                    <SimpleCardCapsuleRightCorner>
-                        <DesignSectionButton
-                            className="btn btn-sm btn-outline-primary border-0"
-                        >🖍</DesignSectionButton>
-
-                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddSubSection}>
-                            + Sekce
-                        </ConfirmClickButton>
-                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddField}>
-                            + Položka
-                        </ConfirmClickButton>
-                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onRemoveSection}>
-                            🗑
-                        </ConfirmClickButton>
-                    </SimpleCardCapsuleRightCorner>
-                }
                 <div>
-                    <H>{formSectionDef?.label ?? "--NEOZNAČEN--"}</H>
-                    {(mode === "design") && (<div>
-                        repeat: {formSectionDef?.repeatableMin ?? "undef"}-
-                        {formSectionDef?.repeatableMax ?? "undef"} ({repeatable ? "repeatable" : "single"})
-                    </div>)}
-                    {formSectionDef?.description ?? "--NEPOPSÁN--"}
-
-                    <div>
-                        <UpdateFormSectionFields
-                            formSectionDefFields={formSectionDef?.fields || []}
-                            digital_submission_sectionFields={digital_submission_section?.fields || []}
-                            reRead={reRead}
-                            mode={mode}
-                            onRemoveField={onRemoveField}
-                            onSubmissionFieldChange={handleSubmissionFieldChange}
-                            SubmissionComponent={SubmissionComponent}
-                            
-                        />
-                        <UpdateFormSectionSections
-                            formSections={formSectionDef?.sections || []}
-                            submissionSections={digital_submission_section?.sections || []}
-                            level={level}
-                            dummy={dummy}
-                            mode={mode}
-                            onSubmissionSectionChange={handleSubmissionSectionChange}
-                            onAddSubmissionSection={handleAddChildSubmissionSection}
-                            onRemoveSubmissionSection={handleRemoveChildSubmissionSection}
-                            SubmissionComponent={SubmissionComponent}
-                        />
-                    </div>
+                    <FormSectionFields
+                        formSectionDefFields={formSectionDef?.fields || []}
+                        digital_submission_sectionFields={digital_submission_section?.fields || []}
+                        reRead={reRead}
+                        mode={mode}
+                        onSubmissionFieldChange={handleSubmissionFieldChange}
+                        SubmissionFieldComponent={SubmissionFieldComponent}
+                        
+                    />
+                    <FormSectionSections
+                        formSections={formSectionDef?.sections || []}
+                        submissionSections={digital_submission_section?.sections || []}
+                        level={level}
+                        dummy={dummy}
+                        mode={mode}
+                        onSubmissionSectionChange={handleSubmissionSectionChange}
+                        onAddSubmissionSection={handleAddChildSubmissionSection}
+                        onRemoveSubmissionSection={handleRemoveChildSubmissionSection}
+                        SubmissionFieldComponent={SubmissionFieldComponent}
+                    />
                 </div>
-            </SimpleCardCapsule>
-        </AsyncActionProvider>
+            </div>
+        </SimpleCardCapsule>
     );
 };
 
@@ -933,7 +828,8 @@ export const UpdateFormSection = ({
     mode = "design",
     digital_submission_section = empty,
     onSubmissionSectionChange = dummy,
-    SubmissionComponent= DefaultSubmissionEdit,
+    SubmissionFieldComponent = SubmissionFieldEdit,
+    UpdateFormSectionComponent = UpdateFormSection,
     children
 }) => {
 
@@ -999,10 +895,6 @@ export const UpdateFormSection = ({
         run: insertField, error: errorInsertField, loading: creatingField,
         // entity, data 
     } = useAsyncThunkAction(InsertFieldAsyncAction, empty, { deferred: true })
-    const {
-        run: deleteField, error: errorDeleteField, loading: deletingField,
-        // entity, data 
-    } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, { deferred: true })
 
     const { reRead } = useGQLEntityContext()
     const onAddSubSection = useCallback(async (id) => {
@@ -1012,10 +904,10 @@ export const UpdateFormSection = ({
             sectionId: formSectionDef?.id,
             id: itemid,
             formId: formSectionDef?.formId,
-            name: "sekce",
-            label: "Nová sekce",
+            name: `sekce_${level}_${formSectionDef?.sections?.length + 1}`,
+            label: `${level}.${formSectionDef?.sections?.length + 1}. Nová sekce`,
             labelEn: "New section",
-            description: `Sekce úrovně ${level}`,
+            description: `Sekce ${level}.${formSectionDef?.sections?.length + 1}`,
             repeatableMin: 1,
             repeatableMax: 1,
             fields: [
@@ -1025,12 +917,13 @@ export const UpdateFormSection = ({
                     formId: formSectionDef?.formId,
                     label: "Nová položka",
                     labelEn: "New field",
-                    name: "field"
+                    name: "field",
+                    order: formSectionDef?.sections?.length + 1
                 }
             ]
         })
         console.log("onAddSubSection.result", result)
-    }, [insertSection])
+    }, [insertSection, level, formSectionDef])
 
     const onRemoveSection = useCallback(async (e) => {
         console.log("onRemoveSection", e)
@@ -1049,19 +942,13 @@ export const UpdateFormSection = ({
             formSectionId: formSectionDef?.id,
             id: itemid,
             formId: formSectionDef?.formId,
-            name: "field",
-            label: "Nová položka",
+            name: `field_${level}_${formSectionDef?.fields?.length + 1}`,
+            label: `${level}.${formSectionDef?.fields?.length + 1}. Nová položka`,
             labelEn: "New field",
+            order: formSectionDef?.fields?.length + 1
         })
         console.log("onAddField.result", result)
-    }, [insertField])
-
-    const onRemoveField = useCallback(async (e) => {
-        console.log("onRemoveField", e)
-        const result = await deleteField(e)
-        console.log("onRemoveField.result", result)
-        reRead()
-    }, [reRead, deleteField])
+    }, [insertField, level, formSectionDef])
 
 
     useEffect(() => {
@@ -1146,7 +1033,6 @@ export const UpdateFormSection = ({
             <AsyncStateIndicator error={errorUpdate} loading={updating} text="Ukládám" />
             <AsyncStateIndicator error={errorInsertSection} loading={creatingSection} text="Vytvářím sekci" />
             <AsyncStateIndicator error={errorDeleteSection} loading={deletingSection} text="Odstraňuji sekci" />
-            <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
 
             <SimpleCardCapsule title={<>
                 {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
@@ -1182,26 +1068,18 @@ export const UpdateFormSection = ({
                     {formSectionDef?.description ?? "--NEPOPSÁN--"}
 
                     <div>
-                        <UpdateFormSectionFields
-                            formSectionDefFields={formSectionDef?.fields || []}
-                            digital_submission_sectionFields={digital_submission_section?.fields || []}
-                            reRead={reRead}
+                        <FormSectionBody
+                            formSectionDef={formSectionDef}
+                            digital_submission_section={digital_submission_section}
                             mode={mode}
-                            onRemoveField={onRemoveField}
-                            onSubmissionFieldChange={handleSubmissionFieldChange}
-                            SubmissionComponent={SubmissionComponent}
-                            
-                        />
-                        <UpdateFormSectionSections
-                            formSections={formSectionDef?.sections || []}
-                            submissionSections={digital_submission_section?.sections || []}
                             level={level}
                             dummy={dummy}
-                            mode={mode}
+                            reRead={reRead}
+                            onSubmissionFieldChange={handleSubmissionFieldChange}
                             onSubmissionSectionChange={handleSubmissionSectionChange}
+                            SubmissionFieldComponent={SubmissionFieldComponent}
                             onAddSubmissionSection={handleAddChildSubmissionSection}
                             onRemoveSubmissionSection={handleRemoveChildSubmissionSection}
-                            SubmissionComponent={SubmissionComponent}
                         />
                     </div>
                 </div>
@@ -1210,13 +1088,56 @@ export const UpdateFormSection = ({
     );
 };
 
+const DummyFieldsAndSections = {fields: [], sections: []}
+const FormSectionBody = ({
+    formSectionDef=DummyFieldsAndSections,
+    digital_submission_section=DummyFieldsAndSections,
+    level=2,
+    dummy=dummy,
+    mode="design",
+    reRead=dummyFunc,
+    onSubmissionSectionChange=dummyFunc,
+    onSubmissionFieldChange=dummyFunc,
+    onAddSubmissionSection=dummyFunc,
+    onRemoveSubmissionSection=dummyFunc,
+    
+    SubmissionFieldComponent=dummyFunc,
+    
+    ...props
+}) => {
+    // console.log("formSectionDef?.sections", formSectionDef?.sections)
+    return (<>
+        {/* S{JSON.stringify(formSectionDef?.sections.length)}/F{JSON.stringify(formSectionDef?.fields.length)} */}
+        <FormSectionFields
+            formSectionDefFields={formSectionDef?.fields || []}
+            digital_submission_sectionFields={digital_submission_section?.fields || []}
+            reRead={reRead}
+            mode={mode}
+            onSubmissionFieldChange={onSubmissionFieldChange}
+            SubmissionFieldComponent={SubmissionFieldComponent}
+        />
+        <FormSectionSections
+            formSections={formSectionDef?.sections || []}
+            submissionSections={digital_submission_section?.sections || []}
+            level={level}
+            dummy={dummy}
+            mode={mode}
+            onSubmissionSectionChange={onSubmissionSectionChange}
+            onAddSubmissionSection={onAddSubmissionSection}
+            onRemoveSubmissionSection={onRemoveSubmissionSection}
+            SubmissionFieldComponent={SubmissionFieldComponent}
+        />
+    </>)
+}
+
 const UpdateSectionWrap = ({
     digital_submission_sections,
+    FormSectionComponent=UpdateFormSection,
     ...props
 }) => {
     const { formSectionDef } = props
     if (digital_submission_sections.length === 0) {
-        return <UpdateFormSection {...props} digital_submission_section={{
+        return <FormSectionComponent {...props} digital_submission_section={{
             id: crypto.randomUUID(),
             formSectionId: formSectionDef?.id,
             sections: [],
@@ -1225,7 +1146,7 @@ const UpdateSectionWrap = ({
     }
     return (<>
         {digital_submission_sections.map(
-            digital_submission_section => <UpdateFormSection
+            digital_submission_section => <FormSectionComponent
                 key={digital_submission_section?.id}
                 digital_submission_section={digital_submission_section}
                 {...props}
@@ -1240,6 +1161,8 @@ export const UpdateForm = ({
     submission: initialSubmission,
     dummy = true,
     debug = true,
+
+    FormSectionComponent = UpdateFormSection,
 
     /** Event hooks for your GraphQL mutations */
     onFormDefinitionChange = dummyFunc, // (nextFormDef, meta) => void
@@ -1357,6 +1280,7 @@ export const UpdateForm = ({
                                     level={2}
                                     dummy={dummy}
                                     mode={mode}
+                                    FormSectionComponent={FormSectionComponent}
                                 // onFieldValueChange={handleFieldValueChange}
                                 />
                             )
