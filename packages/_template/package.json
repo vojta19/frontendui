@@ -1,5 +1,5 @@
 {
-  "name": "@hrbolek/uoisfrontend-base",
+  "name": "@hrbolek/uoisfrontend-template",
   "version": "0.6.0",
   "_main": "src/index.js",
   "_module": "src/index.js",
