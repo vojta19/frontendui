@@ -1,6 +1,6 @@
 {
-  "name": "@hrbolek/uoisfrontend-template",
-  "version": "0.5.0",
+  "name": "@hrbolek/uoisfrontend-base",
+  "version": "0.6.0",
   "_main": "src/index.js",
   "_module": "src/index.js",
   "scripts": {
