@@ -93,4 +93,20 @@ import { Link } from "./Link"
 //     )
 // }
 
-export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
+import { MediumContent as MediumContent_ } from "../../../../_template/src/Base/Components/MediumContent"
+import { Attribute } from "../../../../_template/src/Base/Components"
+
+export const MediumContent = ({ item, children }) => {
+    return (
+        <>
+            <Attribute name="id" value={<Link item={item} />} />
+            <hr/>
+            {item?.id}{ }
+            {item?.order}
+            <hr/>
+            <pre>
+                {JSON.stringify(item, null, 2)}
+            </pre>     
+        </>
+    )
+}
