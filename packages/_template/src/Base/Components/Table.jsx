@@ -6,6 +6,20 @@ import { UpdateButton, UpdateLink } from "../Mutations/Update";
 import { DeleteButton } from "../Mutations/Delete";
 import { r } from "happy-dom/lib/PropertySymbol";
 
+
+const LABELS = {
+    __typename: "Typ",
+    id: "ID",
+    lastchange: "Naposledy změněno",
+    created: "Vytvořeno",
+    name: "Název",
+    value: "Částka",
+    description: "Popis",
+    financeTypeId: "Typ financování",
+    _updatedAt: "Aktualizováno",
+    _version: "Verze",
+}
+
 const CellId = ({ row, name }) => (
     <td key={name}>
         <Link item={row}>{row?.id || "Data Error"}</Link>
@@ -67,7 +81,7 @@ export const buildTableDef = (data) => {
             return [
                 name,
                 {
-                    label: name,        // tady si můžeš dát hezčí label
+                    label: LABELS[name] ?? name,        // tady si můžeš dát hezčí label
                     component,          // React komponenta pro buňku
                 },
             ]
@@ -253,7 +267,6 @@ const TableBody_ = TableBody
 
 export const Table = ({ data, table_def = null, TableBody = TableBody_ }) => {
     if (!data || data.length === 0) return null
-
     const _table_def = useMemo(() => table_def || buildTableDef(data), [data, table_def])
     const colnames = useMemo(() => Object.keys(_table_def).map((k) => _table_def[k].label), [_table_def])
     // console.log(_table_def)

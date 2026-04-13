@@ -2,17 +2,35 @@ import { data } from "react-router"
 import { Attribute } from "./Attribute"
 import { Link } from "./Link"
 
+const LABELS = {
+    __typename: "Typ",
+    id: "ID",
+    lastchange: "Naposledy změněno",
+    created: "Vytvořeno",
+    name: "Název",
+    surname: "Příjmení",
+    fullname: "Celé jméno",
+    value: "Částka",
+    description: "Popis",
+    nameEn: "Název anglicky",
+    rbacobject: "RBAC objekt",
+    _updatedAt: "Aktualizováno",
+    _version: "Verze",
+    path: "Cesta",
+}
+
 export const NonPriorityAttributeValue = ({ datarow = {}, name }) => {
     const value = datarow?.[name] || ""
+    const label = LABELS[name] ?? name
     if (name === "id")
         return (
-            <Attribute item={datarow} label={name} attribute_name={name}>
+            <Attribute item={datarow} label={label} attribute_name={name}>
                 <Link item={datarow} >{datarow?.id || "Data Error"}</Link >
             </Attribute> 
         )
     if (["name", "surname", "fullname"].includes(name))
         return (
-            <Attribute item={datarow} label={name} attribute_name={name}>
+            <Attribute item={datarow} label={label} attribute_name={name}>
                 <Link item={datarow}>{value}</Link>
             </Attribute>
         )
@@ -24,7 +42,7 @@ export const NonPriorityAttributeValue = ({ datarow = {}, name }) => {
             return null
         else {
             return (            
-                <Attribute item={datarow} label={name} attribute_name={name} attribute_value_result={value || ""} />
+                <Attribute item={datarow} label={label} attribute_name={name} attribute_value_result={value || ""} />
             )
         }
     }
@@ -34,7 +52,7 @@ export const NonPriorityAttributeValue = ({ datarow = {}, name }) => {
     if (id && __typename) {
         // return <>{id} {__typename}</>
         return (
-            <Attribute item={datarow} label={name} attribute_name={name}>
+            <Attribute item={datarow} label={label} attribute_name={name}>
                 <Link item={datarow?.[scalarname]}>{id}</Link>
             </Attribute>
         )

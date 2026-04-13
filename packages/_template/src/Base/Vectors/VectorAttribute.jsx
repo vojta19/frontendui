@@ -6,6 +6,21 @@ import { Row } from "../Components/Row"
 import { useState } from "react"
 import { Link } from "../Components"
 
+
+const LABELS = {
+    __typename: "Typ",
+    id: "ID",
+    lastchange: "Naposledy změněno",
+    created: "Vytvořeno",
+    name: "Název",
+    value: "Částka",
+    description: "Popis",
+    financeTypeId: "Typ financování",
+    _updatedAt: "Aktualizováno",
+    _version: "Verze",
+}
+
+
 export const VectorAttributeFactory = (attribute_name) => ({ item }) => {
     const attribute_value = item?.[attribute_name] || []
     return (
@@ -65,7 +80,7 @@ const TreeSimpleValues = ({ item }) => {
             return (
                 // <Row key={attribute_name} >
                 <Col key={attribute_name} >
-                    <SimpleValue datarow={item} name={attribute_name} label={attribute_name} value={attribute_value} />
+                    <SimpleValue datarow={item} name={attribute_name} label={LABELS[attribute_name] } value={attribute_value} />
                 </Col>
                 // </Row>
             )
@@ -89,7 +104,7 @@ const TreeDict = ({ title, item }) => {
             {Object.entries(item).map(([attribute_name, attribute_value]) => {
                 if (Array.isArray(attribute_value)) return null
                 if (isPlainObject(attribute_value)) return (
-                    <TreeDict key={attribute_name} title={attribute_name} item={attribute_value} />       
+                    <TreeDict key={attribute_name} title={LABELS[attribute_name] ?? attribute_name} item={attribute_value} />       
                 )
                 return null
             })}
@@ -121,7 +136,7 @@ const TreeArray = ({ title, items }) => {
         </SimpleCardCapsuleRightCorner>
         
         {!collapsed && items?.map((item, index) => (
-            <TreeDict key={item?.id} title={`${title}[${index}] `} item={item} />
+            <TreeDict key={item?.id} title={LABELS[attribute_name] ?? attribute_name} item={item} />
         ))}
     </SimpleCardCapsule>)
 }
