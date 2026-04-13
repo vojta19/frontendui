@@ -4,13 +4,13 @@
 - úprava queries a grafického zobrazení v prohlížeči
 
 ## 9.4.2026
-- aktualizace docker.compose a system.data
+- aktualizace `docker.compose.hk2026.json` a `systemdata.hk2026.json`
 
 ## 7.4.2026
-- implementace docker.compose a system.data pro náš GQL model
+- implementace `docker.compose.hk2026.json` a `systemdata.hk2026.json` pro náš GQL model
 
 ## 1.4.2026
-- vytvoření app_finance se všemi potřebnými soubory
+- vytvoření `app_finance` se všemi potřebnými soubory
 
 ## 27.3.2026
 - tvorba URI segmentu a package.json
