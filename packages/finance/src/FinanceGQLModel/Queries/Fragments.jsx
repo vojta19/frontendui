@@ -8,16 +8,14 @@ fragment Link on FinanceGQLModel {
   created
   createdbyId
   changedbyId
-  
-  
-rbacobjectId
-path
-name
-nameEn
-value
-description
-financeTypeId
-masterfinanceId
+  rbacobjectId
+  path
+  name
+  nameEn
+  value
+  description
+  financeTypeId
+  masterfinanceId
 }
 `
 
