@@ -25,7 +25,7 @@
 # Jak spustit konrétní app
 
 ```cmd
-npm run dev -w @hrbolek/app_dynamic
+npm run dev -w @vojta19/app_finance
 ```
 
 # Jak sestavit konrétní app
