@@ -110,7 +110,7 @@ export const MediumContent = ({ item, children}) => {
                 </Link>
             </Attribute>
             <hr/>
-            <Attribute label="Zmeneno">
+            <Attribute label="Změněno">
                 {formatDateTime(item?.lastchange)}
                 {item?.changeby?.fullname}
             </Attribute>
