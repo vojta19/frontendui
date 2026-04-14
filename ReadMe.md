@@ -2,6 +2,7 @@
 
 ## 13.4.2026
 - úprava queries a grafického zobrazení v prohlížeči
+- přidání labels pro přehlednější čtení
 
 ## 9.4.2026
 - aktualizace `docker.compose.hk2026.json` a `systemdata.hk2026.json`
