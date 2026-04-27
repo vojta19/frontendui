@@ -58,8 +58,7 @@ services:
         [
           {"name": "ug", "url": "http://gql_ug:8000/gql"},
           {"name": "office", "url": "http://gql_office:8000/gql"},
-          {"name": "granting", "url": "http://gql_granting:8000/gql"},
-          {"name": "projects", "url": "http://gql_projects:8000/gql"}
+          {"name": "granting", "url": "http://gql_granting:8000/gql"}
         ]       
     healthcheck:
       # definice, umoznujici provest test, zda je kontejner v poradku (vsimnete si portu a srovnejte s portem v environment)
