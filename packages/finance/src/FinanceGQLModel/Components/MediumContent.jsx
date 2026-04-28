@@ -104,7 +104,12 @@ export const MediumContent = ({ item, children}) => {
             <Attribute label="Název">
                 <Link item={item}/>
             </Attribute>
-            <Attribute label="id">
+            <Attribute label="EN název">
+                <Link item={item}>
+                    {item?.nameEn}
+                </Link>
+            </Attribute>
+            <Attribute label="ID">
                 <Link item={item}>
                     {item?.order || item?.id || "Data Error"}
                 </Link>
@@ -114,9 +119,6 @@ export const MediumContent = ({ item, children}) => {
                 {formatDateTime(item?.lastchange)}
                 {item?.changeby?.fullname}
             </Attribute>
-            <hr/>
-            {item?.id}{" "}
-            {item?.order}
             <hr/>
         <MediumContent_ item={item}>
             {children}
