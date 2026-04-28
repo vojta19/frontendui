@@ -58,7 +58,8 @@ services:
         [
           {"name": "ug", "url": "http://gql_ug:8000/gql"},
           {"name": "office", "url": "http://gql_office:8000/gql"},
-          {"name": "granting", "url": "http://gql_granting:8000/gql"}
+          {"name": "granting", "url": "http://gql_granting:8000/gql"},
+          {"name": "projects", "url": "http://gql_projects:8000/gql"}
         ]       
     healthcheck:
       # definice, umoznujici provest test, zda je kontejner v poradku (vsimnete si portu a srovnejte s portem v environment)
@@ -80,7 +81,7 @@ services:
 
   gql_ug:
     # image: hrbolek/gql_ug:0.11.0 #   image: kavic/ug
-    image: hrbolek/gql_ug:latest
+    image: hrbolek/gql_ug:0.11.0
     environment:
       # link na db mimo stack
       # - POSTGRES_HOST=host.docker.internal:5432
@@ -248,3 +249,16 @@ services:
     ports:
       - 31122:80
 
+  valkey:
+    image: valkey/valkey:9.0.3-alpine
+    restart: always
+    # environment:
+      # promenne, ktere lze cist v kontejneru
+      # - VALKEY_ADMIN_PASSWORD=example
+    # healthcheck:
+    #   test: ["CMD", "wget", "-O", "-", "http://localhost:8080/valkey/ping"]
+    #   interval: 60s
+    #   timeout: 10s
+    #   retries: 5
+    ports:
+      - 31123:6379
