@@ -9,8 +9,11 @@ fragment Link on FinanceGQLModel {
   createdbyId
   changedbyId
   rbacobjectId
+<<<<<<< HEAD
   name
   nameEn
+=======
+>>>>>>> 0548b57a9092a532b6c66477ca50d6054e2bbf10
   value
   description
   financeTypeId
