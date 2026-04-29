@@ -9,7 +9,6 @@ fragment Link on FinanceGQLModel {
   createdbyId
   changedbyId
   rbacobjectId
-  path
   name
   nameEn
   value

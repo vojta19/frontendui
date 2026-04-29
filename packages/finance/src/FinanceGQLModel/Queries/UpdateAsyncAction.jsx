@@ -7,11 +7,12 @@ const UpdateMutationStr = `
 mutation financeUpdate
 ( $id: UUID!, 
   $lastchange: DateTime!, 
-  $name: String 
+  $name: String, 
+  $nameEn: String 
 )
 {
   financeUpdate
-  (finance: {id: $id, lastchange: $lastchange, name: $name}) 
+  (finance: {id: $id, lastchange: $lastchange, name: $name, nameEn: $nameEn}) 
   {
     
     ... on FinanceGQLModel { ...Large }

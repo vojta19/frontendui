@@ -102,7 +102,7 @@ export const LiveEdit = ({ item, children, asyncMutationAction=UpdateAsyncAction
 
     return (
         
-        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} >
+        <MediumEditableContent item={draft} onChange={onChange} onBlur={onBlur} >
             {saving && <LoadingSpinner/>}
             {children}
         </MediumEditableContent>
