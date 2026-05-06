@@ -1,6 +1,6 @@
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
-import { Link } from "./Link"
+import { Link as ItemLink } from "./Link"
 /**
  * A component that displays medium-level content for an template entity.
  *
@@ -94,34 +94,54 @@ import { Link } from "./Link"
 // }
 
 import { MediumContent as MediumContent_} from "../../../../_template/src/Base/Components/MediumContent"
-import {Attribute, formatDateTime} from "../../../../_template/src/Base/Components"
+import {Attribute, formatDateTime, Link} from "../../../../_template/src/Base/Components"
 
 //export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
 
 export const MediumContent = ({ item, children}) => {
+    console.log("item", item)
     return (
         <>
             <Attribute label="Název">
-                <Link item={item}/>
+                <ItemLink item={item}/>
             </Attribute>
             <Attribute label="EN název">
-                <Link item={item}>
+                <ItemLink item={item}>
                     {item?.nameEn}
-                </Link>
+                </ItemLink>
             </Attribute>
             <Attribute label="ID">
-                <Link item={item}>
+                <ItemLink item={item}>
                     {item?.order || item?.id || "Data Error"}
-                </Link>
+                </ItemLink>
             </Attribute>
-            <Attribute label="Změněno">
+            <hr/>
+            <Attribute label="Poslední změna">
                 {formatDateTime(item?.lastchange)}
                 {item?.changeby?.fullname}
             </Attribute>
-            <hr/>
-        <MediumContent_ item={item}>
-            {children}
-        </MediumContent_>
+            <Attribute label="Vytvořeno">
+                {formatDateTime(item?.created)}
+            </Attribute>
+            <Attribute label="Popis">
+                {item?.description}
+            </Attribute>
+            <Attribute label="Částka">
+                {item?.value}
+            </Attribute>
+            <Attribute label="Uživatel">
+                <Link item={item?.createdby}/>
+                {item?.user?.fullname}
+            </Attribute>
+            <Attribute label="Změnil">
+                <Link item={item?.changedby}/>
+                {item?.changedby?.fullname}
+            </Attribute>
+            <Attribute label="Projekt">
+                <ItemLink item={item?.project}>
+                    {item?.project?.name}
+                </ItemLink>
+            </Attribute>
 </>
 )
 }

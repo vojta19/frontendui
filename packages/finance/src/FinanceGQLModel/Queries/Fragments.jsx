@@ -9,12 +9,20 @@ fragment Link on FinanceGQLModel {
   createdbyId
   changedbyId
   rbacobjectId
+  createdby { id __typename fullname }
+  changedby { id __typename fullname }
+  rbacobject { id __typename }
   name
   nameEn
   value
   description
   financeTypeId
   masterfinanceId
+  masterfinance { id }
+  subfinances { id }
+  type { id name}
+  projectId
+  project { id name}
 }
 `
 
@@ -30,6 +38,9 @@ fragment Medium on FinanceGQLModel {
 const LargeFragmentStr = `
 fragment Large on FinanceGQLModel {
   ...Medium
+  subfinances {
+    ...Medium
+  }
 }
 `
 

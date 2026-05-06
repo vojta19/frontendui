@@ -1,4 +1,4 @@
-import { GeneratedContentBase } from "../../../../_template/src/Base/Pages/Page"
+import { GeneratedContentBase } from "./Page"
 import { PageItemBase } from "./PageBase"
 
 export const PageReadItem = ({ 

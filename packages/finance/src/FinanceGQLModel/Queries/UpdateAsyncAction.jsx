@@ -8,13 +8,13 @@ mutation financeUpdate
 ( $id: UUID!, 
   $lastchange: DateTime!, 
   $name: String, 
-  $nameEn: String 
+  $nameEn: String,
+  $description: String
 )
 {
   financeUpdate
-  (finance: {id: $id, lastchange: $lastchange, name: $name, nameEn: $nameEn}) 
+  (finance: {id: $id, lastchange: $lastchange, name: $name, nameEn: $nameEn, description: $description }) 
   {
-    
     ... on FinanceGQLModel { ...Large }
     ... on FinanceGQLModelUpdateError { ...Error }
   }
