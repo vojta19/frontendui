@@ -1,7 +1,7 @@
 import { useParams } from "react-router"
 
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType"
-
+import { SunburstDiagram } from "../Components/SunburstDiagram"
 import { LargeCard } from "../../../../_template/src/Base/Components/LargeCard"
 import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule"
 import { MediumCardScalars, ScalarAttribute } from "../../../../_template/src/Base/Scalars/ScalarAttribute"
@@ -16,11 +16,12 @@ import { ReadAsyncAction } from "../Queries"
 
 
 export const GeneratedContentBase = ({ item }) => {
-    return (<>
-        
-        <MediumCardVectors item={item} />
-        
-    </>)
+    return (
+        <>
+            <SunburstDiagram item={item} header="Finance sunburst diagram" />
+            <MediumCardVectors item={item} />
+        </>
+    )
 }
 
 /**

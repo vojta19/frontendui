@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "classnames": "^2.5.1",
+    "echarts": "^6.0.0",
     "react-bootstrap": "^2.10.10"
   }
 }
