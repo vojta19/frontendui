@@ -44,9 +44,10 @@ const getNodeLabel = (node) => {
         node?.name ||
         node?.label ||
         node?.title ||
+        node?.displayname ||
+        node?.display ||
         node?.typename ||
         node?.__typename ||
-        node?.id ||
         "node"
     )
 }
@@ -69,7 +70,8 @@ const getNodeUrl = (node) => {
     return null
 }
 
-const getNodeChildren = (node) => {
+const getNodeChildren = (node) => 
+{
     if (!node || typeof node !== "object") return []
 
     if (Array.isArray(node.children)) return node.children
@@ -96,11 +98,20 @@ const getNodeChildren = (node) => {
             return Array.isArray(value)
         })
         .flatMap(([key, value]) =>
-            value.map((child) => ({
-                ...child,
-                name: getNodeLabel(child) || key
-            }))
-        )
+            value.map((child,i) => {
+                const actualName =
+                    child?.name ||
+                    child?.label ||
+                    child?.title ||
+                    child?.displayname ||
+                    child?.display;
+
+                return {
+                    ...child,
+                    name: actualName || `${key} ${i + 1}`
+                }
+            })
+        )        
 }
 
 const buildSunburstNodes = (root, maxDepth = 4) => {
@@ -141,13 +152,13 @@ const buildSunburstNodes = (root, maxDepth = 4) => {
 export const SunburstDiagram = ({
     item,
     header = "Sunburst diagram",
-    size = 420,
+    size = 600,
     maxDepth = 4
 }) => {
     const navigate = useNavigate()
 
     const center = size / 2
-    const ringWidth = 52
+    const ringWidth = 85
 
     const nodes = useMemo(() => {
         return buildSunburstNodes(item, maxDepth)
@@ -161,7 +172,7 @@ export const SunburstDiagram = ({
                 <svg
                     width="100%"
                     height={size}
-                    viewBox={`0 0 ${size} ${size}`}
+                    viewBox={`-120 -120 ${size+240} ${size+240}`}
                     role="img"
                     aria-label={header}
                 >
@@ -183,12 +194,15 @@ export const SunburstDiagram = ({
                         }
 
                         const innerR = depth === 0 ? 0 : depth * ringWidth
-                        const outerR = depth === 0
+                        const outerR = depth == 0
                             ? ringWidth
-                            : (depth + 1) * ringWidth
+                            : (depth+1) * ringWidth
+
+                        const labelR = depth >=2
+                            ? innerR + (outerR-innerR) * 0.42
+                            : innerR + (outerR-innerR) * 0.62
 
                         const angle = (startAngle + endAngle) / 2
-                        const labelR = innerR + (outerR - innerR) / 2
                         const labelPoint = polarToCartesian(
                             center,
                             center,
@@ -217,10 +231,20 @@ export const SunburstDiagram = ({
                                         y={center}
                                         textAnchor="middle"
                                         dominantBaseline="middle"
-                                        fontSize="12"
+                                        fontSize="18"
                                         fill="white"
                                     >
-                                        {String(label).slice(0, 18)}
+                                        {String(label)
+                                        .match(/.{1,14}(\s|$)/g)
+                                        ?.map((line, i) => (
+                                            <tspan
+                                                key={i}
+                                                x={center}
+                                                dy={i === 0 ? "-0.6em" : "1.2em"}
+                                            >
+                                                {line.trim()}
+                                            </tspan>
+                                        ))}
                                     </text>
                                 </g>
                             )
@@ -241,23 +265,35 @@ export const SunburstDiagram = ({
                                     )}
                                     fill={COLORS[colorIndex % COLORS.length]}
                                     stroke="white"
-                                    strokeWidth="2"
+                                    strokeWidth="4"
                                     opacity={0.88}
                                 >
                                     <title>{label}</title>
                                 </path>
 
-                                {endAngle - startAngle > 14 && (
+                                {endAngle - startAngle > 8 && (
                                     <text
                                         x={labelPoint.x}
                                         y={labelPoint.y}
                                         textAnchor="middle"
-                                        dominantBaseline="middle"
-                                        fontSize="10"
+                                        dominantBaseline="central"
+                                        transform={`rotate(${angle > 90 && angle < 270 ? angle + 180: angle} ${labelPoint.x} ${labelPoint.y})`}
+                                        fontSize={depth >= 2 ? "18" : depth === 1 ? "16" : "20"}
                                         fill="white"
                                         pointerEvents="none"
                                     >
-                                        {String(label).slice(0, 12)}
+                                        {String(label)
+                                            .match(/.{1,14}(\s|$)|.{1,14}/g)
+                                            ?.slice(0, 3)
+                                            .map((line, i) => (
+                                                <tspan
+                                                    key={i}
+                                                    x={labelPoint.x}
+                                                     dy={i === 0 ? "0" : "1.1em"}
+                                                >
+                                                    {line.trim()}
+                                                </tspan>
+                                            ))}
                                     </text>
                                 )}
                             </g>
