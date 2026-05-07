@@ -19,7 +19,17 @@ fragment Link on FinanceGQLModel {
   financeTypeId
   masterfinanceId
   masterfinance { id }
-  subfinances { id }
+  subfinances {
+    __typename
+    id
+    name
+    nameEn
+    value
+    description
+    financeTypeId
+    projectId
+    project { id name }
+  }
   type { id name}
   projectId
   project { id name}

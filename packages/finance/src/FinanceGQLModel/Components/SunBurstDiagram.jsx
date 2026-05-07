@@ -42,12 +42,12 @@ const describeArc = (cx, cy, innerR, outerR, startAngle, endAngle) => {
 const getNodeLabel = (node) => {
     return (
         node?.name ||
+        node?.nameEn ||
         node?.label ||
         node?.title ||
-        node?.displayname ||
-        node?.display ||
         node?.typename ||
         node?.__typename ||
+        node?.id ||
         "node"
     )
 }
@@ -65,6 +65,11 @@ const getNodeUrl = (node) => {
 
     if (node.__typename && node.id) {
         return `/finance/${node.__typename}/view/${node.id}`
+    }
+
+    // Fallback for nodes with just id (treated as FinanceGQLModel)
+    if (node.id && !node.typename && !node.__typename) {
+        return `/finance/FinanceGQLModel/view/${node.id}`
     }
 
     return null
@@ -98,20 +103,11 @@ const getNodeChildren = (node) =>
             return Array.isArray(value)
         })
         .flatMap(([key, value]) =>
-            value.map((child,i) => {
-                const actualName =
-                    child?.name ||
-                    child?.label ||
-                    child?.title ||
-                    child?.displayname ||
-                    child?.display;
-
-                return {
-                    ...child,
-                    name: actualName || `${key} ${i + 1}`
-                }
-            })
-        )        
+            value.map((child) => ({
+                ...child,
+                name: getNodeLabel(child) || key
+            }))
+        )
 }
 
 const buildSunburstNodes = (root, maxDepth = 4) => {
@@ -128,19 +124,25 @@ const buildSunburstNodes = (root, maxDepth = 4) => {
             colorIndex
         })
 
-        const children = getNodeChildren(node)
-        if (!children.length) return
+    const children = getNodeChildren(node)
+    if (!children.length) return
 
-        const slice = (endAngle - startAngle) / children.length
+    const totalValue = children.reduce((sum, child) => sum + (Number(child.value) || 1), 0)
+
+    let currentAngle = startAngle
+    const availableAngle = endAngle - startAngle
 
         children.forEach((child, index) => {
+            const childValue = Number(child.value) || 1
+            const slice = (childValue / totalValue) * availableAngle
             walk(
                 child,
                 depth + 1,
-                startAngle + index * slice,
-                startAngle + (index + 1) * slice,
+                currentAngle,
+                currentAngle + slice,
                 colorIndex + index + 1
             )
+            currentAngle += slice
         })
     }
 
@@ -198,9 +200,9 @@ export const SunburstDiagram = ({
                             ? ringWidth
                             : (depth+1) * ringWidth
 
-                        const labelR = depth >=2
-                            ? innerR + (outerR-innerR) * 0.42
-                            : innerR + (outerR-innerR) * 0.62
+                        const labelR = depth === 0
+                            ? innerR + (outerR - innerR) * 0.5
+                            : innerR + (outerR - innerR) * 0.5
 
                         const angle = (startAngle + endAngle) / 2
                         const labelPoint = polarToCartesian(
@@ -278,20 +280,20 @@ export const SunburstDiagram = ({
                                         textAnchor="middle"
                                         dominantBaseline="central"
                                         transform={`rotate(${angle > 90 && angle < 270 ? angle + 180: angle} ${labelPoint.x} ${labelPoint.y})`}
-                                        fontSize={depth >= 2 ? "18" : depth === 1 ? "16" : "20"}
+                                        fontSize={depth >= 2 ? "13" : "15"}
                                         fill="white"
                                         pointerEvents="none"
                                     >
                                         {String(label)
-                                            .match(/.{1,14}(\s|$)|.{1,14}/g)
+                                            .match(/.{1,12}/g)
                                             ?.slice(0, 3)
                                             .map((line, i) => (
                                                 <tspan
                                                     key={i}
                                                     x={labelPoint.x}
-                                                     dy={i === 0 ? "0" : "1.1em"}
+                                                     dy={i === 0 ? "-0.5em" : "1.1em"}
                                                 >
-                                                    {line.trim()}
+                                                    {line}
                                                 </tspan>
                                             ))}
                                     </text>
