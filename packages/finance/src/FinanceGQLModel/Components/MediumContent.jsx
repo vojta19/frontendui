@@ -127,7 +127,9 @@ export const MediumContent = ({ item, children}) => {
                 {item?.description}
             </Attribute>
             <Attribute label="Částka">
-                {item?.value}
+                {typeof item?.value === "number"
+                    ? item.value.toLocaleString("cs-CZ")
+                    : item?.value}
             </Attribute>
             <Attribute label="Uživatel">
                 <Link item={item?.createdby}/>
