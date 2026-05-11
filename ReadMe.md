@@ -1,5 +1,9 @@
 # Změny
 
+## 7.5.2026
+- vytvoření SunBurst diagramu, implementace na naše data a úprava jeho grafické stránky
+- úprava přehlednějšího UI
+
 ## 28.4.2026
 - aktualizace `docker.compose.hk2026.json` a `systemdata.hk2026.json`
 - úprava souborů a dokumentů
