@@ -134,8 +134,11 @@ export const MediumContent = ({ item, children}) => {
                 {item?.user?.fullname}
             </Attribute>
             <Attribute label="Změnil">
-                <Link item={item?.changedby}/>
-                {item?.changedby?.fullname}
+                <>
+                    <Link item={item?.changedby}/>
+                    {' / '}
+                    {formatDateTime(item?.lastchange)}
+                </>
             </Attribute>
             <Attribute label="Projekt">
                 <ItemLink item={item?.project}>
