@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useNavigate } from "react-router"
+//import { useNavigate } from "react-router"
 import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule"
 
 const COLORS = [
@@ -75,8 +75,7 @@ const getNodeUrl = (node) => {
     return null
 }
 
-const getNodeChildren = (node) => 
-{
+const getNodeChildren = (node) => {
     if (!node || typeof node !== "object") return []
 
     if (Array.isArray(node.children)) return node.children
@@ -124,13 +123,13 @@ const buildSunburstNodes = (root, maxDepth = 4) => {
             colorIndex
         })
 
-    const children = getNodeChildren(node)
-    if (!children.length) return
+        const children = getNodeChildren(node)
+        if (!children.length) return
 
-    const totalValue = children.reduce((sum, child) => sum + (Number(child.value) || 1), 0)
+        const totalValue = children.reduce((sum, child) => sum + (Number(child.value) || 1), 0)
 
-    let currentAngle = startAngle
-    const availableAngle = endAngle - startAngle
+        let currentAngle = startAngle
+        const availableAngle = endAngle - startAngle
 
         children.forEach((child, index) => {
             const childValue = Number(child.value) || 1
@@ -155,9 +154,10 @@ export const SunburstDiagram = ({
     item,
     header = "Sunburst diagram",
     size = 600,
-    maxDepth = 4
+    maxDepth = 4,
+    onSelect
 }) => {
-    const navigate = useNavigate()
+    //const navigate = useNavigate()
 
     const center = size / 2
     const ringWidth = 85
@@ -174,7 +174,7 @@ export const SunburstDiagram = ({
                 <svg
                     width="100%"
                     height={size}
-                    viewBox={`-120 -120 ${size+240} ${size+240}`}
+                    viewBox={`-120 -120 ${size + 240} ${size + 240}`}
                     role="img"
                     aria-label={header}
                 >
@@ -188,17 +188,21 @@ export const SunburstDiagram = ({
                         } = entry
 
                         const label = getNodeLabel(node)
-                        const url = getNodeUrl(node)
+                        const children = getNodeChildren(node)
+                        const isLeaf = children.length === 0
 
-                        const handleClick = () => {
-                            if (!url) return
-                            navigate(url)
+                        const handleClick = (event) => {
+                            event.stopPropagation()
+
+                            if (!node?.id) return
+
+                            onSelect?.(node)
                         }
 
                         const innerR = depth === 0 ? 0 : depth * ringWidth
                         const outerR = depth == 0
                             ? ringWidth
-                            : (depth+1) * ringWidth
+                            : (depth + 1) * ringWidth
 
                         const labelR = depth === 0
                             ? innerR + (outerR - innerR) * 0.5
@@ -214,9 +218,10 @@ export const SunburstDiagram = ({
 
                         if (depth === 0) {
                             return (
-                                <g key={index}
-                                onClick={handleClick}
-                                style={{ cursor: url ? "pointer" : "default" }}
+                                <g
+                                    key={index}
+                                    onClick={handleClick}
+                                    style={{ cursor: node?.id ? "pointer" : "default" }}
                                 >
                                     <circle
                                         cx={center}
@@ -237,25 +242,27 @@ export const SunburstDiagram = ({
                                         fill="white"
                                     >
                                         {String(label)
-                                        .match(/.{1,14}(\s|$)/g)
-                                        ?.map((line, i) => (
-                                            <tspan
-                                                key={i}
-                                                x={center}
-                                                dy={i === 0 ? "-0.6em" : "1.2em"}
-                                            >
-                                                {line.trim()}
-                                            </tspan>
-                                        ))}
+                                            .match(/.{1,14}(\s|$)/g)
+                                            ?.map((line, i) => (
+                                                <tspan
+                                                    key={i}
+                                                    x={center}
+                                                    dy={i === 0 ? "-0.6em" : "1.2em"}
+                                                >
+                                                    {line.trim()}
+                                                </tspan>
+                                            ))}
                                     </text>
                                 </g>
                             )
                         }
 
                         return (
-                            <g key={index}
-                            onClick={handleClick}
-                            style={{ cursor: url ? "pointer" : "default" }}>
+                            <g
+                                key={index}
+                                onClick={handleClick}
+                                style={{ cursor: node?.id ? "pointer" : "default" }}
+                            >
                                 <path
                                     d={describeArc(
                                         center,
@@ -279,7 +286,7 @@ export const SunburstDiagram = ({
                                         y={labelPoint.y}
                                         textAnchor="middle"
                                         dominantBaseline="central"
-                                        transform={`rotate(${angle > 90 && angle < 270 ? angle + 180: angle} ${labelPoint.x} ${labelPoint.y})`}
+                                        transform={`rotate(${angle > 90 && angle < 270 ? angle + 180 : angle} ${labelPoint.x} ${labelPoint.y})`}
                                         fontSize={depth >= 2 ? "13" : "15"}
                                         fill="white"
                                         pointerEvents="none"
@@ -291,7 +298,7 @@ export const SunburstDiagram = ({
                                                 <tspan
                                                     key={i}
                                                     x={labelPoint.x}
-                                                     dy={i === 0 ? "-0.5em" : "1.1em"}
+                                                    dy={i === 0 ? "-0.5em" : "1.1em"}
                                                 >
                                                     {line}
                                                 </tspan>
