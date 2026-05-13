@@ -1,7 +1,12 @@
 # Změny
 
+## 13.5.2026
+- vytvoření `FinanceTransferSunburst,jsx` tedy finančních přesunů mezi určitými položkami
+- úprava UI
+- dokončení modelu v módu úprav
+
 ## 7.5.2026
-- vytvoření SunBurst diagramu, implementace na naše data a úprava jeho grafické stránky
+- vytvoření `SunBurstDiagram.jsx` implementace na naše data a úprava jeho grafické stránky
 - úprava přehlednějšího UI
 
 ## 28.4.2026
