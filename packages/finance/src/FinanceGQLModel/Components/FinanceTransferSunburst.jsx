@@ -70,6 +70,7 @@ export const FinanceTransferSunburst = ({
     header = "Finance – přesun financí"
 }) => {
     const [source, setSource] = useState(null)
+    const [hoveredTarget, setHoveredTarget] = useState(null)
     const [diagramItem, setDiagramItem] = useState(item)
 
     useEffect(() => {
@@ -96,9 +97,11 @@ export const FinanceTransferSunburst = ({
 
         if (!source) {
             setSource(node)
+            setHoveredTarget(null)
             return
         }
 
+        setHoveredTarget(node.id)
         const destination = node
 
         if (!canTransferBetween(source, destination)) {
@@ -106,6 +109,7 @@ export const FinanceTransferSunburst = ({
                 "Přesun je povolen pouze mezi dvěma různými finančními prvky."
             )
             setSource(null)
+            setHoveredTarget(null)
             return
         }
 
@@ -115,6 +119,7 @@ export const FinanceTransferSunburst = ({
 
         if (!amountInput) {
             setSource(null)
+            setHoveredTarget(null)
             return
         }
 
@@ -123,12 +128,14 @@ export const FinanceTransferSunburst = ({
         if (!Number.isFinite(amount) || amount <= 0) {
             window.alert("Zadaná částka není platná.")
             setSource(null)
+            setHoveredTarget(null)
             return
         }
 
         if (Number(source.value) < amount) {
             window.alert("Zdrojový prvek nemá dostatek financí.")
             setSource(null)
+            setHoveredTarget(null)
             return
         }
 
@@ -161,6 +168,7 @@ export const FinanceTransferSunburst = ({
                     "Backend odmítl přesun financí."
                 )
                 setSource(null)
+                setHoveredTarget(null)
                 return
             }
 
@@ -178,6 +186,7 @@ export const FinanceTransferSunburst = ({
             )
 
             setSource(null)
+            setHoveredTarget(null)
         } catch (error) {
             console.error("Chyba při přesunu financí:", error)
 
@@ -188,11 +197,13 @@ export const FinanceTransferSunburst = ({
 
             window.alert(msg)
             setSource(null)
+            setHoveredTarget(null)
         }
     }
 
     const handleCancel = () => {
         setSource(null)
+        setHoveredTarget(null)
     }
 
     return (
@@ -224,6 +235,8 @@ export const FinanceTransferSunburst = ({
                 item={diagramItem}
                 header={header}
                 onSelect={handleSelect}
+                selectedSourceId={source?.id}
+                selectedTargetId={hoveredTarget}
             />
         </div>
     )

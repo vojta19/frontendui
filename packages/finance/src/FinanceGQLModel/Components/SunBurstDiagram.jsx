@@ -155,7 +155,9 @@ export const SunburstDiagram = ({
     header = "Sunburst diagram",
     size = 600,
     maxDepth = 4,
-    onSelect
+    onSelect,
+    selectedSourceId = null,
+    selectedTargetId = null
 }) => {
     //const navigate = useNavigate()
 
@@ -172,12 +174,45 @@ export const SunburstDiagram = ({
         <CardCapsule header={header}>
             <div className="d-flex justify-content-center align-items-center">
                 <svg
+                    
                     width="100%"
                     height={size}
                     viewBox={`-120 -120 ${size + 240} ${size + 240}`}
                     role="img"
                     aria-label={header}
                 >
+                    <defs>
+                        <pattern
+                            id="diagonalHatch"
+                            patternUnits="userSpaceOnUse"
+                            width="8"
+                            height="8"
+                            patternTransform="rotate(45)"
+                        >
+                            <line
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="8"
+                                stroke="blue"
+                                strokeWidth="3"
+                                opacity="0.5"
+                            />
+                        </pattern>
+                        
+                        <filter id="glow">
+                            <feGaussianBlur
+                                stdDeviation="4"
+                                result="coloredBlur"
+                            />
+
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
                     {nodes.map((entry, index) => {
                         const {
                             node,
@@ -190,6 +225,8 @@ export const SunburstDiagram = ({
                         const label = getNodeLabel(node)
                         const children = getNodeChildren(node)
                         const isLeaf = children.length === 0
+                        const isSource = node?.id === selectedSourceId
+                        const isTarget = node?.id === selectedTargetId
 
                         const handleClick = (event) => {
                             event.stopPropagation()
@@ -272,10 +309,27 @@ export const SunburstDiagram = ({
                                         startAngle,
                                         endAngle
                                     )}
-                                    fill={COLORS[colorIndex % COLORS.length]}
-                                    stroke="white"
-                                    strokeWidth="4"
-                                    opacity={0.88}
+                                    fill={
+                                        isSource
+                                            ? `url(#diagonalHatch)`
+                                            : COLORS[colorIndex % COLORS.length]
+                                        }
+                                    stroke={
+                                        isTarget
+                                            ? "#000000"
+                                            : "black"
+                                    }
+                                    strokeWidth={
+                                        isTarget
+                                            ? "10"
+                                            : "4"
+                                    }
+                                    opacity={
+                                        isSource || isTarget
+                                            ? "1"
+                                            : "0.88"
+                                    }
+                                    filter={isTarget ? "url(#glow)" : "undefined"}
                                 >
                                     <title>{label}</title>
                                 </path>
@@ -288,7 +342,7 @@ export const SunburstDiagram = ({
                                         dominantBaseline="central"
                                         transform={`rotate(${angle > 90 && angle < 270 ? angle + 180 : angle} ${labelPoint.x} ${labelPoint.y})`}
                                         fontSize={depth >= 2 ? "13" : "15"}
-                                        fill="white"
+                                        fill={isSource ? "#000000" : "white"}
                                         pointerEvents="none"
                                     >
                                         {String(label)
