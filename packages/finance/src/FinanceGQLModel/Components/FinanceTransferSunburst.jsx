@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { SunburstDiagram } from "./SunburstDiagram"
+import { SunburstDiagram } from "./SunBurstDiagram"
 import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks"
 import { FinanceTransferInsertAsyncAction } from "../Queries/FinanceTransferInsertAsyncAction"
 
