@@ -70,8 +70,10 @@ export const FinanceTransferSunburst = ({
     header = "Finance – přesun financí"
 }) => {
     const [source, setSource] = useState(null)
+    const [destination, setDestination] = useState(null)
     const [hoveredTarget, setHoveredTarget] = useState(null)
     const [diagramItem, setDiagramItem] = useState(item)
+    const [transferAmount, setTransferAmount] = useState("")
 
     useEffect(() => {
         setDiagramItem(item)
@@ -89,7 +91,7 @@ export const FinanceTransferSunburst = ({
         }
     )
 
-    const handleSelect = async (node) => {
+    const handleSelect = (node) => {
         console.log("KLIK V DIAGRAMU:", node)
         console.log("AKTUALNI SOURCE:", source)
 
@@ -97,80 +99,53 @@ export const FinanceTransferSunburst = ({
 
         if (!source) {
             setSource(node)
+            setDestination(null)
             setHoveredTarget(null)
+            setTransferAmount("")
             return
         }
 
-        setHoveredTarget(node.id)
-        const destination = node
-
-        if (!canTransferBetween(source, destination)) {
+        if (!canTransferBetween(source, node)) {
             window.alert(
                 "Přesun je povolen pouze mezi dvěma různými finančními prvky."
             )
-            setSource(null)
-            setHoveredTarget(null)
             return
         }
 
-        const amountInput = window.prompt(
-            `Zadejte částku k přesunu:\n\nZ: ${getFinanceName(source)}\nDo: ${getFinanceName(destination)}`
-        )
-
-        if (!amountInput) {
-            setSource(null)
-            setHoveredTarget(null)
+        setDestination(node)
+        setHoveredTarget(node.id)
+    }
+    const handleTransferConfirm = async () => {
+        if (!source || !destination) {
+            window.alert("Nejdřív vyber zdroj i cíl přesunu.")
             return
         }
 
-        const amount = Number(String(amountInput).replace(",", "."))
+        const amount = Number(String(transferAmount).replace(",", "."))
 
         if (!Number.isFinite(amount) || amount <= 0) {
-            window.alert("Zadaná částka není platná.")
-            setSource(null)
-            setHoveredTarget(null)
+            window.alert("Nejdřív zadej platnou částku k přesunu.")
             return
         }
 
         if (Number(source.value) < amount) {
-            window.alert("Zdrojový prvek nemá dostatek financí.")
-            setSource(null)
-            setHoveredTarget(null)
+            window.alert("Zdroj nemá dostatek financí pro tento přesun.")
             return
         }
 
         try {
-            const transferVariables = {
+            const variables = {
                 financeTransfer_financeSourceId: source.id,
                 financeTransfer_financeDestinationId: destination.id,
-                financeTransfer_name: `Přesun financí: ${getFinanceName(source)} -> ${getFinanceName(destination)}`,
+                financeTransfer_name: `${getFinanceName(source)} → ${getFinanceName(destination)}`,
                 financeTransfer_amount: amount,
-                financeTransfer_id: null
             }
 
-            console.log("JDU VOLAT financeTransferInsert")
-            console.log("financeTransferInsert variables:", transferVariables)
+            console.log("ODESILAM TRANSFER:", variables)
 
-            const transferInsertResult = await runFinanceTransferInsert(
-                transferVariables
-            )
+            const result = await runFinanceTransferInsert(variables)
 
-            console.log("financeTransferInsert result:", transferInsertResult)
-
-            const transferResult =
-                transferInsertResult?.data?.financeTransferInsert ||
-                transferInsertResult?.financeTransferInsert
-
-            if (transferResult?.__typename === "FinanceTransferGQLModelInsertError") {
-                console.error("Chyba z backendu:", transferResult)
-                window.alert(
-                    transferResult?.msg ||
-                    "Backend odmítl přesun financí."
-                )
-                setSource(null)
-                setHoveredTarget(null)
-                return
-            }
+            console.log("VYSLEDEK TRANSFERU:", result)
 
             setDiagramItem((currentItem) =>
                 applyLocalTransfer(
@@ -181,29 +156,25 @@ export const FinanceTransferSunburst = ({
                 )
             )
 
-            window.alert(
-                "Přesun financí byl zaznamenán a hodnoty byly lokálně upraveny v diagramu."
-            )
+            window.alert("Přesun financí byl zaznamenán.")
 
             setSource(null)
+            setDestination(null)
             setHoveredTarget(null)
+            setTransferAmount("")
         } catch (error) {
-            console.error("Chyba při přesunu financí:", error)
+            console.error("CHYBA PRI PRESUNU:", error)
 
-            const msg =
-                error?.errors?.msg ||
-                error?.message ||
-                "Přesun financí se nepodařilo provést."
-
-            window.alert(msg)
-            setSource(null)
-            setHoveredTarget(null)
+            window.alert(
+                "Přesun financí se nepodařilo provést. Detail chyby je v konzoli."
+            )
         }
     }
-
     const handleCancel = () => {
         setSource(null)
+        setDestination(null)
         setHoveredTarget(null)
+        setTransferAmount("")
     }
 
     return (
@@ -211,8 +182,49 @@ export const FinanceTransferSunburst = ({
             {source && (
                 <div className="alert alert-info d-flex justify-content-between align-items-center">
                     <div>
-                        Zdroj financí: <strong>{getFinanceName(source)}</strong>.
-                        Teď klikni na cílový prvek.
+                        <div>
+                            Zdroj financí: <strong>{getFinanceName(source)}</strong>.
+                        </div>
+
+                        {!destination && (
+                            <div>
+                                Teď klikni na cílový prvek.
+                            </div>
+                        )}
+
+                        {destination && (
+                            <>
+                                <div>
+                                    Cíl financí: <strong>{getFinanceName(destination)}</strong>.
+                                </div>
+
+                                <div className="mt-2">
+                                    <label className="form-label mb-1">
+                                        Částka k přesunu:
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        style={{ maxWidth: "260px" }}
+                                        value={transferAmount}
+                                        onChange={(e) => setTransferAmount(e.target.value)}
+                                        placeholder="Zadej částku"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-success btn-sm mt-2"
+                                    onClick={handleTransferConfirm}
+                                    disabled={loading}
+                                >
+                                    Provést přesun
+                                </button>
+                            </>
+                        )}
                     </div>
 
                     <button
