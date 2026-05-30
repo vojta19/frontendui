@@ -1,148 +1,75 @@
+import { useMemo, useState } from "react"
 import { useParams } from "react-router"
 
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType"
 import { FinanceTransferSunburst } from "../Components/FinanceTransferSunburst"
-//import { SunburstDiagram } from "../Components/SunburstDiagram"
 import { LargeCard } from "../../../../_template/src/Base/Components/LargeCard"
 import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule"
 import { MediumCardScalars, ScalarAttribute } from "../../../../_template/src/Base/Scalars/ScalarAttribute"
-import { MediumCardVectors, Tree, VectorAttribute } from "../../../../_template/src/Base/Vectors/VectorAttribute"
+import { MediumCardVectors, VectorAttribute } from "../../../../_template/src/Base/Vectors/VectorAttribute"
 import { useGQLEntityContext, AsyncActionProvider } from "../../../../_template/src/Base/Helpers/GQLEntityProvider"
 import { Row } from "../../../../_template/src/Base/Components/Row"
 import { Col } from "../../../../_template/src/Base/Components/Col"
-import { Card } from "react-bootstrap"
 import { SimpleCardCapsuleRightCorner } from "@hrbolek/uoisfrontend-shared"
 import { CopyButton } from "../../../../_template/src/Base/Components/CopyButton"
 import { ReadAsyncAction } from "../Queries"
-import { useMemo, useState } from "react"
 
-export const GeneratedContentBase = ({ item }) => {
+const getTransferSourceId = (transfer) => {
     return (
-        <>
-            <FinanceTransferSunburst
-                item={item}
-                header="Graf finančních přesunů"
-            />
-            <MediumCardVectors item={item} />
-        </>
+        transfer?.financeSourceId ??
+        transfer?.financeTransfer_financeSourceId ??
+        transfer?.sourceFinanceId ??
+        transfer?.sourceId ??
+        transfer?.financeSource?.id ??
+        transfer?.source?.id ??
+        null
     )
 }
 
-/**
- * Vnitřní „skeleton“ stránky pro práci s jednou entitou z `GQLEntityContext`.
- *
- * Komponenta očekává, že někde výše ve stromu už existuje provider (např. `AsyncActionProvider`),
- * který naplní `useGQLEntityContext()` hodnotou `item`.
- *
- * Co dělá:
- * - vezme `item` z `useGQLEntityContext()`
- * - pokud `item` není k dispozici, vrací `null` (typicky loading / nenalezeno)
- * - vykreslí navbar (default `PageNavbar`) s propem `item`
- * - obalí obsah layout komponentou (default `LargeCard`) s propem `item`
- * - uvnitř layoutu vykreslí „subpage“ komponentu (default `GeneratedContentBase`) s propem `item`
- * - `children` vloží dovnitř `SubPage` (slot pro rozšíření obsahu stránky)
- *
- * Díky parametrům `PageNavbar`, `ItemLayout` a `SubPage` lze stejnou strukturu znovu použít
- * pro různé stránky nad jednou entitou (jiné rozložení, jiný generovaný obsah, jiné menu).
- *
- * @component
- * @param {object} props
- * @param {import("react").ComponentType<{item:any}>} [props.PageNavbar=PageNavbar]
- *   Komponenta navigace/hlavičky stránky. Dostane prop `item`.
- * @param {import("react").ComponentType<{item:any, children?:import("react").ReactNode}>} [props.ItemLayout=LargeCard]
- *   Obalová layout komponenta pro zobrazení entity (např. karta). Dostane `item` a obvykle renderuje `children`.
- * @param {import("react").ComponentType<{item:any, children?:import("react").ReactNode}>} [props.SubPage=GeneratedContentBase]
- *   Vnitřní obsah stránky (např. generované sekce, detail, taby). Dostane `item` a renderuje `children`.
- * @param {import("react").ReactNode} [props.children]
- *   Dodatečný obsah vložený do `SubPage` (např. extra sekce, akční tlačítka, custom bloky).
- *
- * @returns {import("react").JSX.Element|null}
- *   Struktura stránky (navbar + layout + subpage) nebo `null`, pokud `item` není dostupný.
- */
-const PageItemInnerStructure = ({
-    PageNavbar = null,
-    ItemLayout = LargeCard,
-    SubPage = GeneratedContentBase,
-    OtherComponents = [],
-    children
-}) => {
-    const { item } = useGQLEntityContext()
-    if (!item) return <>Položka nenalezena</>
-
-    // Components: [A, B, C] => <A><B><C>{children}</C></B></A>
-    const content = (OtherComponents || []).reduceRight((acc, Component) => {
-        if (!Component) return acc;
-        return <Component item={item}>{acc}</Component>;
-    }, null);
-
+const getTransferDestinationId = (transfer) => {
     return (
-        <>
-            {PageNavbar && <PageNavbar item={item} />}
-            {children}
-            <ItemLayout item={item} >
-                {SubPage ? (
-                    <SubPage item={item}>
-                        {content}
-                    </SubPage>
-                ) : (
-                    { content }
-                )}
-            </ItemLayout>
-        </>
-    );
-}
-
-
-/**
- * Base wrapper pro stránky pracující s jedním entity itemem podle `:id` z routy.
- *
- * Komponenta:
- * - načte `id` z URL přes `useParams()`
- * - sestaví minimální `item` objekt `{ id }`
- * - poskytne jej přes `AsyncActionProvider`, který zajistí načtení entity pomocí `queryAsyncAction`
- * - vloží do stránky navbar přes `PlaceChild Component={PageNavbar}`
- * - vyrenderuje `children` uvnitř provideru (tj. až v kontextu načtené entity)
- *
- * Typické použití je jako obálka routy typu `/.../:id`, kde vnořené komponenty
- * (detail, editace, akce) používají kontext z `AsyncActionProvider`.
- *
- * @component
- * @param {object} props
- * @param {import("react").ReactNode} props.children
- *   Obsah stránky, který se má vyrenderovat uvnitř `AsyncActionProvider`.
- * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
- *   Async action (např. thunk) použitá pro načtení entity z GraphQL endpointu.
- *   Dostane `item` s `id` (a případně další parametry podle implementace provideru).
- *
- * @returns {import("react").JSX.Element}
- *   Provider s navigací (`PageNavbar`) a obsahem stránky (`children`).
- */
-export const PageItemBase = ({
-    queryAsyncAction = ReadAsyncAction,
-    PageNavbar = () => null,
-    ItemLayout = LargeCard,
-    SubPage = GeneratedContentBase,
-    children
-}) => {
-    const { id } = useParams()
-    const item = { id }
-    return (
-        <AsyncActionProvider item={item} queryAsyncAction={queryAsyncAction}>
-            <PageItemInnerStructure
-                PageNavbar={PageNavbar}
-                ItemLayout={ItemLayout}
-                SubPage={SubPage}
-                children={children}
-            />
-        </AsyncActionProvider>
+        transfer?.financeDestinationId ??
+        transfer?.financeTransfer_financeDestinationId ??
+        transfer?.destinationFinanceId ??
+        transfer?.destinationId ??
+        transfer?.financeDestination?.id ??
+        transfer?.destination?.id ??
+        null
     )
 }
 
-const collectTransfer = (item) => {
+const normalizeTransfer = (transfer) => {
+    if (!transfer || typeof transfer !== "object") return null
+
+    const financeSourceId = getTransferSourceId(transfer)
+    const financeDestinationId = getTransferDestinationId(transfer)
+    const amount = Number(
+        transfer.amount ??
+        transfer.financeTransfer_amount ??
+        transfer.value ??
+        0
+    )
+
+    if (!financeSourceId || !financeDestinationId || !Number.isFinite(amount) || amount === 0) {
+        return null
+    }
+
+    return {
+        ...transfer,
+        financeSourceId,
+        financeDestinationId,
+        amount,
+    }
+}
+
+const collectTransfers = (item) => {
     const transfers = []
+    const visitedNodes = new Set()
 
     const collect = (node) => {
         if (!node || typeof node !== "object") return
+        if (visitedNodes.has(node)) return
+        visitedNodes.add(node)
 
         const possibleTransferArrays = [
             node.financeTransfers,
@@ -154,22 +81,32 @@ const collectTransfer = (item) => {
         ]
 
         possibleTransferArrays.forEach(array => {
-            if (Array.isArray(array)) {
-                transfers.push(...array)
-            }
+            if (!Array.isArray(array)) return
+
+            array.forEach(transfer => {
+                const normalizedTransfer = normalizeTransfer(transfer)
+                if (normalizedTransfer) transfers.push(normalizedTransfer)
+            })
         })
 
         if (Array.isArray(node.subfinances)) {
             node.subfinances.forEach(collect)
         }
     }
-    collect(items)
 
-    return transfers
+    collect(item)
+
+    const transferMap = new Map()
+    transfers.forEach((transfer, index) => {
+        const key = transfer.id ?? `${transfer.financeSourceId}-${transfer.financeDestinationId}-${transfer.amount}-${index}`
+        transferMap.set(key, transfer)
+    })
+
+    return [...transferMap.values()]
 }
 
-const applyTransfersToSubfinances = (subfinances = [], transfers = []) => {
-    return subfinances.map(finance => {
+const applyTransfersToFinanceTree = (finances = [], transfers = []) => {
+    return finances.map(finance => {
         const outgoing = transfers
             .filter(transfer => transfer.financeSourceId === finance.id)
             .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
@@ -180,34 +117,39 @@ const applyTransfersToSubfinances = (subfinances = [], transfers = []) => {
 
         return {
             ...finance,
-            value: Number(finance.value || 0) - outgoing + incoming
+            value: Number(finance.value || 0) - outgoing + incoming,
+            subfinances: Array.isArray(finance.subfinances)
+                ? applyTransfersToFinanceTree(finance.subfinances, transfers)
+                : finance.subfinances,
         }
     })
 }
 
-const patchFinanceItem = (item) => {
+const patchFinanceItem = (item, localTransfers = []) => {
     if (!item || typeof item !== "object") return item
 
-    const transfers = collectTransfers(item)
+    const normalizedLocalTransfers = localTransfers
+        .map(normalizeTransfer)
+        .filter(Boolean)
 
     return {
         ...item,
-        subfinances: applyTransfersToSubfinances(
+        subfinances: applyTransfersToFinanceTree(
             item.subfinances ?? [],
-            transfers
-        )
+            normalizedLocalTransfers
+        ),
     }
 }
 
-export const PageContent = ({ queryById, queryVector, mutations, children, params }) => {
+export const GeneratedContentBase = ({ item, onTransferInserted = () => {} }) => {
     const [localTransfers, setLocalTransfers] = useState([])
-    const gqlContext = useGQLEntityContext()
-    const { id, typename, action = "view" } = useParams()
-    const { item } = gqlContext || {}
+
     const patchedItem = useMemo(() => {
         if (!item) return item
 
-        const patchedSubfinances = (item.subfinances ?? []).map(finance => {
+        const patchFinance = (finance) => {
+            if (!finance || typeof finance !== "object") return finance
+
             const outgoing = localTransfers
                 .filter(transfer => transfer.financeSourceId === finance.id)
                 .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
@@ -218,116 +160,276 @@ export const PageContent = ({ queryById, queryVector, mutations, children, param
 
             return {
                 ...finance,
-                value: Number(finance.value || 0) - outgoing + incoming
+                value: Number(finance.value || 0) - outgoing + incoming,
+                subfinances: Array.isArray(finance.subfinances)
+                    ? finance.subfinances.map(patchFinance)
+                    : finance.subfinances,
             }
-        })
-
-        return {
-            ...item,
-            subfinances: patchedSubfinances
         }
+
+        return patchFinance(item)
     }, [item, localTransfers])
 
-    if (!item) return (<div>Položka nenalezena<pre>{JSON.stringify(gqlContext)}</pre></div>)
+    const handleTransferInserted = (transfer) => {
+        console.log("GENERATEDCONTENTBASE DOSTAL TRANSFER:", transfer)
+
+        setLocalTransfers(previousTransfers => [
+            ...previousTransfers,
+            {
+                financeSourceId: transfer.financeSourceId,
+                financeDestinationId: transfer.financeDestinationId,
+                amount: Number(transfer.amount || 0),
+                name: transfer.name,
+            },
+        ])
+
+        onTransferInserted?.(transfer)
+    }
+
+    return (
+        <>
+            <FinanceTransferSunburst
+                item={patchedItem}
+                header="Graf finančních přesunů"
+                onTransferInserted={handleTransferInserted}
+            />
+
+            <MediumCardVectors item={patchedItem} />
+        </>
+    )
+}
+
+const PageItemInnerStructure = ({
+    PageNavbar = null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    OtherComponents = [],
+    children
+}) => {
+    const { item } = useGQLEntityContext()
+    const [localTransfers, setLocalTransfers] = useState([])
+
+    const handleTransferInserted = (transfer) => {
+        console.log("PAGEITEMINNER DOSTAL TRANSFER:", transfer)
+
+        setLocalTransfers(previousTransfers => [
+            ...previousTransfers,
+            {
+                financeSourceId: transfer.financeSourceId,
+                financeDestinationId: transfer.financeDestinationId,
+                amount: Number(transfer.amount || 0),
+            }
+        ])
+    }
+
+    const patchedItem = useMemo(() => {
+        if (!item) return item
+
+        const patchFinance = (finance) => {
+            if (!finance || typeof finance !== "object") return finance
+
+            const outgoing = localTransfers
+                .filter(transfer => transfer.financeSourceId === finance.id)
+                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+            const incoming = localTransfers
+                .filter(transfer => transfer.financeDestinationId === finance.id)
+                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+            return {
+                ...finance,
+                value: Number(finance.value || 0) - outgoing + incoming,
+                subfinances: Array.isArray(finance.subfinances)
+                    ? finance.subfinances.map(patchFinance)
+                    : finance.subfinances
+            }
+        }
+
+        return patchFinance(item)
+    }, [item, localTransfers])
+    if (!item) return <>Položka nenalezena</>
+
+    const content = (OtherComponents || []).reduceRight((acc, Component) => {
+        if (!Component) return acc
+        return <Component item={item}>{acc}</Component>
+    }, children)
+
+    return (
+        <>
+            {PageNavbar && <PageNavbar item={item} />}
+            <ItemLayout item={patchedItem}>
+                {SubPage ? (
+                    <SubPage
+                        item={patchedItem}
+                        onTransferInserted={(transfer) => {
+                            console.log("SUBPAGE INLINE CALLBACK DOSTAL TRANSFER:", transfer)
+                            handleTransferInserted(transfer)
+                        }}
+                    >
+                        {content}
+                    </SubPage>
+                ) : (
+                    content
+                )}
+            </ItemLayout>
+        </>
+    )
+}
+
+export const PageItemBase = ({
+    queryAsyncAction = ReadAsyncAction,
+    PageNavbar = () => null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    children
+}) => {
+    const { id } = useParams()
+    const item = { id }
+
+    return (
+        <AsyncActionProvider item={item} queryAsyncAction={queryAsyncAction}>
+            <PageItemInnerStructure
+                PageNavbar={PageNavbar}
+                ItemLayout={ItemLayout}
+                SubPage={SubPage}
+            >
+                {children}
+            </PageItemInnerStructure>
+        </AsyncActionProvider>
+    )
+}
+
+export const PageContent = ({ queryById, queryVector, mutations = {}, children, params }) => {
+    const [localTransfers, setLocalTransfers] = useState([])
+    const gqlContext = useGQLEntityContext()
+    const { action = "view" } = useParams()
+    const { item } = gqlContext || {}
+
+    const patchedItem = useMemo(() => {
+        return patchFinanceItem(item, localTransfers)
+    }, [item, localTransfers])
+
+    const handleTransferInserted = (transfer) => {
+        const normalizedTransfer = normalizeTransfer(transfer)
+        if (!normalizedTransfer) return
+
+        setLocalTransfers(previousTransfers => [
+            ...previousTransfers,
+            normalizedTransfer,
+        ])
+    }
+
+    if (!item) {
+        return (
+            <div>
+                Položka nenalezena
+                <pre>{JSON.stringify(gqlContext, null, 2)}</pre>
+            </div>
+        )
+    }
+
     let content = children
-    const attribute_value = patchedItem?.[action]
+    const attributeValue = patchedItem?.[action]
 
     console.log("FINANCE ITEM:", item)
     console.log("PATCHED ITEM:", patchedItem)
-    console.log("COLLECTED TRANSFERS:", collectTransfers(item))
     console.log("LOCAL TRANSFERS:", localTransfers)
-    console.log("PATCHED ITEM:", patchedItem)
-    console.log("PATCHED SUBFINANCES:", patchedItem?.subfinances)
+    console.log("COLLECTED TRANSFERS:", collectTransfers(item))
 
-    if ((action === "__def"))
-        content = <Row>
-            <Col>
-                <CardCapsule header="queryById">
-                    <SimpleCardCapsuleRightCorner>
-                        <CopyButton className="btn btn-sm border-0" text={queryById} />
-                    </SimpleCardCapsuleRightCorner>
-                    <pre>{queryById?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
-                </CardCapsule>
-            </Col>
-            <Col>
-                <CardCapsule header="queryVector">
-                    <SimpleCardCapsuleRightCorner>
-                        <CopyButton className="btn btn-sm border-0" text={queryVector} />
-                    </SimpleCardCapsuleRightCorner>
-                    <pre>{queryVector?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
-                </CardCapsule>
-            </Col>
-            {Object.entries(mutations).map(([name, value]) => {
-                return (
-                    <Col key={name}>
-                        <CardCapsule header={name}>
-                            <SimpleCardCapsuleRightCorner>
-                                <CopyButton className="btn btn-sm border-0" text={value} />
-                            </SimpleCardCapsuleRightCorner>
-                            <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
-                            {/* <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", ", (\n\t")}</pre> */}
-                        </CardCapsule>
-                    </Col>
-                )
-            })}
-        </Row>
-    if ((action === "view"))
+    if (action === "__def") {
+        content = (
+            <Row>
+                <Col>
+                    <CardCapsule header="queryById">
+                        <SimpleCardCapsuleRightCorner>
+                            <CopyButton className="btn btn-sm border-0" text={queryById} />
+                        </SimpleCardCapsuleRightCorner>
+                        <pre>{queryById?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                    </CardCapsule>
+                </Col>
+                <Col>
+                    <CardCapsule header="queryVector">
+                        <SimpleCardCapsuleRightCorner>
+                            <CopyButton className="btn btn-sm border-0" text={queryVector} />
+                        </SimpleCardCapsuleRightCorner>
+                        <pre>{queryVector?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                    </CardCapsule>
+                </Col>
+                {Object.entries(mutations).map(([name, value]) => {
+                    return (
+                        <Col key={name}>
+                            <CardCapsule header={name}>
+                                <SimpleCardCapsuleRightCorner>
+                                    <CopyButton className="btn btn-sm border-0" text={value} />
+                                </SimpleCardCapsuleRightCorner>
+                                <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                            </CardCapsule>
+                        </Col>
+                    )
+                })}
+            </Row>
+        )
+    } else if (action === "view") {
         content = (
             <>
-                <MediumCardScalars key={"MediumCardScalars"} item={item} />
-                <MediumCardVectors key={"MediumCardVectors"} item={item} />
+                <FinanceTransferSunburst
+                    item={patchedItem}
+                    header="Graf finančních přesunů"
+                    onTransferInserted={handleTransferInserted}
+                />
+                <MediumCardScalars key="MediumCardScalars" item={patchedItem} />
+                <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
             </>
         )
+    } else if (Array.isArray(attributeValue)) {
+        content = <VectorAttribute attribute_name={action} item={patchedItem} />
+    } else if (attributeValue) {
+        content = <ScalarAttribute attribute_name={action} item={patchedItem} />
+    }
 
-    if (Array.isArray(attribute_value))
-        content = <VectorAttribute attribute_name={action} item={item} />
-    else if (attribute_value)
-        content = <ScalarAttribute attribute_name={action} item={item} />
-    return (<>
-        <LargeCard item={item} >
-            {content}
-            {/* <MediumCardScalars key={"MediumCardScalars"} item={item} />
-            <MediumCardVectors key={"MediumCardVectors"} item={item} /> */}
-        </LargeCard>
-        <Row>
-            <Col>
-                <CardCapsule header="QueryById">
-                    <pre>{queryById}</pre>
-                </CardCapsule>
-            </Col>
-            <Col>
-                <CardCapsule header="Parametry">
-                    <pre>{JSON.stringify(params, null, 2)}</pre>
-                </CardCapsule>
-            </Col>
-            <Col>
-                <CardCapsule header="Response">
-                    <pre>{JSON.stringify(item, null, 2)}</pre>
-                </CardCapsule>
-            </Col>
-        </Row>
-    </>
+    return (
+        <>
+            <LargeCard item={patchedItem}>
+                {content}
+            </LargeCard>
+            <Row>
+                <Col>
+                    <CardCapsule header="QueryById">
+                        <pre>{queryById}</pre>
+                    </CardCapsule>
+                </Col>
+                <Col>
+                    <CardCapsule header="Parametry">
+                        <pre>{JSON.stringify(params, null, 2)}</pre>
+                    </CardCapsule>
+                </Col>
+                <Col>
+                    <CardCapsule header="Response">
+                        <pre>{JSON.stringify(patchedItem, null, 2)}</pre>
+                    </CardCapsule>
+                </Col>
+            </Row>
+        </>
     )
 }
 
 export const Page = ({ children }) => {
-    const { id, typename, action = "view" } = useParams()
-    // const id = "51d101a0-81f1-44ca-8366-6cf51432e8d6";
+    const { id, typename } = useParams()
     const item = { id }
     const { ByIdAsyncAction, queryById, queryVector, mutations } = useGQLType(typename || "RoleGQLModel")
+
     return (
-        // <div>Hello</div>
-        <>{ByIdAsyncAction &&
-            <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
-                <PageContent queryById={queryById} queryVector={queryVector} mutations={mutations} params={item}>
-                    {children}
-                </PageContent>
-            </AsyncActionProvider>
-        }
+        <>
+            {ByIdAsyncAction &&
+                <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
+                    <PageContent queryById={queryById} queryVector={queryVector} mutations={mutations} params={item}>
+                        {children}
+                    </PageContent>
+                </AsyncActionProvider>
+            }
             {!ByIdAsyncAction &&
                 <div>No ByIdAsyncAction for type {typename}</div>
             }
-
         </>
     )
 }

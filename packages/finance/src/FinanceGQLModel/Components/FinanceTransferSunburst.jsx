@@ -68,7 +68,7 @@ const applyLocalTransfer = (root, sourceId, destinationId, amount) => {
 export const FinanceTransferSunburst = ({
     item,
     header = "Finance – přesun financí",
-    onTransferCreated
+    onTransferInserted = () => {},
 }) => {
     const [source, setSource] = useState(null)
     const [destination, setDestination] = useState(null)
@@ -147,11 +147,24 @@ export const FinanceTransferSunburst = ({
             const result = await runFinanceTransferInsert(variables)
 
             console.log("VYSLEDEK TRANSFERU:", result)
-            onTransferCreated?.({
-                financeSourceId: selectedSource.id,
-                financeDestinationId: clickedNode.id,
-                amount: Number(amount)
-            })
+
+            const inserted = result?.data?.financeTransferInsert
+
+            if (inserted?.__typename !== "FinanceTransferGQLModel") {
+                console.error("TRANSFER NEPROBEHL USPESNE:", inserted)
+                return
+            }
+
+            const insertedTransfer = {
+                financeSourceId: variables.financeTransfer_financeSourceId,
+                financeDestinationId: variables.financeTransfer_financeDestinationId,
+                amount: Number(variables.financeTransfer_amount || 0),
+                name: variables.financeTransfer_name,
+            }
+
+            console.log("USPESNY TRANSFER:", insertedTransfer)
+
+            onTransferInserted?.(insertedTransfer)
 
             setDiagramItem((currentItem) =>
                 applyLocalTransfer(
