@@ -1,8 +1,13 @@
 # Změny
 
+## 28.5.2026
+- úprava ovládání a vzhledu stránky při přesunech financí v rámci `FinanceTransferSunburst,jsx`
+- dodatečné vylepšení v módu úprav
+
 ## 13.5.2026
 - vytvoření `FinanceTransferSunburst,jsx` tedy finančních přesunů mezi určitými položkami
 - úprava UI
+- publish nové verze balíčku npms
 - dokončení modelu v módu úprav
 
 ## 7.5.2026
