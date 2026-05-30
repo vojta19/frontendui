@@ -14,15 +14,15 @@ import { Card } from "react-bootstrap"
 import { SimpleCardCapsuleRightCorner } from "@hrbolek/uoisfrontend-shared"
 import { CopyButton } from "../../../../_template/src/Base/Components/CopyButton"
 import { ReadAsyncAction } from "../Queries"
-
+import { useMemo, useState } from "react"
 
 export const GeneratedContentBase = ({ item }) => {
     return (
         <>
             <FinanceTransferSunburst
-    item={item}
-    header="Graf finančních přesunů"
-/>
+                item={item}
+                header="Graf finančních přesunů"
+            />
             <MediumCardVectors item={item} />
         </>
     )
@@ -60,15 +60,15 @@ export const GeneratedContentBase = ({ item }) => {
  *   Struktura stránky (navbar + layout + subpage) nebo `null`, pokud `item` není dostupný.
  */
 const PageItemInnerStructure = ({
-    PageNavbar=null,
-    ItemLayout=LargeCard,
-    SubPage=GeneratedContentBase,
-    OtherComponents=[],
+    PageNavbar = null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    OtherComponents = [],
     children
 }) => {
     const { item } = useGQLEntityContext()
     if (!item) return <>Položka nenalezena</>
-    
+
     // Components: [A, B, C] => <A><B><C>{children}</C></B></A>
     const content = (OtherComponents || []).reduceRight((acc, Component) => {
         if (!Component) return acc;
@@ -84,12 +84,12 @@ const PageItemInnerStructure = ({
                     <SubPage item={item}>
                         {content}
                     </SubPage>
-                ):(
-                    {content}
+                ) : (
+                    { content }
                 )}
-            </ItemLayout>        
+            </ItemLayout>
         </>
-    );    
+    );
 }
 
 
@@ -117,18 +117,18 @@ const PageItemInnerStructure = ({
  * @returns {import("react").JSX.Element}
  *   Provider s navigací (`PageNavbar`) a obsahem stránky (`children`).
  */
-export const PageItemBase = ({ 
-    queryAsyncAction=ReadAsyncAction,
-    PageNavbar=()=>null,
-    ItemLayout=LargeCard,
-    SubPage=GeneratedContentBase,
+export const PageItemBase = ({
+    queryAsyncAction = ReadAsyncAction,
+    PageNavbar = () => null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
     children
 }) => {
-    const {id} = useParams()
-    const item = {id}
+    const { id } = useParams()
+    const item = { id }
     return (
         <AsyncActionProvider item={item} queryAsyncAction={queryAsyncAction}>
-            <PageItemInnerStructure 
+            <PageItemInnerStructure
                 PageNavbar={PageNavbar}
                 ItemLayout={ItemLayout}
                 SubPage={SubPage}
@@ -138,20 +138,113 @@ export const PageItemBase = ({
     )
 }
 
+const collectTransfer = (item) => {
+    const transfers = []
 
-export const PageContent = ({queryById, queryVector, mutations, children, params}) => {
-     const gqlContext= useGQLEntityContext()
-     const {id, typename, action="view"} = useParams()
-     const { item } = gqlContext || {}
+    const collect = (node) => {
+        if (!node || typeof node !== "object") return
+
+        const possibleTransferArrays = [
+            node.financeTransfers,
+            node.transfers,
+            node.incomingTransfers,
+            node.outgoingTransfers,
+            node.financeSourceTransfers,
+            node.financeDestinationTransfers,
+        ]
+
+        possibleTransferArrays.forEach(array => {
+            if (Array.isArray(array)) {
+                transfers.push(...array)
+            }
+        })
+
+        if (Array.isArray(node.subfinances)) {
+            node.subfinances.forEach(collect)
+        }
+    }
+    collect(items)
+
+    return transfers
+}
+
+const applyTransfersToSubfinances = (subfinances = [], transfers = []) => {
+    return subfinances.map(finance => {
+        const outgoing = transfers
+            .filter(transfer => transfer.financeSourceId === finance.id)
+            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+        const incoming = transfers
+            .filter(transfer => transfer.financeDestinationId === finance.id)
+            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+        return {
+            ...finance,
+            value: Number(finance.value || 0) - outgoing + incoming
+        }
+    })
+}
+
+const patchFinanceItem = (item) => {
+    if (!item || typeof item !== "object") return item
+
+    const transfers = collectTransfers(item)
+
+    return {
+        ...item,
+        subfinances: applyTransfersToSubfinances(
+            item.subfinances ?? [],
+            transfers
+        )
+    }
+}
+
+export const PageContent = ({ queryById, queryVector, mutations, children, params }) => {
+    const [localTransfers, setLocalTransfers] = useState([])
+    const gqlContext = useGQLEntityContext()
+    const { id, typename, action = "view" } = useParams()
+    const { item } = gqlContext || {}
+    const patchedItem = useMemo(() => {
+        if (!item) return item
+
+        const patchedSubfinances = (item.subfinances ?? []).map(finance => {
+            const outgoing = localTransfers
+                .filter(transfer => transfer.financeSourceId === finance.id)
+                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+            const incoming = localTransfers
+                .filter(transfer => transfer.financeDestinationId === finance.id)
+                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+
+            return {
+                ...finance,
+                value: Number(finance.value || 0) - outgoing + incoming
+            }
+        })
+
+        return {
+            ...item,
+            subfinances: patchedSubfinances
+        }
+    }, [item, localTransfers])
+
     if (!item) return (<div>Položka nenalezena<pre>{JSON.stringify(gqlContext)}</pre></div>)
     let content = children
-    const attribute_value = item?.[action]
+    const attribute_value = patchedItem?.[action]
+
+    console.log("FINANCE ITEM:", item)
+    console.log("PATCHED ITEM:", patchedItem)
+    console.log("COLLECTED TRANSFERS:", collectTransfers(item))
+    console.log("LOCAL TRANSFERS:", localTransfers)
+    console.log("PATCHED ITEM:", patchedItem)
+    console.log("PATCHED SUBFINANCES:", patchedItem?.subfinances)
+
     if ((action === "__def"))
         content = <Row>
             <Col>
                 <CardCapsule header="queryById">
                     <SimpleCardCapsuleRightCorner>
-                        <CopyButton className="btn btn-sm border-0" text={queryById}/>
+                        <CopyButton className="btn btn-sm border-0" text={queryById} />
                     </SimpleCardCapsuleRightCorner>
                     <pre>{queryById?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
                 </CardCapsule>
@@ -159,22 +252,22 @@ export const PageContent = ({queryById, queryVector, mutations, children, params
             <Col>
                 <CardCapsule header="queryVector">
                     <SimpleCardCapsuleRightCorner>
-                        <CopyButton className="btn btn-sm border-0" text={queryVector}/>
+                        <CopyButton className="btn btn-sm border-0" text={queryVector} />
                     </SimpleCardCapsuleRightCorner>
                     <pre>{queryVector?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
                 </CardCapsule>
             </Col>
             {Object.entries(mutations).map(([name, value]) => {
                 return (
-                <Col key={name}>
-                    <CardCapsule header={name}>
-                        <SimpleCardCapsuleRightCorner>
-                            <CopyButton className="btn btn-sm border-0" text={value}/>
-                        </SimpleCardCapsuleRightCorner>
-                        <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
-                        {/* <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", ", (\n\t")}</pre> */}
-                    </CardCapsule>
-                </Col>
+                    <Col key={name}>
+                        <CardCapsule header={name}>
+                            <SimpleCardCapsuleRightCorner>
+                                <CopyButton className="btn btn-sm border-0" text={value} />
+                            </SimpleCardCapsuleRightCorner>
+                            <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                            {/* <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", ", (\n\t")}</pre> */}
+                        </CardCapsule>
+                    </Col>
                 )
             })}
         </Row>
@@ -185,8 +278,8 @@ export const PageContent = ({queryById, queryVector, mutations, children, params
                 <MediumCardVectors key={"MediumCardVectors"} item={item} />
             </>
         )
-    
-    if (Array.isArray(attribute_value)) 
+
+    if (Array.isArray(attribute_value))
         content = <VectorAttribute attribute_name={action} item={item} />
     else if (attribute_value)
         content = <ScalarAttribute attribute_name={action} item={item} />
@@ -218,22 +311,22 @@ export const PageContent = ({queryById, queryVector, mutations, children, params
 }
 
 export const Page = ({ children }) => {
-    const {id, typename, action="view"} = useParams()
+    const { id, typename, action = "view" } = useParams()
     // const id = "51d101a0-81f1-44ca-8366-6cf51432e8d6";
-    const item = {id}
-    const { ByIdAsyncAction, queryById, queryVector, mutations } = useGQLType(typename || "RoleGQLModel")    
+    const item = { id }
+    const { ByIdAsyncAction, queryById, queryVector, mutations } = useGQLType(typename || "RoleGQLModel")
     return (
         // <div>Hello</div>
-        <>{ByIdAsyncAction&&
+        <>{ByIdAsyncAction &&
             <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
                 <PageContent queryById={queryById} queryVector={queryVector} mutations={mutations} params={item}>
                     {children}
                 </PageContent>
             </AsyncActionProvider>
         }
-        {!ByIdAsyncAction&&
-            <div>No ByIdAsyncAction for type {typename}</div>
-        }
+            {!ByIdAsyncAction &&
+                <div>No ByIdAsyncAction for type {typename}</div>
+            }
 
         </>
     )

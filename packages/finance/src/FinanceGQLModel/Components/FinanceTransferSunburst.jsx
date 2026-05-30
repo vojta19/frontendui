@@ -67,7 +67,8 @@ const applyLocalTransfer = (root, sourceId, destinationId, amount) => {
 
 export const FinanceTransferSunburst = ({
     item,
-    header = "Finance – přesun financí"
+    header = "Finance – přesun financí",
+    onTransferCreated
 }) => {
     const [source, setSource] = useState(null)
     const [destination, setDestination] = useState(null)
@@ -146,6 +147,11 @@ export const FinanceTransferSunburst = ({
             const result = await runFinanceTransferInsert(variables)
 
             console.log("VYSLEDEK TRANSFERU:", result)
+            onTransferCreated?.({
+                financeSourceId: selectedSource.id,
+                financeDestinationId: clickedNode.id,
+                amount: Number(amount)
+            })
 
             setDiagramItem((currentItem) =>
                 applyLocalTransfer(
