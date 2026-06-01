@@ -1,5 +1,9 @@
 # Změny
 
+## 1.6.2026
+- publish finální verze balíčku npms
+- finální úpravy u `FinanceTransferSunburst.jsx` , `Page.jsx` , `Fragments` , `FinanceTransferInsertAsyncAction.jsx` a `FinanceTransferPageAsyncAction.jsx` , které umožňují plnou funkčnost při finančních přeesunech mezi jednotlivými položkami
+
 ## 30.5. a 31.5.2026
 - publish nové verze balíčku npms
 - úprava `FinanceTransferSunburst.jsx` a `Page.jsx`, tedy úpravy při přesunech jednotlivých financí
