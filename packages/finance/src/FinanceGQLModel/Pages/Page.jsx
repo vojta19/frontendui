@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router"
-
+import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks"
+import { FinanceTransferPageAsyncAction } from "../Queries/FinanceTransferPageAsyncAction"
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType"
 import { FinanceTransferSunburst } from "../Components/FinanceTransferSunburst"
 import { LargeCard } from "../../../../_template/src/Base/Components/LargeCard"
@@ -140,63 +141,181 @@ const patchFinanceItem = (item, localTransfers = []) => {
         ),
     }
 }
+const collectFinanceIds = (finance) => {
+  const ids = new Set()
 
-export const GeneratedContentBase = ({ item, onTransferInserted = () => {} }) => {
-    const [localTransfers, setLocalTransfers] = useState([])
+  const walk = (node) => {
+    if (!node || typeof node !== "object") return
 
-    const patchedItem = useMemo(() => {
-        if (!item) return item
-
-        const patchFinance = (finance) => {
-            if (!finance || typeof finance !== "object") return finance
-
-            const outgoing = localTransfers
-                .filter(transfer => transfer.financeSourceId === finance.id)
-                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
-
-            const incoming = localTransfers
-                .filter(transfer => transfer.financeDestinationId === finance.id)
-                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
-
-            return {
-                ...finance,
-                value: Number(finance.value || 0) - outgoing + incoming,
-                subfinances: Array.isArray(finance.subfinances)
-                    ? finance.subfinances.map(patchFinance)
-                    : finance.subfinances,
-            }
-        }
-
-        return patchFinance(item)
-    }, [item, localTransfers])
-
-    const handleTransferInserted = (transfer) => {
-        console.log("GENERATEDCONTENTBASE DOSTAL TRANSFER:", transfer)
-
-        setLocalTransfers(previousTransfers => [
-            ...previousTransfers,
-            {
-                financeSourceId: transfer.financeSourceId,
-                financeDestinationId: transfer.financeDestinationId,
-                amount: Number(transfer.amount || 0),
-                name: transfer.name,
-            },
-        ])
-
-        onTransferInserted?.(transfer)
+    if (node.id) {
+      ids.add(node.id)
     }
 
-    return (
-        <>
-            <FinanceTransferSunburst
-                item={patchedItem}
-                header="Graf finančních přesunů"
-                onTransferInserted={handleTransferInserted}
-            />
+    if (Array.isArray(node.subfinances)) {
+      node.subfinances.forEach(walk)
+    }
+  }
 
-            <MediumCardVectors item={patchedItem} />
-        </>
-    )
+  walk(finance)
+
+  return ids
+}
+const buildParentMap = (finance) => {
+  const parentById = new Map()
+
+  const walk = (node, parentId = null) => {
+    if (!node || typeof node !== "object") return
+
+    if (node.id) {
+      parentById.set(node.id, parentId)
+    }
+
+    if (Array.isArray(node.subfinances)) {
+      node.subfinances.forEach(child => walk(child, node.id))
+    }
+  }
+
+  walk(finance)
+
+  return parentById
+}
+
+const isAncestor = (ancestorId, childId, parentById) => {
+  let currentId = parentById.get(childId)
+
+  while (currentId) {
+    if (currentId === ancestorId) return true
+    currentId = parentById.get(currentId)
+  }
+
+  return false
+}
+
+const filterRelevantTransfers = (transfers, item) => {
+  const financeIds = collectFinanceIds(item)
+  const parentById = buildParentMap(item)
+  const uniqueTransfers = new Map()
+
+  for (const transfer of transfers || []) {
+    const sourceId = transfer?.financeSourceId
+    const destinationId = transfer?.financeDestinationId
+
+    const bothAreInCurrentTree =
+      financeIds.has(sourceId) && financeIds.has(destinationId)
+
+    if (!bothAreInCurrentTree) continue
+
+    const isStructuralTransfer =
+      isAncestor(sourceId, destinationId, parentById) ||
+      isAncestor(destinationId, sourceId, parentById)
+
+    if (isStructuralTransfer) continue
+
+    const key =
+      transfer.id ||
+      `${sourceId}-${destinationId}-${transfer.amount}-${transfer.name}`
+
+    if (!uniqueTransfers.has(key)) {
+      uniqueTransfers.set(key, transfer)
+    }
+  }
+
+  return Array.from(uniqueTransfers.values())
+}
+
+export const GeneratedContentBase = ({ item, onTransferInserted = () => { } }) => {
+  console.log("JSEM V GENERATEDCONTENTBASE", item)
+
+  const [backendTransfers, setBackendTransfers] = useState([])
+
+  const { run: runFinanceTransferPage } = useAsyncThunkAction(
+  FinanceTransferPageAsyncAction,
+  {},
+  { deferred: true, network: true }
+)
+
+const loadTransfers = async () => {
+  console.log("LOAD TRANSFERS START")
+
+  try {
+    const result = await runFinanceTransferPage({
+      skip: 0,
+      limit: 1000,
+      orderby: "created"
+    })
+
+    console.log("RAW FINANCE TRANSFER PAGE RESULT:", result)
+
+    const transfers = result?.data?.financeTransferPage || []
+
+    console.log("FINANCE TRANSFER PAGE:", transfers)
+
+    setBackendTransfers(transfers)
+  } catch (error) {
+    console.error("LOAD TRANSFERS ERROR:", error)
+  }
+}
+
+  useEffect(() => {
+    loadTransfers()
+  }, [])
+
+  const patchedItem = useMemo(() => {
+  if (!item) return item
+
+  const relevantTransfers = filterRelevantTransfers(backendTransfers, item)
+
+  console.log("ALL BACKEND TRANSFERS:", backendTransfers)
+  console.log("RELEVANT TRANSFERS:", relevantTransfers)
+  const financeNameById = new Map()
+
+const collectFinanceNames = (node) => {
+  if (!node || typeof node !== "object") return
+
+  if (node.id) {
+    financeNameById.set(node.id, node.name)
+  }
+
+  if (Array.isArray(node.subfinances)) {
+    node.subfinances.forEach(collectFinanceNames)
+  }
+}
+
+collectFinanceNames(item)
+
+console.table(
+  relevantTransfers.map(t => ({
+    id: t.id,
+    name: t.name,
+    amount: Number(t.amount || 0),
+    sourceId: t.financeSourceId,
+    sourceName: financeNameById.get(t.financeSourceId),
+    destinationId: t.financeDestinationId,
+    destinationName: financeNameById.get(t.financeDestinationId),
+  }))
+)
+
+  return patchFinanceItem(item, relevantTransfers)
+}, [item, backendTransfers])
+
+  const handleTransferInserted = async (transfer) => {
+  console.log("TRANSFER HOTOVY, NACITAM TRANSFERY ZNOVU:", transfer)
+
+  await loadTransfers()
+}
+
+  if (!item) return <>Položka nenalezena</>
+
+  return (
+    <>
+      <FinanceTransferSunburst
+        item={patchedItem}
+        header="Graf finančních přesunů"
+        onTransferInserted={handleTransferInserted}
+      />
+      <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
+    </>
+  )
 }
 
 const PageItemInnerStructure = ({
@@ -207,7 +326,6 @@ const PageItemInnerStructure = ({
     children
 }) => {
     const { item } = useGQLEntityContext()
-    const [localTransfers, setLocalTransfers] = useState([])
 
     const handleTransferInserted = (transfer) => {
         console.log("PAGEITEMINNER DOSTAL TRANSFER:", transfer)
@@ -225,28 +343,20 @@ const PageItemInnerStructure = ({
     const patchedItem = useMemo(() => {
         if (!item) return item
 
-        const patchFinance = (finance) => {
-            if (!finance || typeof finance !== "object") return finance
+        console.log("GENERATEDCONTENTBASE ITEM:", item)
+        console.log("GENERATEDCONTENTBASE ITEM KEYS:", Object.keys(item || {}).join("\n"))
+        console.log("TRANSFER RELATED KEYS:", Object.keys(item || {}).filter(key =>
+  key.toLowerCase().includes("transfer") ||
+  key.toLowerCase().includes("source") ||
+  key.toLowerCase().includes("destination")
+))
 
-            const outgoing = localTransfers
-                .filter(transfer => transfer.financeSourceId === finance.id)
-                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+        const backendTransfers = collectTransfers(item)
 
-            const incoming = localTransfers
-                .filter(transfer => transfer.financeDestinationId === finance.id)
-                .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0)
+        console.log("BACKEND TRANSFERS:", backendTransfers)
 
-            return {
-                ...finance,
-                value: Number(finance.value || 0) - outgoing + incoming,
-                subfinances: Array.isArray(finance.subfinances)
-                    ? finance.subfinances.map(patchFinance)
-                    : finance.subfinances
-            }
-        }
-
-        return patchFinance(item)
-    }, [item, localTransfers])
+        return patchFinanceItem(item, backendTransfers)
+        }, [item])
     if (!item) return <>Položka nenalezena</>
 
     const content = (OtherComponents || []).reduceRight((acc, Component) => {
@@ -300,23 +410,23 @@ export const PageItemBase = ({
 }
 
 export const PageContent = ({ queryById, queryVector, mutations = {}, children, params }) => {
-    const [localTransfers, setLocalTransfers] = useState([])
     const gqlContext = useGQLEntityContext()
     const { action = "view" } = useParams()
     const { item } = gqlContext || {}
 
     const patchedItem = useMemo(() => {
-        return patchFinanceItem(item, localTransfers)
-    }, [item, localTransfers])
+        const backendTransfers = collectTransfers(item)
 
-    const handleTransferInserted = (transfer) => {
-        const normalizedTransfer = normalizeTransfer(transfer)
-        if (!normalizedTransfer) return
+        console.log("BACKEND TRANSFERS:", backendTransfers)
 
-        setLocalTransfers(previousTransfers => [
-            ...previousTransfers,
-            normalizedTransfer,
-        ])
+        return patchFinanceItem(item, backendTransfers)
+    }, [item])
+
+    const handleTransferInserted = async (transfer) => {
+        console.log("TRANSFER HOTOVY, NACITAM DATA ZNOVU:", transfer)
+
+         //window.location.reload()
+         console.log("RELOAD DOCASNE VYPNUTY KVULI DEBUGU")
     }
 
     if (!item) {

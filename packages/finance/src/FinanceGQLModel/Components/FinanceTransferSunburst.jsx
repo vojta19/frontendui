@@ -138,7 +138,7 @@ export const FinanceTransferSunburst = ({
             const variables = {
                 financeTransfer_financeSourceId: source.id,
                 financeTransfer_financeDestinationId: destination.id,
-                financeTransfer_name: `${getFinanceName(source)} → ${getFinanceName(destination)}`,
+                financeTransfer_name: `Přesun: ${getFinanceName(source)} → ${getFinanceName(destination)}`,
                 financeTransfer_amount: amount,
             }
 
@@ -175,7 +175,7 @@ export const FinanceTransferSunburst = ({
                 )
             )
 
-            window.alert("Přesun financí byl zaznamenán.")
+            //window.alert("Přesun financí byl zaznamenán.")
 
             setSource(null)
             setDestination(null)
