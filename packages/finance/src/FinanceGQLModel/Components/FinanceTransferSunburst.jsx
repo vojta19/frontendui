@@ -68,7 +68,7 @@ const applyLocalTransfer = (root, sourceId, destinationId, amount) => {
 export const FinanceTransferSunburst = ({
     item,
     header = "Finance – přesun financí",
-    onTransferInserted = () => {},
+    onTransferInserted = () => { },
 }) => {
     const [source, setSource] = useState(null)
     const [destination, setDestination] = useState(null)
