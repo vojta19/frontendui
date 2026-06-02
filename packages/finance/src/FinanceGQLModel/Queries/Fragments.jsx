@@ -18,8 +18,11 @@
     description
     financeTypeId
     masterfinanceId
-    masterfinance { id }
-    masterfinance { id }
+    masterfinance {
+      __typename
+      id
+      name
+    }
     subfinances {
       __typename
       id
@@ -29,11 +32,19 @@
       description
       financeTypeId
       projectId
-      project { id name }
+      project {
+        __typename
+        id
+        name
+      }
     }
-    type { id name}
+    type { id name }
     projectId
-    project { id name}
+    project {
+      __typename
+      id
+      name
+    }
   }
   `
 
