@@ -154,7 +154,7 @@ export const MediumContent = ({ item, children}) => {
             </Attribute>
             <Attribute label="Projekt">
                 {item?.project?.id ? (
-                    <ProxyLink to={`http://localhost:3301/projekt/ProjektGQLModel/view/${item.project.id}`}>
+                    <ProxyLink to={`http://localhost:33001/projekt/ProjektGQLModel/view/${item.project.id}`}>
                         {item?.project?.name || item.project.id}
                     </ProxyLink>
                 ) : (
