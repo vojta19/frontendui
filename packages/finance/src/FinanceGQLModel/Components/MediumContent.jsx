@@ -153,10 +153,10 @@ export const MediumContent = ({ item, children}) => {
                 </>
             </Attribute>
             <Attribute label="Projekt">
-                {item?.project?.id ? (
-                    <ProxyLink to={`http://localhost:33001/projekt/ProjectGQLModel/view/${item.project.id}`}>
-                        {item?.project?.name || item.project.id}
-                    </ProxyLink>
+                {item?.project?.name ? (
+                    <Link item={item?.project}>
+                        {item?.project?.name}
+                    </Link>
                 ) : (
                     "-"
                 )}
