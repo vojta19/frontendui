@@ -1,8 +1,13 @@
 # Změny
 
+## 11.6.2026
+- aktualizace verze `package.json` pro app_finance
+- publish nové verze balíčku npms
+- úpravy v `Table.jsx` , `Filter.jsx` , `MediumContent.jsx` za účelem přehlednější a snadněji přístupnější úvodní tabulky financí
+
 ## 1.6.2026
-- publish finální verze balíčku npms
-- finální úpravy u `FinanceTransferSunburst.jsx` , `Page.jsx` , `Fragments` , `FinanceTransferInsertAsyncAction.jsx` a `FinanceTransferPageAsyncAction.jsx` , které umožňují plnou funkčnost při finančních přeesunech mezi jednotlivými položkami
+- publish nové verze balíčku npms
+- další úpravy u `FinanceTransferSunburst.jsx` , `Page.jsx` , `Fragments` , `FinanceTransferInsertAsyncAction.jsx` a `FinanceTransferPageAsyncAction.jsx` , které umožňují plnou funkčnost při finančních přeesunech mezi jednotlivými položkami
 
 ## 30.5. a 31.5.2026
 - publish nové verze balíčku npms
@@ -59,5 +64,5 @@ npm run dev -w @vojta19/app_finance
 # Jak sestavit konrétní app
 
 ```cmd
-npm run build -w @hrbolek/app_dynamic
+npm run build -w @vojta19/app_finance
 ```
