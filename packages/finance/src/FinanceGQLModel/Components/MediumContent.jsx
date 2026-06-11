@@ -1,6 +1,7 @@
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
 import { Link as ItemLink } from "./Link"
+import { ProxyLink as ProjectLink } from "../../../../_template/src/Base/Components/ProxyLink";
 /**
  * A component that displays medium-level content for an template entity.
  *
@@ -154,9 +155,9 @@ export const MediumContent = ({ item, children}) => {
             </Attribute>
             <Attribute label="Projekt">
                 {item?.project?.name ? (
-                    <Link item={item?.project}>
+                    <ProjectLink to={`/projekt/ProjectGQLModel/view/${item?.project?.id}`}>
                         {item?.project?.name}
-                    </Link>
+                    </ProjectLink>
                 ) : (
                     "-"
                 )}
