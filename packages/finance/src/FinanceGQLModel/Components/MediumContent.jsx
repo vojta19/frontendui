@@ -1,6 +1,7 @@
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
 import { Link as ItemLink } from "./Link"
+import { ProxyLink as ProjectLink } from "../../../../_template/src/Base/Components/ProxyLink";
 /**
  * A component that displays medium-level content for an template entity.
  *
@@ -94,7 +95,7 @@ import { Link as ItemLink } from "./Link"
 // }
 
 import { MediumContent as MediumContent_} from "../../../../_template/src/Base/Components/MediumContent"
-import {Attribute, formatDateTime, Link} from "../../../../_template/src/Base/Components"
+import {Attribute, formatDateTime, Link, ProxyLink} from "../../../../_template/src/Base/Components"
 
 //export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
 
@@ -114,6 +115,15 @@ export const MediumContent = ({ item, children}) => {
                 <ItemLink item={item}>
                     {item?.order || item?.id || "Data Error"}
                 </ItemLink>
+            </Attribute>
+            <Attribute label="Nadřazená finance">
+                {item?.masterfinanceId ? (
+                    <ItemLink item={item?.masterfinance}>
+                        {item?.masterfinance?.name} ({item?.masterfinanceId})
+                    </ItemLink>
+                ) : (
+                    "-"
+                )}
             </Attribute>
             <hr/>
             <Attribute label="Poslední změna">
@@ -144,9 +154,13 @@ export const MediumContent = ({ item, children}) => {
                 </>
             </Attribute>
             <Attribute label="Projekt">
-                <ItemLink item={item?.project}>
-                    {item?.project?.name}
-                </ItemLink>
+                {item?.project?.name ? (
+                    <ProjectLink to={`/projekt/ProjectGQLModel/view/${item?.project?.id}`}>
+                        {item?.project?.name}
+                    </ProjectLink>
+                ) : (
+                    "-"
+                )}
             </Attribute>
 </>
 )
