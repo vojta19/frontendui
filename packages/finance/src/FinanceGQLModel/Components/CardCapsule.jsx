@@ -1,43 +1,46 @@
-import { PersonFill } from "react-bootstrap-icons"
-import { Link } from "./Link"
-import { CardCapsule as CardCapsule_ } from "../../../../_template/src/Base/Components"
+import { PersonFill } from "react-bootstrap-icons" // ikonka pro záhlaví karty
+import { Link } from "./Link" // komponenta místního odkazu pro zobrazení položky
+import { CardCapsule as CardCapsule_ } from "../../../../_template/src/Base/Components" // základní kard komponenta
 
 /**
- * A specialized card component that displays an `TemplateLink` as its title and encapsulates additional content.
+ * A specialized card component that renders a title and encapsulates children content.
  *
- * This component extends the `CardCapsule` component by using a combination of a `PersonFill` icon and 
- * an `TemplateLink` component in the card's header. The `children` prop is used to render any content 
- * inside the card body. It is designed for use with entities represented by the `template` object.
+ * This component wraps the base `CardCapsule` component and provides a default title
+ * that includes an icon plus a link rendered from the provided `item`.
  *
  * @component
- * @param {Object} props - The props for the TemplateCardCapsule component.
- * @param {Object} props.template - The object representing the template entity.
- * @param {string|number} props.template.id - The unique identifier for the template entity.
- * @param {string} props.template.name - The display name for the template entity.
- * @param {React.ReactNode} [props.children=null] - The content to render inside the card's body.
+ * @param {Object} props - The component props.
+ * @param {Object} props.item - The object representing the item entity.
+ * @param {string|number} props.item.id - The unique identifier for the item.
+ * @param {string} props.item.name - The display name for the item.
+ * @param {React.ReactNode} [props.children=null] - Content rendered inside the card body.
+ * @param {JSX.Element|null} [props.title=null] - Custom title element, overrides default title.
  *
  * @returns {JSX.Element} The rendered card component with a dynamic title and body content.
  *
  * @example
- * // Example usage:
- * import { TemplateCardCapsule } from './TemplateCardCapsule';
+ * import { CardCapsule } from './CardCapsule';
  * import { Button } from 'react-bootstrap';
  *
- * const templateEntity = { id: 123, name: "Example Entity" };
+ * const item = { id: 123, name: "Example Entity" };
  *
- * <TemplateCardCapsule template={templateEntity}>
+ * <CardCapsule item={item}>
  *   <Button variant="primary">Click Me</Button>
- * </TemplateCardCapsule>
+ * </CardCapsule>
  */
-export const CardCapsule = ({ item, children, title=null}) => {
-    
-    if (!title) {
-        title = <><PersonFill /> <Link item={item} /></>
+export const CardCapsule = ({ item, children, title = null }) => { // komponenta přijímá položku, potomky a volitelný titul
+    if (!title) { // pokud není poskytnut vlastní titul, vytvoříme výchozí
+        title = (
+            <> {/* fragment pro kombinaci ikonky a odkazu */}
+                <PersonFill /> {/* ikona osoby v titulku */}
+                <Link item={item} /> {/* lokální odkaz na položku */}
+            </>
+        )
     }
+
     return (
-        
-        <CardCapsule_ title={title}>
-            {children}
+        <CardCapsule_ title={title}> {/* render základní kapsle s titulkem */}
+            {children} {/* obsah karty předaný z rodiče */}
         </CardCapsule_>
     )
 }

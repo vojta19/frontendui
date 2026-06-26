@@ -1,5 +1,10 @@
+// Importuje konstanty cest a komponentu obsahu z lokálního adresáře Components
 import { DeleteItemURI, ListURI, MediumContent, VectorItemsURI } from "../Components";
+
+// Importuje asynchronní síťovou akci (thunk) pro smazání entity ze souboru Queries
 import { DeleteAsyncAction } from "../Queries";
+
+// Importuje základní komponenty pro mazání ze sdílené šablony a dává jim aliasy s prefixem Base
 import { 
     DeleteBody as BaseDeleteBody, 
     DeleteButton as BaseDeleteButton, 
@@ -7,13 +12,17 @@ import {
     DeleteLink as BaseDeleteLink
 } from "../../../../_template/src/Base/Mutations/Delete";
 
-const DefaultContent = MediumContent
-const MutationAsyncAction = DeleteAsyncAction
+// Nastavuje komponentu MediumContent jako výchozí read-only zobrazení entity před smazáním
+const DefaultContent = MediumContent;
 
+// Přiřazuje asynchronní smazání (DeleteAsyncAction) do vnitřní konstanty MutationAsyncAction
+const MutationAsyncAction = DeleteAsyncAction;
+
+// Konfiguruje objekt přístupových práv (RBAC) vyžadující roli administrátora v absolutním režimu kontroly
 const permissions = {
-    oneOfRoles: ["administrátor"],
-    mode: "absolute",
-}
+    oneOfRoles: ["administrátor"], // Pole povolených uživatelských rolí
+    mode: "absolute", // Striktní režim vyhodnocování oprávnění na PermissionGate
+}; // Konec definice oprávnění
 
 /**
  * Link na delete route pro konkrétní entitu.
@@ -23,25 +32,28 @@ const permissions = {
  *
  * @param {Object} params
  * @param {string} [params.uriPattern=DeleteItemURI]
- *   URI pattern pro delete route (typicky obsahuje `:id` nebo odpovídá routování aplikace).
+ * URI pattern pro delete route (typicky obsahuje `:id` nebo odpovídá routování aplikace).
  * @param {Object} params.props
- *   Další props přeposílané do `BaseDeleteLink` (např. `children`, `className`,
- *   `preserveSearch`, `preserveHash`, atd.).
+ * Další props přeposílané do `BaseDeleteLink` (např. `children`, `className`,
+ * `preserveSearch`, `preserveHash`, atd.).
  *
  * @returns {JSX.Element}
  */
+// Definuje a exportuje komponentu DeleteLink přijímající uriPattern s defaultní hodnotou a zbytek parametrů
 export const DeleteLink = ({ 
-    uriPattern=DeleteItemURI,
-    ...props
- }) => {
+    uriPattern = DeleteItemURI, // Cesta pro smazání konkrétní položky s ID
+    ...props // Zbylé HTML a klientské vlastnosti (např. className, title)
+}) => {
+    
+    // Vrací základní komponentu odkazu obohacenou o parametry cesty a práva administrátora
     return (
         <BaseDeleteLink 
-            {...props} 
-            uriPattern={uriPattern} 
-            {...permissions}
+            {...props} // Rozbaluje obecné vlastnosti přímo na komponentu
+            uriPattern={uriPattern} // Předává cílovou URL adresu pro smazání
+            {...permissions} // Aplikuje kontrolu role "administrátor"
         />
-    )
-};
+    ); // Konec návratové hodnoty komponenty DeleteLink
+}; // Konec definice komponenty DeleteLink
 
 /**
  * Tlačítko pro smazání entity (obvykle otevře confirm dialog a spustí delete mutaci).
@@ -51,48 +63,51 @@ export const DeleteLink = ({
  *
  * Chování navigace / callback:
  * - Pokud je definované `onOk`, použije se pro “feedback”, že mazání proběhlo (tj. uživatel si
- *   rozhodne, co dál).
+ * rozhodne, co dál).
  * - Pokud `onOk` definované není, Base implementace typicky naviguje na `vectorItemsURI`.
  *
  * @param {Object} params
  * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- *   Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
  *
  * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- *   Komponenta pro zobrazení mazáné entity v confirm dialogu (read-only).
+ * Komponenta pro zobrazení mazáné entity v confirm dialogu (read-only).
  *
  * @param {string} [params.vectorItemsURI=ListURI]
- *   URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
  *
  * @param {Function} [params.onOk]
- *   Callback po úspěšném smazání. Pokud není zadán, Base implementace typicky použije navigaci na `vectorItemsURI`.
+ * Callback po úspěšném smazání. Pokud není zadán, Base implementace typicky použije navigaci na `vectorItemsURI`.
  *
  * @param {Object}} params.props
- *   Další props přeposílané do `BaseDeleteButton` (např. `children`, `title`, `className`,
- *   `rbacitem`, `item`, `disabled`, atd. – podle Base/General implementace).
+ * Další props přeposílané do `BaseDeleteButton` (např. `children`, `title`, `className`,
+ * `rbacitem`, `item`, `disabled`, atd. – podle Base/General implementace).
  *
  * @returns {JSX.Element}
  */
+// Definuje a exportuje tlačítko DeleteButton s kompletní destrukturalizací vlastností, dialogu a callbacků
 export const DeleteButton = ({
-    mutationAsyncAction=MutationAsyncAction,
-    DefaultContent:DefaultContent_=DefaultContent,
-    Dialog=DeleteDialog,
-    vectorItemsURI=ListURI,
-    onOk,
-    ...props 
+    mutationAsyncAction = MutationAsyncAction, // Výchozí síťová akce pro smazání z databáze
+    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí komponenta pro náhled mazaných dat
+    Dialog = DeleteDialog, // Komponenta potvrzovacího dialogového okna (confirm modal)
+    vectorItemsURI = ListURI, // URL adresa pro přesměrování zpět na seznam po úspěšném smazání
+    onOk, // Volitelný callback spouštěný po úspěšném odstranění položky
+    ...props // Zbylé props jako styl tlačítka, ikona nebo zakázaný stav (disabled)
 }) => {
+    
+    // Vrací základní tlačítko ze šablony nakonfigurované pro bezpečné mazání s dialogem a právy
     return (
         <BaseDeleteButton 
-            {...props} 
-            DefaultContent={DefaultContent_} 
-            Dialog={Dialog}
-            mutationAsyncAction={mutationAsyncAction}
-            vectorItemsURI={vectorItemsURI}
-            onOk={onOk}
-            {...permissions}
+            {...props} // Předává standardní vlastnosti HTML elementu tlačítka
+            DefaultContent={DefaultContent_} // Registruje komponentu pro zobrazení obsahu v dialogu
+            Dialog={Dialog} // Vkládá modální okno, které se má po stisku tlačítka zobrazit
+            mutationAsyncAction={mutationAsyncAction} // Předává asynchronní thunk pro vyvolání smazání
+            vectorItemsURI={vectorItemsURI} // Nastavuje záložní URL adresu pro redirect po úspěchu
+            onOk={onOk} // Předává klientský callback
+            {...permissions} // Rozbaluje administrátorská práva pro vnitřní PermissionGate tlačítka
         />
-    )
-}
+    ); // Konec návratové hodnoty komponenty DeleteButton
+}; // Konec definice komponenty DeleteButton
 
 /**
  * Confirm dialog pro smazání entity.
@@ -102,36 +117,39 @@ export const DeleteButton = ({
  *
  * @param {Object} params
  * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- *   Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
  *
  * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- *   Komponenta pro zobrazení mazáné entity (read-only).
+ * Komponenta pro zobrazení mazáné entity (read-only).
  *
  * @param {string} [params.vectorItemsURI=ListURI]
- *   URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
  *
  * @param {Object}} params.props
- *   Další props přeposílané do `BaseDeleteDialog` (např. `title`, `oklabel`, `cancellabel`,
- *   `item`, `onOk`, `onCancel`, atd.).
+ * Další props přeposílané do `BaseDeleteDialog` (např. `title`, `oklabel`, `cancellabel`,
+ * `item`, `onOk`, `onCancel`, atd.).
  *
  * @returns {JSX.Element}
  */
+// Definuje a exportuje komponentu DeleteDialog, která vykresluje potvrzovací vyskakovací okno
 export const DeleteDialog = ({
-    mutationAsyncAction=MutationAsyncAction,
-    DefaultContent:DefaultContent_=DefaultContent,
-    vectorItemsURI=ListURI,
-    ...props 
+    mutationAsyncAction = MutationAsyncAction, // Výchozí asynchronní akce pro smazání
+    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí read-only náhled na mazanou entitu
+    vectorItemsURI = ListURI, // Výchozí URL adresa pro návrat na seznam
+    ...props // Zbylé props (např. titulky oken, popisky tlačítek Ano/Ne a jejich interní event handlery)
 }) => {
+    
+    // Vrací základní dialogové okno ze šablony naplněné výchozími akcemi a omezené právy
     return (
         <BaseDeleteDialog 
-            {...props} 
-            DefaultContent={DefaultContent_} 
-            mutationAsyncAction={mutationAsyncAction}
-            vectorItemsURI={vectorItemsURI}
-            {...permissions}
+            {...props} // Předává všechny klientské parametry z nadřazené komponenty
+            DefaultContent={DefaultContent_} // Vkládá náhled entity jako hlavní tělo dialogu
+            mutationAsyncAction={mutationAsyncAction} // Registruje thunk mutace, pokud ho dialog přímo volá
+            vectorItemsURI={vectorItemsURI} // Poskytuje adresu pro návrat
+            {...permissions} // Zajišťuje, že dialog se zobrazí pouze oprávněným uživatelům
         />
-    )
-}
+    ); // Konec návratové hodnoty komponenty DeleteDialog
+}; // Konec definice komponenty DeleteDialog
 
 /**
  * “Page-level” delete workflow (mazání na celé stránce / v těle stránky).
@@ -141,33 +159,36 @@ export const DeleteDialog = ({
  *
  * @param {Object} params
  * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- *   Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
  *
  * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- *   Komponenta pro zobrazení mazáné entity (read-only).
+ * Komponenta pro zobrazení mazáné entity (read-only).
  *
  * @param {string} [params.vectorItemsURI=ListURI]
- *   URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
  *
  * @param {Object}} params.props
- *   Další props přeposílané do `BaseDeleteBody` (např. `title`, `oklabel`, `cancellabel`,
- *   `item`, `onOk`, `onCancel`, atd.).
+ * Další props přeposílané do `BaseDeleteBody` (např. `title`, `oklabel`, `cancellabel`,
+ * `item`, `onOk`, `onCancel`, atd.).
  *
  * @returns {JSX.Element}
  */
+// Definuje a exportuje celostránkový mazací layout DeleteBody
 export const DeleteBody = ({ 
-    mutationAsyncAction=MutationAsyncAction,
-    DefaultContent:DefaultContent_=DefaultContent,
-    vectorItemsURI=ListURI,
-    ...props
+    mutationAsyncAction = MutationAsyncAction, // Výchozí asynchronní thunk akce pro odstranění dat
+    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí komponenta pro vykreslení mazané položky inline
+    vectorItemsURI = ListURI, // Výchozí návratová URL adresa pro redirect po smazání z detailu stránky
+    ...props // Ostatní parametry (titulky stránky, potvrzovací texty a lokální handlery)
 }) => {
+    
+    // Vrací základní page-level mazací kontejner nakonfigurovaný pro daný finanční model a práva
     return (
         <BaseDeleteBody 
-            {...props} 
-            DefaultContent={DefaultContent_} 
-            mutationAsyncAction={mutationAsyncAction}
-            vectorItemsURI={vectorItemsURI}
-            {...permissions}
+            {...props} // Předává zbylé vlastnosti komponentě ze šablony
+            DefaultContent={DefaultContent_} // Vykresluje read-only formulář položky přímo do těla stránky
+            mutationAsyncAction={mutationAsyncAction} // Předává síťovou akci smazání pro její submit button
+            vectorItemsURI={vectorItemsURI} // Nastavuje redirect na list
+            {...permissions} // Omezuje celostránkový přístup k akci pouze administrátorovi
         />
-    )
-}
+    ); // Konec návratové hodnoty komponenty DeleteBody
+}; // Konec definice komponenty DeleteBody

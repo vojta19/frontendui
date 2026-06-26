@@ -1,31 +1,31 @@
-import { ChildWrapper } from "@hrbolek/uoisfrontend-shared";
+import { ChildWrapper } from "@hrbolek/uoisfrontend-shared" // import ChildWrapper komponenty pro obalení potomků
 
 /**
- * TemplateChildren Component
+ * A utility component that wraps children with the `ChildWrapper` component.
  *
- * A utility React component that wraps its children with the `ChildWrapper` component, 
- * passing down an `template` entity along with other props to all child elements.
- * This component is useful for injecting a common `template` entity into multiple children 
- * while preserving their existing functionality.
+ * This component passes down an `item` entity along with other props to all child elements,
+ * allowing children to access common data while preserving their functionality.
  *
  * @component
- * @param {Object} props - The props for the TemplateChildren component.
- * @param {any} props.template - An entity (e.g., object, string, or other data) to be passed to the children.
- * @param {React.ReactNode} props.children - The children elements to be wrapped and enhanced.
- * @param {...any} props - Additional props to be passed to each child element.
+ * @param {Object} props - The component props.
+ * @param {any} props.item - An entity (object, string, or other data) to be passed to children.
+ * @param {React.ReactNode} props.children - The child elements to be wrapped.
+ * @param {...any} props - Additional props to be forwarded to each child element.
  *
- * @returns {JSX.Element} A `ChildWrapper` component containing the children with the injected `template` entity.
+ * @returns {JSX.Element} A `ChildWrapper` component containing the children with injected `item`.
  *
  * @example
- * // Example usage:
- * const templateEntity = { id: 1, message: "No data available" };
+ * import { Children } from './Children';
  *
- * <TemplateChildren template={templateEntity}>
- *     <CustomMessage />
- *     <CustomIcon />
- * </TemplateChildren>
+ * const item = { id: 1, name: "Finance Item" };
  *
- * // Result: Both <CustomMessage /> and <CustomIcon /> receive the 'template' prop with the specified entity.
+ * <Children item={item}>
+ *   <CustomMessage />
+ *   <CustomIcon />
+ * </Children>
+ *
+ * // Both children receive the 'item' prop with the specified entity.
  */
-export const Children = ({item, children, ...props}) => 
-    <ChildWrapper item={item} children={children} {...props} />
+export const Children = ({ item, children, ...props }) => ( // komponenta destructuje item, children a zbytek props
+    <ChildWrapper item={item} children={children} {...props} /> // vrací ChildWrapper s předaným item, potomky a ostatními props
+)

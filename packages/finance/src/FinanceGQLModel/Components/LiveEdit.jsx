@@ -1,9 +1,19 @@
+// Importuje hook 'useCallback' z knihovny React pro memoizaci funkcí
 import { useCallback } from "react";
+
+// Importuje hook 'useMemo' z knihovny React pro memoizaci vypočtených hodnot
 import { useMemo } from "react";
 
+// Importuje asynchronní akci 'UpdateAsyncAction' ze souboru se sítěovými dotazy
 import { UpdateAsyncAction } from "../Queries";
+
+// Importuje sdílené pomocné komponenty (CreateDelayer, ErrorHandler, LoadingSpinner) ze společného balíčku
 import { CreateDelayer, ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
+
+// Importuje editační komponentu středního rozsahu, která se stará o zobrazení formulářových polí
 import { MediumEditableContent } from "./MediumEditableContent";
+
+// Importuje vlastní React hook 'useEditAction' pro řízení stavu a akcí během editace dat
 import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
 
 /**
@@ -29,83 +39,103 @@ import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
  * @example
  * // S vlastním asyncAction a doplňkovým obsahem
  * <TemplateLiveEdit template={templateEntity} asyncAction={myUpdateAction}>
- *   <div>Extra obsah nebo poznámka</div>
+ * <div>Extra obsah nebo poznámka</div>
  * </TemplateLiveEdit>
  *
  * @returns {JSX.Element}
- *   Interaktivní komponenta pro live editaci šablony, včetně spinneru a error handleru.
+ * Interaktivní komponenta pro live editaci šablony, včetně spinneru a error handleru.
  */
-export const LiveEdit_ = ({ children, asyncAction=UpdateAsyncAction}) => {
-    const { onChange, onBlur, item } = useGQLEntityContext()
+// Definuje a exportuje vnitřní komponentu LiveEdit_ přijímající children a výchozí update akci
+export const LiveEdit_ = ({ children, asyncAction = UpdateAsyncAction }) => {
+    
+    // Vytahuje funkce onChange, onBlur a objekt item z globálního GraphQL kontextu entity
+    const { onChange, onBlur, item } = useGQLEntityContext();
+    
+    // Vrací JSX strom obalený poskytovatelem asynchronních akcí
     return (
         <AsyncActionProvider 
-            item={item} 
-            queryAsyncAction={asyncAction}
-            options={{deferred: true, network: true}}
-            onChange={onChange}
-            onBlur={onBlur}
+            item={item} // Předává aktuální entitu (položku) do provideru
+            queryAsyncAction={asyncAction} // Předává asynchronní mutaci/akci pro uložení změn
+            options={{ deferred: true, network: true }} // Nastavuje specifické chování provideru (odloženě, síťově)
+            onChange={onChange} // Předává callback vyvolaný při změně
+            onBlur={onBlur} // Předává callback vyvolaný při opuštění pole
         >
             <LiveEditWrapper item={item}>
                 {children}
-                {/* <hr />
-                <pre>{JSON.stringify(item, null, 2)}</pre> */}
             </LiveEditWrapper>
         </AsyncActionProvider>
-    )
-}
+    ); // Konec návratové hodnoty komponenty LiveEdit_
+}; // Konec definice komponenty LiveEdit_
 
+// Definuje komponentu LiveEditWrapper, která obaluje vnitřní logiku zachytávání a úpravy událostí inputů
 const LiveEditWrapper = ({ item, children }) => {
-    const { run , error, loading, entity, data, onChange, onBlur } = useGQLEntityContext()
     
+    // Destrukturalizuje funkce a stavy poskytované kontextem useGQLEntityContext
+    const { run, error, loading, entity, data, onChange, onBlur } = useGQLEntityContext();
+    
+    // Pomocí useCallback vytváří memoizovanou funkci vyššího řádu pro zpracování změn (onChange/onBlur)
     const handleEvent = useCallback((handler) => async (e) => {
-        const {id, value} = e?.target || {}
-        if (id === undefined || value === undefined) return 
+        
+        // Vytahuje vlastnosti 'id' a 'value' z elementu, který událost vyvolal
+        const { id, value } = e?.target || {};
+        
+        // Pokud chybí ID nebo nová hodnota, okamžitě ukončí zpracování události
+        if (id === undefined || value === undefined) return;
+        
+        // Pokud se nová hodnota shoduje se starou hodnotou v itemu, není třeba nic ukládat
         if (item?.[id] === value) {
             return;
-        }
-        const newItem = { ...item, [e.target.id]: e.target.value }
-        const newEvent = { target: { value: newItem } }
-        // console.log("LiveEditWrapper localOnChange start e", e, '=>', newEvent)
-        // const result = await delayer(()=>onChange(newEvent))
-        const result = await handler(newEvent)
-        // console.log("LiveEditWrapper localOnChange end e", e, '=>', newItem, '=>', result)
-        return result
-    }, [item])
+        } // Konec podmínky shody hodnot
+        
+        // Vytváří kopii původní položky a přepisuje v ní změněné pole novou hodnotou
+        const newItem = { ...item, [e.target.id]: e.target.value };
+        
+        // Simuluje strukturu události (eventu) pro předání do nadřazeného handleru, kde 'value' je celý nový objekt
+        const newEvent = { target: { value: newItem } };
+        
+        // Asynchronně spouští předaný handler (onChange/onBlur) s nově vytvořeným eventem a čeká na výsledek
+        const result = await handler(newEvent);
+        
+        // Vrací výsledek provedení dané akce (úspěch/chyba uložení)
+        return result;
+        
+    }, [item]); // Závislostí useCallback je objekt item; při jeho změně se funkce přegeneruje
 
-    const bindedOnChange = useMemo(() => handleEvent(onChange), [onChange, handleEvent])
-    const bindedOnBlur = useMemo(() => handleEvent(onBlur), [onBlur, handleEvent])
+    // Memoizuje napojenou funkci onChange tak, že předá originální onChange z kontextu do handleEvent generátoru
+    const bindedOnChange = useMemo(() => handleEvent(onChange), [onChange, handleEvent]);
+    
+    // Memoizuje napojenou funkci onBlur tak, že předá originální onBlur z kontextu do handleEvent generátoru
+    const bindedOnBlur = useMemo(() => handleEvent(onBlur), [onBlur, handleEvent]);
 
+    // Vrací komponentu MediumEditableContent, které předává item a nově navázané handlery
     return (
-        <MediumEditableContent item={item} onChange={bindedOnChange} onBlur={bindedOnBlur} >
+        <MediumEditableContent item={item} onChange={bindedOnChange} onBlur={bindedOnBlur}>
             {children}
-            {/* <hr />
-            <pre>{JSON.stringify(item, null, 2)}</pre> */}
         </MediumEditableContent>
-    )
-}
+    ); // Konec návratové hodnoty komponenty LiveEditWrapper
+}; // Konec definice komponenty LiveEditWrapper
 
-
-export const LiveEdit = ({ item, children, asyncMutationAction=UpdateAsyncAction }) => {
-    // const { run , error, loading, entity, data, onChange: contextOnChange, onBlur: contextOnBlur } = useGQLEntityContext()
+// Definuje a exportuje hlavní komponentu LiveEdit pro přímou inline editaci položky za běhu
+export const LiveEdit = ({ item, children, asyncMutationAction = UpdateAsyncAction }) => {
+    
+    // Inicializuje hook useEditAction, který spravuje lokální drafty (koncepty), příznaky změn a samotný proces uložení
     const {
-        draft,
-        dirty,
-        loading: saving,
-        onChange, 
-        onBlur,
-        onCancel,
-        onConfirm,
+        draft, // Obsahuje aktuální rozpracovaný stav dat (draft)
+        dirty, // Indikuje, zda se data v draftu liší od původního itemu
+        loading: saving, // Přejmenovává loading stav na 'saving', který značí probíhající ukládání na pozadí
+        onChange, // Handler pro registraci průběžných změn v polích formuláře
+        onBlur, // Handler reagující na opuštění pole (v režimu "live" spouští uložení)
+        onCancel, // Funkce pro zahození změn a návrat k původnímu stavu
+        onConfirm, // Funkce pro ruční potvrzení a odeslání změn
     } = useEditAction(asyncMutationAction, item, {
-        mode: "live", 
-        // onCommit: contextOnChange
-    })
+        mode: "live", // Konfiguruje hook tak, aby se změny ukládaly ihned po opuštění políčka (onBlur)
+    }); // Konec volání hooku useEditAction
 
+    // Vrací editační kontejner napojený na handlery z useEditAction
     return (
-        
-        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} >
-            {saving && <LoadingSpinner/>}
+        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur}>
+            {saving && <LoadingSpinner />}
             {children}
         </MediumEditableContent>
-        
-    )
-}
+    ); // Konec návratové hodnoty komponenty LiveEdit
+}; // Konec definice komponenty LiveEdit

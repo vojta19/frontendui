@@ -1,16 +1,23 @@
+// Importuje funkci createQueryStrLazy ze sdíleného GraphQL balíčku pro odložené sestavení dotazu s fragmenty
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
+
+// Importuje podrobné datové schéma LargeFragment z lokálního souboru fragmentů
 import { LargeFragment } from "./Fragments";
+
+// Importuje pokročilého tvůrce asynchronních akcí createAsyncGraphQLAction2 z dynamického jádra aplikace
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
+// Definuje řetězec GraphQL dotazu pro bezpečné vyhledání a načtení jedné konkrétní finance na základě jejího UUID
 const ReadQueryStr = `
 query financeById($id: UUID!) {
   financeById(id: $id) {
     ...Large
   }
 }
-`
+`; // Konec definice řetězce GraphQL dotazu
 
-const ReadQuery = createQueryStrLazy(`${ReadQueryStr}`, LargeFragment)
+// Sestavuje finální GraphQL dotaz spojením textu vyhledání podle ID a definice LargeFragmentu pomocí lazy generátoru
+const ReadQuery = createQueryStrLazy(`${ReadQueryStr}`, LargeFragment);
 
 /**
  * An async action for executing a GraphQL query to read  entities.
@@ -33,12 +40,14 @@ const ReadQuery = createQueryStrLazy(`${ReadQueryStr}`, LargeFragment)
  * const queryVariables = { id: "12345" };
  *
  * dispatch(ReadAsyncAction(queryVariables))
- *   .then((result) => {
- *     console.log("Fetched data:", result);
- *   })
- *   .catch((error) => {
- *     console.error("Error fetching data:", error);
- *   });
+ * .then((result) => {
+ * console.log("Fetched data:", result);
+ * })
+ * .catch((error) => {
+ * console.error("Error fetching data:", error);
+ * });
  */
-// export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery, reduceToFirstEntity("result"))
-export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery)
+// PŮVODNÍ ZAKOMENTOVANÝ EXPORT: export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery, reduceToFirstEntity("result"))
+
+// Vytváří a exportuje asynchronní akci (thunk) spojením připraveného dotazu ReadQuery a generátoru akcí
+export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery);

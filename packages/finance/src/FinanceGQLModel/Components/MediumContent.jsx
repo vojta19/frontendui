@@ -1,7 +1,15 @@
-import { Col } from "../../../../_template/src/Base/Components/Col"
-import { Row } from "../../../../_template/src/Base/Components/Row"
-import { Link as ItemLink } from "./Link"
+// Importuje komponentu Col pro tvorbu sloupcového layoutu ze šablony
+import { Col } from "../../../../_template/src/Base/Components/Col";
+
+// Importuje komponentu Row pro tvorbu řádkového layoutu ze šablony
+import { Row } from "../../../../_template/src/Base/Components/Row";
+
+// Importuje lokální komponentu Link a přejmenovává ji na ItemLink kvůli zamezení kolizí jmen
+import { Link as ItemLink } from "./Link";
+
+// Importuje komponentu ProxyLink pro interní routování projektů a přejmenovává ji na ProjectLink
 import { ProxyLink as ProjectLink } from "../../../../_template/src/Base/Components/ProxyLink";
+
 /**
  * A component that displays medium-level content for an template entity.
  *
@@ -20,103 +28,52 @@ import { ProxyLink as ProjectLink } from "../../../../_template/src/Base/Compone
  * @example
  * // Example usage:
  * const templateEntity = { id: 123, name: "Sample Entity" };
- * 
- * <TemplateMediumContent template={templateEntity}>
- *   <p>Additional information about the entity.</p>
+ * * <TemplateMediumContent template={templateEntity}>
+ * <p>Additional information about the entity.</p>
  * </TemplateMediumContent>
- */
-// export const MediumContent = ({ item, children}) => {
-//     return (
-//         <MediumContent_ item={item}>
-//             {children}
-//         </MediumContent_>
-//     )
-// }
+*/
 
-// export const MediumContent_ = ({ item, children }) => {
-//     return (
-//         <>
-//             {Object.entries(item).map(([attribute_name, attribute_value]) => {
-//                 // if (attribute_name !== "id") return null
-//                 if (Array.isArray(attribute_value)) return null
-//                 if (typeof attribute_value === "object" && attribute_value !== null) return null
-//                 let attribute_value_result = attribute_value
-//                 // let attribute_value_result = attribute_value
-//                 if (Array.isArray(attribute_value))
-//                     // attribute_value_result = <CardCapsule><Table data={attribute_value} /></CardCapsule>
-//                     return null
-//                 else if (typeof attribute_value === "object" && attribute_value !== null)
-//                     // attribute_value_result = <MediumCard item={attribute_value} />
-//                     return null
-//                 else if (attribute_name === "__typename") {
-//                     /*attribute_value_result = <Link item={attribute_value} />*/
-//                     // console.log("else1", attribute_name, attribute_value)
-//                 }
-//                 if (attribute_name === "id")
-//                     attribute_value_result = <Link item={item}>{item?.id || "Data error"}</Link>
-//                 if (attribute_name === "name")
-//                     attribute_value_result = <Link item={item} />
-//                 // else return null
-//                 if (attribute_value)
-//                     return (
-//                         <Row key={attribute_name}>
-//                             <Col className="col-4"><b>{attribute_name}</b></Col>
-//                             <Col className="col-8">{attribute_value_result}</Col>
-//                         </Row>
-//                     )
-//                 else return null
-//             })}
-//             {Object.entries(item).map(([attribute_name, attribute_value]) => {
-//                 if (attribute_value !== null) return null
-//                 let attribute_value_result = JSON.stringify(attribute_value)
-//                 if (Array.isArray(attribute_value))
-//                     // attribute_value_result = <CardCapsule><Table data={attribute_value} /></CardCapsule>
-//                     return null
-//                 else if (typeof attribute_value === "object" && attribute_value !== null)
-//                     // attribute_value_result = <MediumCard item={attribute_value} />
-//                     return null
-//                 else if (attribute_name === "__typename") {
-//                     /*attribute_value_result = <Link item={attribute_value} />*/
-//                     console.log("else2", attribute_name, attribute_value)
-//                 }
-//                 if (attribute_value)
-//                     return null
-//                 else
-//                     return (
-//                         <Row key={attribute_name}>
-//                             <Col className="col-4"><b>{attribute_name}</b></Col>
-//                             <Col className="col-8">{attribute_value_result}</Col>
-//                         </Row>
-//                     )
-//             })}
-//             {children}
-//         </>
-//     )
-// }
+// Importuje základní komponentu MediumContent ze sdílené šablony jako MediumContent_
+import { MediumContent as MediumContent_ } from "../../../../_template/src/Base/Components/MediumContent";
 
-import { MediumContent as MediumContent_} from "../../../../_template/src/Base/Components/MediumContent"
-import {Attribute, formatDateTime, Link, ProxyLink} from "../../../../_template/src/Base/Components"
+// Importuje sadu komponent a utilit (Attribute, formatDateTime, Link, ProxyLink) ze základních komponent šablony
+import { Attribute, formatDateTime, Link, ProxyLink } from "../../../../_template/src/Base/Components";
 
-//export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
 
-export const MediumContent = ({ item, children}) => {
-    console.log("item", item)
+// Definuje a exportuje novou komponentu MediumContent pro vykreslení strukturovaných atributů finanční položky
+export const MediumContent = ({ item, children }) => {
+    
+    // Vypisuje aktuální objekt do vývojářské konzole pro účely ladění
+    console.log("item", item);
+    
+    // Vrací JSX strukturu složenou z jednotlivých řádků atributů
     return (
         <>
+            {/* Blok pro zobrazení primárního českého názvu */}
             <Attribute label="Název">
-                <ItemLink item={item}/>
+                {/* Vykresluje komponentu odkazu na samotný detail této položky */}
+                <ItemLink item={item} />
             </Attribute>
+
+            {/* Blok pro zobrazení anglického názvu */}
             <Attribute label="EN název">
+                {/* Vykresluje odkaz s vlastním vnitřním textem z parametru nameEn */}
                 <ItemLink item={item}>
                     {item?.nameEn}
                 </ItemLink>
             </Attribute>
+
+            {/* Blok pro zobrazení identifikačního znaku nebo čísla objednávky */}
             <Attribute label="ID">
+                {/* Vykresluje odkaz zobrazující přednostně order, následně id, nebo chybovou hlášku */}
                 <ItemLink item={item}>
                     {item?.order || item?.id || "Data Error"}
                 </ItemLink>
             </Attribute>
+
+            {/* Blok pro zobrazení vazby na nadřazenou finanční entitu */}
             <Attribute label="Nadřazená finance">
+                {/* Podmínka: Pokud existuje ID nadřazené finance, vykreslí odkaz, jinak pomlčku */}
                 {item?.masterfinanceId ? (
                     <ItemLink item={item?.masterfinance}>
                         {item?.masterfinance?.name} ({item?.masterfinanceId})
@@ -125,35 +82,63 @@ export const MediumContent = ({ item, children}) => {
                     "-"
                 )}
             </Attribute>
-            <hr/>
+
+            {/* Vykresluje horizontální oddělovací čáru mezi skupinami systémových a finančních informací */}
+            <hr />
+
+            {/* Blok zobrazující informaci o poslední modifikaci položky */}
             <Attribute label="Poslední změna">
+                {/* Formátuje timestamp poslední změny do čitelného formátu data a času */}
                 {formatDateTime(item?.lastchange)}
+                {/* Zobrazuje celé jméno uživatele, který změnu provedl */}
                 {item?.changeby?.fullname}
             </Attribute>
+
+            {/* Blok zobrazující datum a čas vytvoření záznamu */}
             <Attribute label="Vytvořeno">
+                {/* Formátuje timestamp vytvoření do čitelného formátu data a času */}
                 {formatDateTime(item?.created)}
             </Attribute>
+
+            {/* Blok pro zobrazení detailnějšího textového popisu položky */}
             <Attribute label="Popis">
+                {/* Vykresluje text popisu uložený v entitě */}
                 {item?.description}
             </Attribute>
+
+            {/* Blok pro zobrazení finanční částky */}
             <Attribute label="Částka">
+                {/* Podmínka: Pokud je hodnota číslo, naformátuje ji podle českých standardů, jinak vypíše původní hodnotu */}
                 {typeof item?.value === "number"
                     ? item.value.toLocaleString("cs-CZ")
                     : item?.value}
             </Attribute>
+
+            {/* Blok pro zobrazení autora záznamu (Uživatel) */}
             <Attribute label="Uživatel">
-                <Link item={item?.createdby}/>
+                {/* Generuje systémový odkaz na uživatele, který záznam vytvořil */}
+                <Link item={item?.createdby} />
+                {/* Vypisuje celé jméno přiřazeného uživatele */}
                 {item?.user?.fullname}
             </Attribute>
+
+            {/* Blok kombinující informaci o autorovi změny a času změny v jednom řádku */}
             <Attribute label="Změnil">
                 <>
-                    <Link item={item?.createdby}/>
+                    {/* Generuje odkaz na stvořitele záznamu */}
+                    <Link item={item?.createdby} />
+                    {/* Vypisuje celé jméno uživatele */}
                     {item?.user?.fullname}
+                    {/* Vkládá textové lomítko s mezerami jako vizuální oddělovač */}
                     {' / '}
+                    {/* Formátuje čas poslední úpravy */}
                     {formatDateTime(item?.lastchange)}
                 </>
             </Attribute>
+
+            {/* Blok pro zobrazení navázaného projektu */}
             <Attribute label="Projekt">
+                {/* Podmínka: Pokud je k dispozici název projektu, vykreslí speciální ProjectLink s pevnou URL, jinak pomlčku */}
                 {item?.project?.name ? (
                     <ProjectLink to={`/projekt/ProjectGQLModel/view/${item?.project?.id}`}>
                         {item?.project?.name}
@@ -162,6 +147,6 @@ export const MediumContent = ({ item, children}) => {
                     "-"
                 )}
             </Attribute>
-</>
-)
-}
+        </>
+    ); // Konec návratové hodnoty JSX fragmentu
+}; // Konec definice komponenty MediumContent

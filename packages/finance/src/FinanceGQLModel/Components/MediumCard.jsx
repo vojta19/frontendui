@@ -1,7 +1,14 @@
-import { PersonFill } from "react-bootstrap-icons"
-import { CardCapsule } from "./CardCapsule"
-import { MediumContent } from "./MediumContent"
-import { Link } from "./Link"
+// Importuje ikonu uživatele (panáčka) z knihovny react-bootstrap-icons
+import { PersonFill } from "react-bootstrap-icons";
+
+// Importuje obalovou komponentu karty (kapsli), která definuje její vizuální strukturu a záhlaví
+import { CardCapsule } from "./CardCapsule";
+
+// Importuje komponentu pro zobrazení obsahu středního rozsahu (např. detailní výpis polí entity)
+import { MediumContent } from "./MediumContent";
+
+// Importuje lokální komponentu Link pro generování dynamických odkazů na danou entitu
+import { Link } from "./Link";
 
 /**
  * A card component that displays detailed content for an template entity.
@@ -23,17 +30,25 @@ import { Link } from "./Link"
  * @example
  * // Example usage:
  * const templateEntity = { id: 123, name: "Sample Entity" };
- * 
- * <TemplateMediumCard template={templateEntity}>
- *   <p>Additional details or actions for the entity.</p>
+ * * <TemplateMediumCard template={templateEntity}>
+ * <p>Additional details or actions for the entity.</p>
  * </TemplateMediumCard>
  */
+// Definuje a exportuje React komponentu MediumCard, která přijímá objekt 'item' a 'children'
 export const MediumCard = ({ item, children }) => {
+    
+    // Vrací JSX strukturu komponenty, která skládá kartu dohromady
     return (
+        // Obaluje obsah do karty a do vlastnosti title předává React fragment s ikonou a odkazem na detail položky
         <CardCapsule title={<><PersonFill /> <Link item={item} /></>}>
+            
+            {/* Vykresluje jakýkoliv doplňkový vnořený obsah předaný zvenčí do komponenty */}
             {children}
+            
+            {/* Vykresluje vnitřní komponentu pro detailní zobrazení dat samotné položky (item) */}
             <MediumContent item={item}>
             </MediumContent>
-        </CardCapsule>
-    )
-}
+            
+        </CardCapsule> // Konec obalové komponenty karty
+    ); // Konec návratové hodnoty komponenty
+}; // Konec definice komponenty MediumCard
