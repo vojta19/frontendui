@@ -1,137 +1,158 @@
-// Importuje základní hooky useEffect, useMemo a useState z knihovny React pro řízení životního cyklu a stavu
-import { useEffect, useMemo, useState } from "react";
+// Importuje základní hooky z Reactu.
+// useCallback slouží k zapamatování funkce mezi rendery.
+// useEffect slouží ke spuštění vedlejší logiky po renderu.
+// useMemo slouží k zapamatování vypočítané hodnoty, aby se zbytečně nepřepočítávala.
+import { useCallback, useEffect, useMemo } from "react";
 
-// Importuje hook useParams z knihovny react-router pro přístup k parametrům v URL adrese
+// Importuje hook useParams z react-routeru.
+// Díky němu můžeme číst hodnoty z URL adresy, například id, typename nebo action.
 import { useParams } from "react-router";
 
-// Importuje vlastní hook useAsyncThunkAction z dynamické části sdílené šablony prvků
+// Importuje hook useSelector z Reduxu.
+// Ten slouží ke čtení hodnot uložených v globálním Redux store.
+import { useSelector } from "react-redux";
+
+// Importuje selector, který ze store vytáhne seznam finančních transferů.
+import { selectFinanceTransfers } from "../Store/FinanceTransferSlice";
+
+// Importuje vlastní hook pro spouštění asynchronních thunk akcí.
 import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
 
-// Importuje asynchronní akci FinanceTransferPageAsyncAction pro načítání stránek finančních přesunů
+// Importuje thunk akci, která načítá stránkovaný seznam finančních transferů z backendu.
 import { FinanceTransferPageAsyncAction } from "../Queries/FinanceTransferPageAsyncAction";
 
-// Importuje hook useGQLType pro dynamickou detekci schématu a dotazů na základě GraphQL typu
+// Importuje hook, který podle GraphQL typu dynamicky získá správné dotazy, mutace a async akce.
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType";
 
-// Importuje vizualizační komponentu FinanceTransferSunburst pro vykreslení přesunů v diagramu
+// Importuje komponentu pro zobrazení a ovládání Sunburst diagramu finančních přesunů.
 import { FinanceTransferSunburst } from "../Components/FinanceTransferSunburst";
 
-// Importuje designovou komponentu velké karty (LargeCard) ze sdílené šablony komponent
+// Importuje hlavní obalovou kartu stránky.
 import { LargeCard } from "../../../../_template/src/Base/Components/LargeCard";
 
-// Importuje standardní obalovou kartu (CardCapsule) pro sekce stránky
+// Importuje menší obalovou kartu pro jednotlivé sekce stránky.
 import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule";
 
-// Importuje komponenty pro zobrazení skalárních (jednoduchých) atributů objektu
+// Importuje komponenty pro zobrazení jednoduchých hodnot entity, například name, value, description.
 import { MediumCardScalars, ScalarAttribute } from "../../../../_template/src/Base/Scalars/ScalarAttribute";
 
-// Importuje komponenty pro zobrazení vektorových (pole/seznamy) atributů objektu
+// Importuje komponenty pro zobrazení polí / kolekcí entity, například subfinances.
 import { MediumCardVectors, VectorAttribute } from "../../../../_template/src/Base/Vectors/VectorAttribute";
 
-// Importuje pomocný kontextový hook a provider pro správu asynchronních GraphQL dat entity
+// Importuje GraphQL kontext entity a provider, který se stará o načtení dat podle async akce.
 import { useGQLEntityContext, AsyncActionProvider } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
 
-// Importuje layout komponentu Row pro řádky flexibilní mřížky (Grid)
+// Importuje layout komponentu pro řádek.
 import { Row } from "../../../../_template/src/Base/Components/Row";
 
-// Importuje layout komponentu Col pro sloupce flexibilní mřížky (Grid)
+// Importuje layout komponentu pro sloupec.
 import { Col } from "../../../../_template/src/Base/Components/Col";
 
-// Importuje vizuální prvek pro rohové akce karty ze sdíleného balíčku frontend utilit
+// Importuje komponentu pro pravý horní roh CardCapsule, typicky pro tlačítka.
 import { SimpleCardCapsuleRightCorner } from "@hrbolek/uoisfrontend-shared";
 
-// Importuje komponentu CopyButton, která po kliknutí zkopíruje zadaný text do schránky
+// Importuje tlačítko pro kopírování textu do schránky.
 import { CopyButton } from "../../../../_template/src/Base/Components/CopyButton";
 
-// Importuje výchozí thunk akci ReadAsyncAction pro načítání dat ze souboru Queries
+// Importuje výchozí async akci pro načtení detailu entity.
 import { ReadAsyncAction } from "../Queries";
 
-// Pomocná funkce pro bezpečné nalezení a vytažení ID zdrojové finance z různých struktur objektu
+console.log("FINANCE Page.jsx MODULE LOADED");
+
+// =======================================================
+// Pomocné funkce pro práci s finančními transfery
+// =======================================================
+
+// Funkce se snaží bezpečně získat ID zdrojové finance z objektu transferu.
+// Backend nebo různé části aplikace mohou vracet stejnou hodnotu pod jinými názvy,
+// proto se zde kontroluje více možných variant.
 const getTransferSourceId = (transfer) => {
-    
-    // Vrací první existující nenulový identifikátor zdroje na základě prioritního řetězce
     return (
-        transfer?.financeSourceId ?? // Zkusí přímé ID financeSourceId
-        transfer?.financeTransfer_financeSourceId ?? // Zkusí prefixované ID z plochého filtru
-        transfer?.sourceFinanceId ?? // Zkusí alternativní název sourceFinanceId
-        transfer?.sourceId ?? // Zkusí zkrácené sourceId
-        transfer?.financeSource?.id ?? // Zkusí zanořené ID objektu financeSource
-        transfer?.source?.id ?? // Zkusí zanořené ID objektu source
-        null // Pokud nic neexistuje, vrací null
-    ); // Konec prioritního řetězce
-}; // Konec definice funkce getTransferSourceId
+        transfer?.financeSourceId ??
+        transfer?.financeTransfer_financeSourceId ??
+        transfer?.sourceFinanceId ??
+        transfer?.sourceId ??
+        transfer?.financeSource?.id ??
+        transfer?.source?.id ??
+        null
+    );
+};
 
-// Pomocná funkce pro bezpečné nalezení a vytažení ID cílové (destinační) finance z různých struktur objektu
+// Funkce se snaží bezpečně získat ID cílové finance z objektu transferu.
+// Stejně jako u source ID se zde počítá s více možnými názvy stejné hodnoty.
 const getTransferDestinationId = (transfer) => {
-    
-    // Vrací první existující nenulový identifikátor cíle na základě prioritního řetězce
     return (
-        transfer?.financeDestinationId ?? // Zkusí přímé ID financeDestinationId
-        transfer?.financeTransfer_financeDestinationId ?? // Zkusí prefixované ID z plochého filtru
-        transfer?.destinationFinanceId ?? // Zkusí alternativní název destinationFinanceId
-        transfer?.destinationId ?? // Zkusí zkrácené destinationId
-        transfer?.financeDestination?.id ?? // Zkusí zanořené ID objektu financeDestination
-        transfer?.destination?.id ?? // Zkusí zanořené ID objektu destination
-        null // Pokud nic neexistuje, vrací null
-    ); // Konec prioritního řetězce
-}; // Konec definice funkce getTransferDestinationId
+        transfer?.financeDestinationId ??
+        transfer?.financeTransfer_financeDestinationId ??
+        transfer?.destinationFinanceId ??
+        transfer?.destinationId ??
+        transfer?.financeDestination?.id ??
+        transfer?.destination?.id ??
+        null
+    );
+};
 
-// Funkce normalizuje data přesunu, sjednocuje klíče a ověřuje validitu finanční částky
+// Funkce normalizuje jeden transfer.
+// Cílem je převést různé možné podoby transferu na jednotný tvar:
+// financeSourceId, financeDestinationId a amount.
 const normalizeTransfer = (transfer) => {
-    
-    // Pokud přesun neexistuje nebo to není objekt, okamžitě vrací null
+    // Pokud transfer neexistuje nebo není objekt, nemá smysl s ním dál pracovat.
     if (!transfer || typeof transfer !== "object") return null;
 
-    // Vytahuje zdrojové ID pomocí dříve definované pomocné funkce
+    // Získání zdrojového ID pomocí pomocné funkce.
     const financeSourceId = getTransferSourceId(transfer);
-    
-    // Vytahuje cílové ID pomocí dříve definované pomocné funkce
+
+    // Získání cílového ID pomocí pomocné funkce.
     const financeDestinationId = getTransferDestinationId(transfer);
-    
-    // Sjednocuje a převádí hodnotu částky na číslo s výchozí hodnotou 0
+
+    // Částka se může nacházet pod amount, financeTransfer_amount nebo value.
+    // Number() ji převede na číslo.
     const amount = Number(
-        transfer.amount ?? // Výchozí klíč amount
-        transfer.financeTransfer_amount ?? // Prefixovaný klíč ze specifického datasetu
-        transfer.value ?? // Alternativní klíč value
-        0 // Záložní nula
-    ); // Konec parsování částky
+        transfer.amount ??
+        transfer.financeTransfer_amount ??
+        transfer.value ??
+        0
+    );
 
-    // Validace: Pokud chybí zdroj, cíl, částka není konečné číslo nebo je nulová, přesun je nevalidní
+    // Transfer považujeme za neplatný, pokud:
+    // - nemá zdroj,
+    // - nemá cíl,
+    // - amount není platné číslo,
+    // - amount je nula.
     if (!financeSourceId || !financeDestinationId || !Number.isFinite(amount) || amount === 0) {
-        return null; // Vrací null pro nevalidní přesun
-    } // Konec validace
+        return null;
+    }
 
-    // Vrací nový objekt kombinující původní vlastnosti a sjednocené normalizované klíče
+    // Vracíme původní transfer doplněný o sjednocené hodnoty.
     return {
-        ...transfer, // Rozbalení původního objektu
-        financeSourceId, // Dosazení sjednoceného zdrojového ID
-        financeDestinationId, // Dosazení sjednoceného cílového ID
-        amount, // Dosazení převedeného čísla částky
-    }; // Konec návratového objektu
-}; // Konec definice funkce normalizeTransfer
+        ...transfer,
+        financeSourceId,
+        financeDestinationId,
+        amount,
+    };
+};
 
-// Funkce rekurzivně projde celý finanční strom a posbírá z něj všechny přítomné pole přesunů
+// Funkce projde celý finanční strom a pokusí se z něj najít všechny transfery,
+// pokud jsou někde zanořené přímo v itemu nebo jeho subfinances.
 const collectTransfers = (item) => {
-    
-    // Inicializuje prázdné pole pro ukládání nalezených přesunů
+    // Sem se budou ukládat nalezené transfery.
     const transfers = [];
-    
-    // Set pro evidenci již navštívených uzlů kvůli ochraně před zacyklením v grafu
+
+    // Ochrana proti zacyklení při rekurzivním procházení objektů.
     const visitedNodes = new Set();
 
-    // Vnitřní rekurzivní funkce pro průchod uzly stromu
+    // Vnitřní rekurzivní funkce pro průchod stromem.
     const collect = (node) => {
-        
-        // Pokud uzel neexistuje nebo není objekt, rekurze končí
+        // Pokud uzel neexistuje nebo není objekt, přeskočí se.
         if (!node || typeof node !== "object") return;
-        
-        // Pokud jsme tento uzel již navštívili, přeskočíme ho (ochrana před cykly)
+
+        // Pokud jsme tento objekt už viděli, přeskočí se.
         if (visitedNodes.has(node)) return;
-        
-        // Zaregistruje aktuální uzel do seznamu navštívených
+
+        // Označíme aktuální objekt jako navštívený.
         visitedNodes.add(node);
 
-        // Seznam všech možných klíčů, pod kterými se v objektu mohou skrývat pole přesunů
+        // Možné názvy polí, kde by se mohly nacházet transfery.
         const possibleTransferArrays = [
             node.financeTransfers,
             node.transfers,
@@ -139,474 +160,453 @@ const collectTransfers = (item) => {
             node.outgoingTransfers,
             node.financeSourceTransfers,
             node.financeDestinationTransfers,
-        ]; // Konec pole klíčů
+        ];
 
-        // Prochází jednotlivá pole potenciálních přesunů
+        // Projde všechna možná pole transferů.
         possibleTransferArrays.forEach(array => {
-            
-            // Pokud vlastnost není polem, ignoruje ji
+            // Pokud daná hodnota není pole, ignoruje se.
             if (!Array.isArray(array)) return;
 
-            // Prochází jednotlivé objekty přesunů v poli
+            // Každý nalezený transfer se znormalizuje.
             array.forEach(transfer => {
-                
-                // Pokusí se o normalizaci objektu přesunu
                 const normalizedTransfer = normalizeTransfer(transfer);
-                
-                // Pokud je přesun validní (není null), vloží ho do sběrného pole transfers
+
+                // Do výsledku se vloží jen validní transfer.
                 if (normalizedTransfer) transfers.push(normalizedTransfer);
-            }); // Konec vnitřního forEach přesuny
-        }); // Konec vnějšího forEach pole
+            });
+        });
 
-        // Pokud uzel obsahuje pole podřízených financí (subfinances), rekurzivně je projde
+        // Pokud má finance potomky, pokračujeme rekurzivně do subfinances.
         if (Array.isArray(node.subfinances)) {
-            node.subfinances.forEach(collect); // Volá rekurzi pro každou subfinance
-        } // Konec kontroly subfinances
-    }; // Konec definice vnitřní funkce collect
+            node.subfinances.forEach(collect);
+        }
+    };
 
-    // Spustí rekurzi od hlavního předaného kořenového objektu item
+    // Spuštění průchodu od kořenového itemu.
     collect(item);
 
-    // Vytvoří Mapu pro odstranění duplicitních přesunů na základě ID nebo složeného klíče
+    // Map slouží k odstranění duplicitních transferů.
     const transferMap = new Map();
-    
-    // Prochází posbírané přesuny a ukládá je do mapy
+
     transfers.forEach((transfer, index) => {
-        
-        // Generuje unikátní klíč: použije ID přesunu nebo složený řetězec z parametrů a indexu
+        // Pokud má transfer vlastní ID, použije se jako unikátní klíč.
+        // Pokud ID nemá, vytvoří se náhradní klíč z hodnot transferu.
         const key = transfer.id ?? `${transfer.financeSourceId}-${transfer.financeDestinationId}-${transfer.amount}-${index}`;
-        
-        // Uloží přesun do mapy pod vygenerovaným klíčem (případná duplicita přepíše předchozí)
+
+        // Vložení do mapy odstraní duplicitní hodnoty se stejným klíčem.
         transferMap.set(key, transfer);
-    }); // Konec pročištění duplicit
+    });
 
-    // Vrací čisté pole unikátních přesunů vytažením hodnot z mapy
+    // Vrací čisté pole unikátních transferů.
     return [...transferMap.values()];
-}; // Konec definice funkce collectTransfers
+};
 
-// Rekurzivní funkce, která aplikuje finanční přesuny (přičte/odečte částky) na hodnoty celého stromu financí
+// Funkce aplikuje transfery na finanční strom.
+// Pro každou finance vypočítá novou hodnotu podle pravidla:
+// původní hodnota - odchozí transfery + příchozí transfery.
 const applyTransfersToFinanceTree = (finances = [], transfers = []) => {
-    
-    // Mapuje pole financí na nové objekty s přepočítanými hodnotami
     return finances.map(finance => {
-        
-        // Spočítá sumu všech odchozích transferů z této konkrétní finance
+        // Součet všech transferů, kde je aktuální finance zdrojem.
         const outgoing = transfers
-            .filter(transfer => transfer.financeSourceId === finance.id) // Filtruje přesuny, kde je finance zdrojem
-            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0); // Sčítá částky
+            .filter(transfer => transfer.financeSourceId === finance.id)
+            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0);
 
-        // Spočítá sumu všech příchozích transferů do této konkrétní finance
+        // Součet všech transferů, kde je aktuální finance cílem.
         const incoming = transfers
-            .filter(transfer => transfer.financeDestinationId === finance.id) // Filtruje přesuny, kde je finance cílem
-            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0); // Sčítá částky
+            .filter(transfer => transfer.financeDestinationId === finance.id)
+            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0);
 
-        // Vrací modifikovaný objekt finance s upravenou hodnotou a rekurzivně zpracovanými potomky
+        // Vrací novou kopii finance s přepočítanou hodnotou.
+        // Původní objekt se nemění přímo.
         return {
-            ...finance, // Zachová původní vlastnosti finance
-            value: Number(finance.value || 0) - outgoing + incoming, // Přepočet hodnoty (původní - odchozí + příchozí)
-            subfinances: Array.isArray(finance.subfinances) // Pokud existují subfinances, rekurzivně je přepočítá
-                ? applyTransfersToFinanceTree(finance.subfinances, transfers)
-                : finance.subfinances, // Jinak ponechá původní hodnotu subfinances
-        }; // Konec mapovaného objektu
-    }); // Konec mapování pole
-}; // Konec definice funkce applyTransfersToFinanceTree
+            ...finance,
+            value: Number(finance.value || 0) - outgoing + incoming,
 
-// Funkce naformátuje a upraví kořenový item dosazením přepočítaného subfinance stromu
+            // Pokud má finance potomky, transfery se rekurzivně aplikují i na ně.
+            subfinances: Array.isArray(finance.subfinances)
+                ? applyTransfersToFinanceTree(finance.subfinances, transfers)
+                : finance.subfinances,
+        };
+    });
+};
+
+// Funkce vytvoří upravenou kopii hlavního itemu,
+// kde jsou jeho subfinances přepočítané podle transferů.
 const patchFinanceItem = (item, localTransfers = []) => {
-    
-    // Pokud item neexistuje nebo to není objekt, vrátí ho beze změny
+    // Pokud item není validní objekt, vrací se beze změny.
     if (!item || typeof item !== "object") return item;
 
-    // Normalizuje pole lokálních přesunů a vyfiltruje pouze validní objekty (Boolean odfiltruje null)
+    // Transfery se nejdřív normalizují a neplatné hodnoty se odstraní.
     const normalizedLocalTransfers = localTransfers
         .map(normalizeTransfer)
-        .filter(Boolean); // Konec čistění pole přesunů
+        .filter(Boolean);
 
-    // Vrací upravenou položku s nově přepočítaným polem podřízených subfinances
+    // Vrací novou kopii itemu s přepočítanými subfinances.
     return {
-        ...item, // Rozbalí původní položku
+        ...item,
         subfinances: applyTransfersToFinanceTree(
-            item.subfinances ?? [], // Pokud subfinances chybí, použije prázdné pole
-            normalizedLocalTransfers // Předá vyčištěné transfery pro matematický přepočet
-        ), // Konec přiřazení subfinances
-    }; // Konec návratu objektu
-}; // Konec definice funkce patchFinanceItem
+            item.subfinances ?? [],
+            normalizedLocalTransfers
+        ),
+    };
+};
 
-// Pomocná rekurzivní funkce, která posbírá všechna unikátní ID ze stromu financí do Setu
+// Funkce projde finanční strom a posbírá všechna ID financí,
+// která se v aktuálním stromu nachází.
 const collectFinanceIds = (finance) => {
-    
-    // Inicializuje nový Set pro ukládání unikátních ID
     const ids = new Set();
 
-    // Vnitřní rekurzivní funkce pro průchod uzly stromu financí
     const walk = (node) => {
-        
-        // Pokud uzel neexistuje nebo není objekt, rekurzivní větev končí
+        // Neplatný uzel se přeskočí.
         if (!node || typeof node !== "object") return;
 
-        // Pokud má uzel platné ID, přidá ho do Setu
+        // Pokud má uzel ID, vloží se do Setu.
         if (node.id) {
             ids.add(node.id);
-        } // Konec kontroly ID
+        }
 
-        // Pokud uzel obsahuje pole subfinances, rekurzivně pokračuje v průchodu dolů
+        // Rekurzivní průchod potomků.
         if (Array.isArray(node.subfinances)) {
-            node.subfinances.forEach(walk); // Průchod dětí
-        } // Konec kontroly subfinances
-    }; // Konec definice vnitřní funkce walk
+            node.subfinances.forEach(walk);
+        }
+    };
 
-    // Spustí rekurzi od předaného hlavního objektu finance
     walk(finance);
 
-    // Vrací naplněný Set s unikátními identifikátory
     return ids;
-}; // Konec definice funkce collectFinanceIds
+};
 
-// Pomocná rekurzivní funkce sestavující mapu vazeb, kde klíčem je ID dítěte a hodnotou ID jeho přímého rodiče
+// Funkce sestaví mapu vztahů dítě -> rodič.
+// Klíčem je ID finance, hodnotou je ID jejího rodiče.
 const buildParentMap = (finance) => {
-    
-    // Inicializuje prázdnou Mapu pro ukládání relací dítě -> rodič
     const parentById = new Map();
 
-    // Vnitřní rekurzivní funkce procházející strom
     const walk = (node, parentId = null) => {
-        
-        // Pokud uzel chybí nebo není objekt, rekurze končí
+        // Neplatný uzel se přeskočí.
         if (!node || typeof node !== "object") return;
 
-        // Pokud uzel má ID, uloží relaci do mapy k příslušnému parentId
+        // Pokud má uzel ID, uložíme vztah aktuální finance k jejímu rodiči.
         if (node.id) {
             parentById.set(node.id, parentId);
-        } // Konec uložení relace
+        }
 
-        // Pokud existují subfinances, rekurzivně je projde a předá jim aktuální node.id jako parentId
+        // Potomci dostanou jako parentId ID aktuálního uzlu.
         if (Array.isArray(node.subfinances)) {
-            node.subfinances.forEach(child => walk(child, node.id)); // Rekurzivní volání pro potomky
-        } // Konec kontroly subfinances
-    }; // Konec definice vnitřní funkce walk
+            node.subfinances.forEach(child => walk(child, node.id));
+        }
+    };
 
-    // Spustí sestavení mapy od kořene, kde výchozí rodič je null
     walk(finance);
 
-    // Vrací kompletní mapu hierarchických vazeb rodokmenu
     return parentById;
-}; // Konec definice funkce buildParentMap
+};
 
-// Funkce zjišťuje, zda je jedno ID (ancestorId) přímým nebo nepřímým předkem druhého ID (childId) v hierarchii
+// Funkce ověřuje, zda je ancestorId předkem childId.
+// Používá se pro odhalení transferů mezi rodičem a potomkem.
 const isAncestor = (ancestorId, childId, parentById) => {
-    
-    // Načte ID přímého rodiče daného dítěte z předpřipravené mapy rodičů
+    // Začínáme u přímého rodiče childId.
     let currentId = parentById.get(childId);
 
-    // Cyklus prochází stromem směrem nahoru (k rodičům), dokud nenarazí na kořen (null)
+    // Postupujeme směrem nahoru ke kořeni stromu.
     while (currentId) {
-        
-        // Pokud se ID aktuálně kontrolovaného rodiče shoduje s hledaným předkem, vrací true
+        // Pokud narazíme na hledaného předka, vracíme true.
         if (currentId === ancestorId) return true;
-        
-        // Posune se v hierarchii o úroveň výše (načte rodiče aktuálního rodiče)
+
+        // Posun o úroveň výše.
         currentId = parentById.get(currentId);
-    } // Konec cyklu while
+    }
 
-    // Pokud cyklus doběhl až ke kořeni a předka nenašel, vrací false
+    // Předek nebyl nalezen.
     return false;
-}; // Konec definice funkce isAncestor
+};
 
-// Funkce vyfiltruje pouze ty přesuny, které jsou relevantní pro aktuální strom (např. vyloučí vnitro-strukturální přesuny mezi rodičem a dítětem)
+// Funkce vyfiltruje transfery tak, aby zůstaly pouze transfery relevantní pro aktuální strom.
+// Zároveň odstraňuje transfery mezi rodičem a potomkem, protože ty jsou brané jako strukturální.
 const filterRelevantTransfers = (transfers, item) => {
-    
-    // Posbírá všechna ID přítomná v aktuálním finančním podstromu položky
+    // Všechna ID financí, která jsou v aktuálním stromu.
     const financeIds = collectFinanceIds(item);
-    
-    // Sestaví hierarchickou mapu rodičů pro detekci předků
+
+    // Mapa vztahů dítě -> rodič.
     const parentById = buildParentMap(item);
-    
-    // Inicializuje mapu pro ukládání unikátních profiltrovaných přesunů
+
+    // Mapa pro odstranění duplicit.
     const uniqueTransfers = new Map();
 
-    // Prochází pole všech dostupných přesunů (v případě chybějícího pole použije prázdné)
     for (const transfer of transfers || []) {
-        
-        // Získává zdrojové a cílové ID z objektu transferu
         const sourceId = transfer?.financeSourceId;
         const destinationId = transfer?.financeDestinationId;
 
-        // Kontrola: Oba uzly (zdroj i cíl) musí fyzicky existovat v aktuálně zobrazeném podstromu
+        // Transfer je relevantní jen tehdy, pokud zdroj i cíl existují v aktuálním stromu.
         const bothAreInCurrentTree = financeIds.has(sourceId) && financeIds.has(destinationId);
 
-        // Pokud alespoň jeden z uzlů v aktuálním podstromu chybí, přesun ignorujeme a pokračujeme dalším
+        // Pokud jeden z uzlů není v aktuálním stromu, transfer ignorujeme.
         if (!bothAreInCurrentTree) continue;
 
-        // Strukturální kontrola: Zjišťuje, zda se nejedná o přesun po přímé vertikální linii (rodič -> potomek nebo naopak)
-        const isStructuralTransfer = isAncestor(sourceId, destinationId, parentById) || isAncestor(destinationId, sourceId, parentById);
+        // Detekce strukturálního transferu mezi rodičem a potomkem.
+        const isStructuralTransfer =
+            isAncestor(sourceId, destinationId, parentById) ||
+            isAncestor(destinationId, sourceId, parentById);
 
-        // Pokud jde o vnitro-strukturální přesun v rámci jedné větve, tak ho přeskočíme
+        // Strukturální transfer se ignoruje.
         if (isStructuralTransfer) continue;
 
-        // Sestaví unikátní řetězcový klíč pro eliminaci duplicitních záznamů
+        // Unikátní klíč transferu.
         const key = transfer.id || `${sourceId}-${destinationId}-${transfer.amount}-${transfer.name}`;
 
-        // Pokud mapa unikátních transferů tento klíč ještě neobsahuje, vloží přesun dovnitř
+        // Do výsledku se uloží jen první výskyt daného transferu.
         if (!uniqueTransfers.has(key)) {
             uniqueTransfers.set(key, transfer);
-        } // Konec uložení unikátního klíče
-    } // Konec cyklu for-of
+        }
+    }
 
-    // Vrací pole vyčištěných a relevantních finančních přesunů vytažením prvků z mapy
+    // Vrací pole relevantních a unikátních transferů.
     return Array.from(uniqueTransfers.values());
-}; // Konec definice funkce filterRelevantTransfers
+};
 
-// Definuje a exportuje komponentu GeneratedContentBase, která na pozadí načítá přesuny z API a patchuje finanční data
-export const GeneratedContentBase = ({ item, onTransferInserted = () => { } }) => {
-    
-    // Vypisuje trasovací zprávu do vývojářské konzole o vstupu do komponenty
+// =======================================================
+// Komponenta GeneratedContentBase
+// =======================================================
+
+// Tato komponenta:
+// 1. dostane aktuální finance item,
+// 2. načte transfery z backendu,
+// 3. vybere transfery relevantní pro aktuální strom,
+// 4. přepočítá hodnoty,
+// 5. vykreslí Sunburst graf a vektorové atributy.
+export const GeneratedContentBase = ({
+    item,
+    onTransferInserted = () => {},
+}) => {
     console.log("JSEM V GENERATEDCONTENTBASE", item);
 
-    // Stav pro uložení surových přesunů načtených z backendu (výchozí je prázdné pole)
-    const [backendTransfers, setBackendTransfers] = useState([]);
+    // Načte transfery uložené v Redux store.
+    // Store se naplní po zavolání FinanceTransferPageAsyncAction.
+    const backendTransfers = useSelector(selectFinanceTransfers);
 
-    // Využívá hook useAsyncThunkAction pro registraci thunku načítání dat přesunů v odloženém síťovém režimu
-    const { run: runFinanceTransferPage } = useAsyncThunkAction(
+    // Připraví funkci runFinanceTransferPage.
+    // deferred: true znamená, že se akce nespustí automaticky hned při inicializaci.
+    // network: true říká, že se má skutečně sahat na backend.
+    const {
+        run: runFinanceTransferPage,
+    } = useAsyncThunkAction(
         FinanceTransferPageAsyncAction,
         {},
         { deferred: true, network: true }
-    ); // Konec registrace thunku
+    );
 
-    // Asynchronní funkce, která fyzicky vyvolá síťový dotaz a uloží načtené transfery do stavu
-    const loadTransfers = async () => {
-        
-        // Loguje spuštění načítání dat
+    // Funkce načte transfery z backendu.
+    // Po úspěšném načtení by se data měla propsat do Redux store.
+    const loadTransfers = useCallback(async () => {
         console.log("LOAD TRANSFERS START");
 
-        // Blok try-catch ošetřuje potenciální síťové výpadky nebo chyby API dotazu
         try {
-            
-            // Spouští asynchronní dotaz s parametry stránkování a řazení podle data vytvoření
             const result = await runFinanceTransferPage({
-                skip: 0, // Začátek od nultého prvku
-                limit: 1000, // Maximální limit načtených záznamů
-                orderby: "created" // Řazení podle klíče created
-            }); // Konec await volání thunku
+                skip: 0,
+                limit: 1000,
+                orderby: "created",
+            });
 
-            // Loguje surovou odpověď obdrženou z backendu
+            // Surový výsledek se loguje pro kontrolu,
+            // jestli backend opravdu vrací očekávaná data.
             console.log("RAW FINANCE TRANSFER PAGE RESULT:", result);
-
-            // Bezpečně vytáhne pole transferů z odpovědi, v případě absence nastaví prázdné pole
-            const transfers = result?.data?.financeTransferPage || []
-
-            // Loguje očištěné pole transferů připravené ke zpracování
-            console.log("FINANCE TRANSFER PAGE:", transfers);
-
-            // Uloží stažené transfery do lokálního stavu backendTransfers
-            setBackendTransfers(transfers);
-            
         } catch (error) {
-            
-            // Loguje případnou chybu zachycenou během asynchronní síťové komunikace
+            // Pokud dotaz selže, chyba se vypíše do konzole.
             console.error("LOAD TRANSFERS ERROR:", error);
-        } // Konec bloku try-catch
-    }; // Konec definice funkce loadTransfers
+        }
+    }, [runFinanceTransferPage]);
 
-    // useEffect hook spustí načítání dat přesunů ihned po prvním vyrenderování komponenty do DOMu
+    // Po prvním renderu komponenty se načtou transfery z backendu.
     useEffect(() => {
-        loadTransfers(); // Volá načítací funkci
-    }, []); // Prázdné pole závislostí znamená spuštění pouze při mountu
+        loadTransfers();
+    }, [loadTransfers]);
 
-    // Pomocí useMemo vypočítá a optimalizuje upravený finanční strom (patchedItem) na základě načtených dat
+    // patchedItem je přepočítaná verze itemu.
+    // Přepočet se provede pouze tehdy, když se změní item nebo backendTransfers.
     const patchedItem = useMemo(() => {
-        
-        // Pokud kořenový item neexistuje, vrátí ho přímo bez provádění dalších úprav
         if (!item) return item;
 
-        // Profiltruje backendové transfery a ponechá pouze ty, které se týkají aktuálního podstromu financí
-        const relevantTransfers = filterRelevantTransfers(backendTransfers, item);
+        // Z celého seznamu transferů ve store vybereme jen ty,
+        // které se týkají aktuálně zobrazeného finančního stromu.
+        const relevantTransfers = filterRelevantTransfers(
+            backendTransfers,
+            item
+        );
 
-        // Ladící výpisy celkových a relevantních transferů pro konzoli
-        console.log("ALL BACKEND TRANSFERS:", backendTransfers);
+        console.log("ALL BACKEND TRANSFERS FROM STORE:", backendTransfers);
         console.log("RELEVANT TRANSFERS:", relevantTransfers);
-        
-        // Mapa pro rychlé párování názvů financí k jejich ID (využito pro vizuální tabulku v konzoli)
+
+        // Mapa slouží jen pro hezčí debug výpis.
+        // Díky ní se v console.table zobrazí i názvy financí, ne jen ID.
         const financeNameById = new Map();
 
-        // Pomocná vnitřní funkce pro rekurzivní sběr jmen financí podle ID
+        // Rekurzivně projde strom a uloží názvy financí podle jejich ID.
         const collectFinanceNames = (node) => {
-            
-            // Pokud uzel neexistuje nebo není objekt, ukončí větev
             if (!node || typeof node !== "object") return;
 
-            // Pokud uzel má ID, uloží jeho název do mapy názvů
             if (node.id) {
                 financeNameById.set(node.id, node.name);
-            } // Konec uložení názvu
+            }
 
-            // Pokud uzel obsahuje subfinances, pokračuje rekurzí dolů
             if (Array.isArray(node.subfinances)) {
-                node.subfinances.forEach(collectFinanceNames); // Rekurzivní průchod
-            } // Konec kontroly subfinances
-        }; // Konec definice vnitřní funkce collectFinanceNames
+                node.subfinances.forEach(collectFinanceNames);
+            }
+        };
 
-        // Spustí sběr jmen z předaného itemu
         collectFinanceNames(item);
 
-        // Vykreslí do vývojářské konzole přehlednou formátovanou tabulku relevantních transferů včetně lidských jmen uzlů
+        // Tabulkový výpis transferů v konzoli.
+        // Pomáhá ověřit, odkud kam transfer jde a jaká částka se používá.
         console.table(
-            relevantTransfers.map(t => ({
-                id: t.id,
-                name: t.name,
-                amount: Number(t.amount || 0),
-                sourceId: t.financeSourceId,
-                sourceName: financeNameById.get(t.financeSourceId), // Vytáhne lidské jméno zdroje z mapy
-                destinationId: t.financeDestinationId,
-                destinationName: financeNameById.get(t.financeDestinationId), // Vytáhne lidské jméno cíle z mapy
-            })) // Konec struktury objektu pro tabulku
-        ); // Konec konzolového výpisu console.table
+            relevantTransfers.map((transfer) => ({
+                id: transfer.id,
+                name: transfer.name,
+                amount: Number(transfer.amount || 0),
+                sourceId: transfer.financeSourceId,
+                sourceName: financeNameById.get(transfer.financeSourceId),
+                destinationId: transfer.financeDestinationId,
+                destinationName: financeNameById.get(transfer.financeDestinationId),
+            }))
+        );
 
-        // Vrací nově napatchovaný finanční objekt upravený o hodnoty relevantních transferů
+        // Vrací item s přepočítanými hodnotami podle relevantních transferů.
         return patchFinanceItem(item, relevantTransfers);
-        
-    }, [item, backendTransfers]); // Přepočítá se pouze při změně položky nebo načtení nových transferů
+    }, [item, backendTransfers]);
 
-    // Callback handler reagující na úspěšné vložení nového transferu z vnitřního formuláře
+    // Funkce se zavolá po úspěšném vložení nového transferu v Sunburst komponentě.
     const handleTransferInserted = async (transfer) => {
-        
-        // Loguje vložení nového přesunu a oznamuje opětovné synchronizační stažení dat
         console.log("TRANSFER HOTOVY, NACITAM TRANSFERY ZNOVU:", transfer);
 
-        // Znovu zavolá asynchronní načtení dat z backendu pro zaktualizování stavu a grafu
+        // Po vložení transferu znovu načteme transfery z backendu.
+        // To odpovídá variantě A: backend je zdroj pravdy.
         await loadTransfers();
-    }; // Konec definice funkce handleTransferInserted
 
-    // Podmínka: Pokud položka neexistuje, zobrazí uživateli textové upozornění v fragmentu
+        // Poté se informace předá výš rodičovské komponentě.
+        onTransferInserted?.(transfer);
+    };
+
+    // Pokud item není dostupný, zobrazí se jednoduchá hláška.
     if (!item) return <>Položka nenalezena</>;
 
-    // Vrací vizuální rozhraní tvořené Sunburst diagramem a tabulkou vektorových vlastností
     return (
         <>
-            {/* Vykresluje interaktivní kruhový diagram přesunů s upraveným finančním stromem */}
+            {/* Sunburst graf dostává už přepočítaný item */}
             <FinanceTransferSunburst
-                item={patchedItem} // Předává přepočítaná finanční data
-                header="Graf finančních přesunů" // Titulek komponenty diagramu
-                onTransferInserted={handleTransferInserted} // Předává callback pro překreslení po uložení
+                item={patchedItem}
+                header="Graf finančních přesunů"
+                onTransferInserted={handleTransferInserted}
             />
-            {/* Vykresluje tabulky a seznamy podřízených vektorových vazeb s unikátním React klíčem */}
+
+            {/* Vektorové atributy se také vykreslují z přepočítaného itemu */}
             <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
         </>
-    ); // Konec návratové hodnoty JSX fragmentu
-}; // Konec definice komponenty GeneratedContentBase
+    );
+};
 
-// Komponenta spravující vnitřní strukturní rozřazení prvků na detailu finanční stránky
+// =======================================================
+// Komponenta PageItemInnerStructure
+// =======================================================
+
+// Tato komponenta skládá vnitřní strukturu stránky.
+// Bere item z GraphQL kontextu, případně ho přepočítá,
+// a potom ho předá do layoutu a subpage komponenty.
 const PageItemInnerStructure = ({
-    PageNavbar = null, // Volitelná navigační lišta specifická pro entitu
-    ItemLayout = LargeCard, // Výchozí layout prvek (velká karta) obalující obsah
-    SubPage = GeneratedContentBase, // Výchozí podstránka zajišťující kalkulace a grafy
-    OtherComponents = [], // Pole doplňkových komponent pro dodatečný wrapping obsahu
-    children // Vnořené klientské elementy
+    PageNavbar = null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    OtherComponents = [],
+    children
 }) => {
-    
-    // Vytahuje aktuální asynchronně načtenou položku (item) z globálního GraphQL kontextu entity
+    // Získá aktuálně načtenou entitu z GraphQL provideru.
     const { item } = useGQLEntityContext();
 
-    // Callback handler pro zachycení vložení transferu uvnitř této specifické struktury layoutu
+    console.log("PAGEITEMINNERSTRUCTURE RENDER", item);
+
+    // Handler pro případ, kdy SubPage oznámí úspěšné vložení transferu.
     const handleTransferInserted = (transfer) => {
-        
-        // Loguje přijetí události transferu a jeho parametry
         console.log("PAGEITEMINNER DOSTAL TRANSFER:", transfer);
+    };
 
-        // UPOZORNĚNÍ: Volání setLocalTransfers v původním kódu selže, pokud není stav lokálně definován v této komponentě.
-        // Původní řádky ponechány v nezměněné formě pro zachování funkční kontinuity struktury:
-        setLocalTransfers(previousTransfers => [
-            ...previousTransfers,
-            {
-                financeSourceId: transfer.financeSourceId,
-                financeDestinationId: transfer.financeDestinationId,
-                amount: Number(transfer.amount || 0),
-            }
-        ]); // Konec fiktivního nastavení stavu
-    }; // Konec definice handleTransferInserted
-
-    // Memoizuje lokálně napatchovaný finanční objekt na základě kompletního prohledání a vysbírání transferů z itemu
+    // Vytvoří přepočítanou kopii itemu podle transferů,
+    // které jsou případně zanořené přímo ve struktuře itemu.
     const patchedItem = useMemo(() => {
-        
-        // Pokud item chybí, vrátí ho přímo bez kalkulací
         if (!item) return item;
 
-        // Výpisy klíčů a vlastností objektu pro potřeby hlubokého ladění datového schématu v konzoli
+        // Debug výpisy pro kontrolu, jaká data item skutečně obsahuje.
         console.log("GENERATEDCONTENTBASE ITEM:", item);
         console.log("GENERATEDCONTENTBASE ITEM KEYS:", Object.keys(item || {}).join("\n"));
+
+        // Vypíše klíče, které se názvem podobají transferům nebo zdrojům/cílům.
         console.log("TRANSFER RELATED KEYS:", Object.keys(item || {}).filter(key =>
             key.toLowerCase().includes("transfer") ||
             key.toLowerCase().includes("source") ||
             key.toLowerCase().includes("destination")
-        )); // Konec filtrovaných logů klíčů
+        ));
 
-        // Posbírá rekurzivně všechny transfery, které jsou přímou součástí datové struktury tohoto objektu
+        // Posbírá transfery z aktuálního itemu.
         const backendTransfers = collectTransfers(item);
 
-        // Loguje interně nalezené transfery struktury
         console.log("BACKEND TRANSFERS:", backendTransfers);
 
-        // Vrací napatchovaný finanční objekt upravený o tyto interní transfery
+        // Vrátí item přepočítaný podle těchto transferů.
         return patchFinanceItem(item, backendTransfers);
-        
-    }, [item]); // Spustí se znovu pouze tehdy, pokud se změní samotný objekt item z kontextu
+    }, [item]);
 
-    // Podmínka: Pokud položka v kontextu neexistuje, renderuje textové upozornění
+    // Pokud item není načtený, zobrazí se hláška.
     if (!item) return <>Položka nenalezena</>;
 
-    // Pomocí metody reduceRight obalí vnořený klientský obsah (children) do řetězce komponent specifikovaných v OtherComponents
+    // OtherComponents umožňuje obalit obsah dalšími komponentami.
+    // reduceRight znamená, že se komponenty aplikují zprava doleva.
     const content = (OtherComponents || []).reduceRight((acc, Component) => {
-        if (!Component) return acc; // Pokud komponenta v poli neexistuje, vrátí dosavadní akumulátor
-        return <Component item={item}>{acc}</Component>; // Obalí akumulátor do komponenty a předá jí item
-    }, children); // Výchozí hodnotou redukce jsou samotné children
+        if (!Component) return acc;
 
-    // Vrací výsledný JSX strom skládající navigační lištu, obalovou kartu a dynamický obsah podstránky
+        return <Component item={item}>{acc}</Component>;
+    }, children);
+
     return (
         <>
-            {/* Pokud je předána navigační lišta, vykreslí ji v horní části a předá jí položku */}
+            {/* Volitelná navigace stránky */}
             {PageNavbar && <PageNavbar item={item} />}
-            
-            {/* Vykresluje obalový prvek karty (LargeCard) s předáním kompletně napatchované položky */}
+
+            {/* Hlavní layout stránky dostává přepočítaný item */}
             <ItemLayout item={patchedItem}>
-                
-                {/* Podmínka: Pokud je definována substránka, vykreslí ji a naváže inline callback vložení transferu */}
                 {SubPage ? (
                     <SubPage
-                        item={patchedItem} // Předání napatchovaných dat do subpage
+                        item={patchedItem}
                         onTransferInserted={(transfer) => {
-                            // Zachytí událost ze subpage, zaloguje ji a předá internímu handleru layoutu
                             console.log("SUBPAGE INLINE CALLBACK DOSTAL TRANSFER:", transfer);
-                            handleTransferInserted(transfer); // Volání vnitřního zpracování
+                            handleTransferInserted(transfer);
                         }}
                     >
-                        {content} {/* Vkládá vygenerovaný a obalený obsah jako children podstránky */}
+                        {content}
                     </SubPage>
                 ) : (
-                    content // Pokud subpage chybí, vykreslí přímo samotný obalený obsah (content)
+                    content
                 )}
             </ItemLayout>
         </>
-    ); // Konec návratu JSX stromu layoutu
-}; // Konec definice komponenty PageItemInnerStructure
+    );
+};
 
-// Definuje a exportuje základní komponentu stránky (PageItemBase) obalující celou logiku do AsyncActionProvideru
+// =======================================================
+// Komponenta PageItemBase
+// =======================================================
+
+// Tato komponenta připravuje základní provider pro načtení detailu entity podle ID z URL.
 export const PageItemBase = ({
-    queryAsyncAction = ReadAsyncAction, // Výchozí asynchronní akce pro načtení (čtení) dat entity
-    PageNavbar = () => null, // Výchozí prázdná funkce pro navigační lištu
-    ItemLayout = LargeCard, // Výchozí obalová komponenta karty layoutu
-    SubPage = GeneratedContentBase, // Výchozí vnitřní subpage komponenta
-    children // Vnořený klientský obsah
+    queryAsyncAction = ReadAsyncAction,
+    PageNavbar = () => null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    children
 }) => {
-    
-    // Vytahuje textový parametr 'id' z aktivní URL adresy prohlížeče pomocí react-routeru
+    // Z URL adresy vytáhne ID entity.
     const { id } = useParams();
-    
-    // Sestaví iniciální minimální objekt položky obsahující pouze vytažené ID pro potřeby provideru
+
+    // Vytvoří minimální item, který provider použije pro dotaz.
     const item = { id };
 
-    // Vrací strukturu obalenou providerem, který automaticky spustí dotaz queryAsyncAction pro dané ID položky
     return (
         <AsyncActionProvider item={item} queryAsyncAction={queryAsyncAction}>
-            {/* Vykresluje vnitřní strukturu layoutu a předává jí nakonfigurované renderovací komponenty */}
             <PageItemInnerStructure
                 PageNavbar={PageNavbar}
                 ItemLayout={ItemLayout}
@@ -615,171 +615,153 @@ export const PageItemBase = ({
                 {children}
             </PageItemInnerStructure>
         </AsyncActionProvider>
-    ); // Konec návratové hodnoty komponenty PageItemBase
-}; // Konec definice komponenty PageItemBase
+    );
+};
 
-// Definuje a exportuje univerzální komponentu PageContent, která dynamicky mění obsah na základě parametru akce v URL (view, edit, __def)
+// =======================================================
+// Komponenta PageContent
+// =======================================================
+
+// Tato komponenta řídí obsah detailu stránky podle action z URL.
+// Například:
+// /view zobrazí hlavní detail,
+// /__def zobrazí definice dotazů,
+// /subfinances zobrazí konkrétní vektorový atribut.
 export const PageContent = ({ queryById, queryVector, mutations = {}, children, params }) => {
-    
-    // Získává kompletní GraphQL kontext entity z nejbližšího nadřazeného AsyncActionProvideru
+    // Získá GraphQL kontext z provideru.
     const gqlContext = useGQLEntityContext();
-    
-    // Vytahuje parametr akce z URL adresy (např. /view nebo /__def), jako výchozí nastavuje "view"
+
+    // Z URL načte action. Pokud chybí, výchozí je view.
     const { action = "view" } = useParams();
-    
-    // Bezpečně rozbaluje aktuální datový objekt položky z GraphQL kontextu, pokud existuje
+
+    // Z kontextu vytáhne aktuální item.
     const { item } = gqlContext || {};
 
-    // Memoizuje a přepočítává finanční strom z datového objektu item staženého z provideru
+    // Přepočítá item podle transferů, které jsou případně obsažené přímo v itemu.
     const patchedItem = useMemo(() => {
-        
-        // Posbírá transfery přítomné uvnitř struktury načteného objektu
         const backendTransfers = collectTransfers(item);
 
-        // Loguje nalezené transfery z databáze
         console.log("BACKEND TRANSFERS:", backendTransfers);
 
-        // Vrací upravenou a matematicky přepočítanou položku
         return patchFinanceItem(item, backendTransfers);
-        
-    }, [item]); // Spustí se znovu pouze tehdy, pokud provider dodá nový aktualizovaný objekt item
+    }, [item]);
 
-    // Callback handler reagující na úspěšné vložení přesunu v rámci zobrazení obsahu stránky
+    // Handler po úspěšném vložení transferu.
     const handleTransferInserted = async (transfer) => {
-        
-        // Loguje úspěšné uložení a nutnost reloadu/synchronizace dat
         console.log("TRANSFER HOTOVY, NACITAM DATA ZNOVU:", transfer);
 
-        // PŮVODNÍ ZAKOMENTOVANÝ KÓD: window.location.reload()
-        console.log("RELOAD DOCASNE VYPNUTY KVULI DEBUGU"); // Informace o dočasném potlačení reloadu
-    }; // Konec definice funkce handleTransferInserted
+        // Reload je zatím vypnutý kvůli debugování.
+        // Původní varianta mohla být:
+        // window.location.reload()
+        console.log("RELOAD DOCASNE VYPNUTY KVULI DEBUGU");
+    };
 
-    // Podmínka: Pokud objekt položky v kontextu chybí (např. nevalidní ID), vykreslí chybovou hlášku a vypíše dump kontextu
+    // Pokud item není dostupný, zobrazí se hláška a debug výpis kontextu.
     if (!item) {
         return (
             <div>
                 Položka nenalezena
-                {/* Vykresluje formátovaný JSON dump celého stavu GraphQL kontextu pro účely ladění chyb */}
                 <pre>{JSON.stringify(gqlContext, null, 2)}</pre>
             </div>
-        ); // Konec chybového JSX
-    } // Konec kontroly existence itemu
+        );
+    }
 
-    // Inicializuje proměnnou obsahu výchozí hodnotou vnořených dětí (children)
+    // Výchozí obsah stránky jsou children.
     let content = children;
-    
-    // Získává dynamickou hodnotu vlastnosti z objektu na základě klíče z parametru akce v URL (např. patchedItem["view"])
+
+    // Podle action se zkusí získat konkrétní atribut z itemu.
     const attributeValue = patchedItem?.[action];
 
-    // Ladící výpisy stavů, úprav a sesbíraných dat pro detailní trasování objektů na stránce
     console.log("FINANCE ITEM:", item);
     console.log("PATCHED ITEM:", patchedItem);
-    // PŮVODNÍ LOG: console.log("LOCAL TRANSFERS:", localTransfers) - localTransfers není v tomto scópu definováno, log vyvolá warning/chybu
     console.log("COLLECTED TRANSFERS:", collectTransfers(item));
 
-    // Větvení logiky zobrazení na základě hodnoty parametru 'action' vytaženého z URL adresy
+    // Režim __def slouží pro výpis GraphQL dotazů a mutací.
     if (action === "__def") {
-        
-        // Vývojářský režim "__def": Zobrazuje interní GraphQL schémata dotazů, mutací a tlačítka pro jejich snadné zkopírování
         content = (
             <Row>
-                {/* Sloupec zobrazující textaci primárního dotazu queryById */}
+                {/* Výpis queryById */}
                 <Col>
                     <CardCapsule header="queryById">
                         <SimpleCardCapsuleRightCorner>
-                            {/* Tlačítko pro kopírování řetězce dotazu queryById do schránky */}
                             <CopyButton className="btn btn-sm border-0" text={queryById} />
                         </SimpleCardCapsuleRightCorner>
-                        {/* Formátuje zobrazení GraphQL dotazu zalomením řádků za čárkami a závorkami pro lepší čitelnost */}
+
                         <pre>{queryById?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
                     </CardCapsule>
                 </Col>
-                
-                {/* Sloupec zobrazující textaci vektorového dotazu queryVector */}
+
+                {/* Výpis queryVector */}
                 <Col>
                     <CardCapsule header="queryVector">
                         <SimpleCardCapsuleRightCorner>
-                            {/* Tlačítko pro kopírování řetězce dotazu queryVector do schránky */}
                             <CopyButton className="btn btn-sm border-0" text={queryVector} />
                         </SimpleCardCapsuleRightCorner>
-                        {/* Formátuje zobrazení GraphQL dotazu pro přehlednost v HTML tagu pre */}
+
                         <pre>{queryVector?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
                     </CardCapsule>
                 </Col>
-                
-                {/* Prochází objekt registrovaných mutací (mutations) a pro každou vygeneruje samostatný sloupec s kódem a kopírováním */}
+
+                {/* Výpis všech mutací */}
                 {Object.entries(mutations).map(([name, value]) => {
                     return (
                         <Col key={name}>
                             <CardCapsule header={name}>
                                 <SimpleCardCapsuleRightCorner>
-                                    {/* Tlačítko pro zkopírování těla konkrétní mutace podle jejího názvu */}
                                     <CopyButton className="btn btn-sm border-0" text={value} />
                                 </SimpleCardCapsuleRightCorner>
-                                {/* Formátuje a vypisuje kód mutace */}
+
                                 <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
                             </CardCapsule>
                         </Col>
-                    ); // Konec mapování sloupce mutace
+                    );
                 })}
             </Row>
-        ); // Konec obsahu pro akční režim __def
-        
+        );
     } else if (action === "view") {
-        
-        // Uživatelský režim "view": Standardní klientské zobrazení detailu prvků včetně Sunburst grafu a vizualizace atributů
+        // Standardní zobrazení detailu finance.
         content = (
             <>
-                {/* Vykresluje interaktivní kruhový graf finančních přesunů s upravenými daty a reload callbackem */}
                 <FinanceTransferSunburst
                     item={patchedItem}
                     header="Graf finančních přesunů"
                     onTransferInserted={handleTransferInserted}
                 />
-                {/* Vykresluje přehled všech jednoduchých skalárních textových a číselných hodnot entity */}
+
                 <MediumCardScalars key="MediumCardScalars" item={patchedItem} />
-                
-                {/* Vykresluje přehled všech asociovaných polí a kolekcí (vektorů) entity */}
+
                 <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
             </>
-        ); // Konec obsahu pro režim view
-        
+        );
     } else if (Array.isArray(attributeValue)) {
-        
-        // Pokud hodnota atributu odpovídá poli, přepne zobrazení na specifickou komponentu pro vykreslení polí (VectorAttribute)
+        // Pokud je action název atributu, který je pole, zobrazí se jako VectorAttribute.
         content = <VectorAttribute attribute_name={action} item={patchedItem} />;
-        
     } else if (attributeValue) {
-        
-        // Pokud hodnota atributu existuje (je skalární), přepne zobrazení na komponentu pro vykreslení jednoduché hodnoty (ScalarAttribute)
+        // Pokud je action název jednoduchého atributu, zobrazí se jako ScalarAttribute.
         content = <ScalarAttribute attribute_name={action} item={patchedItem} />;
-    } // Konec vyhodnocování action větvení
+    }
 
-    // Hlavní návratová hodnota komponenty: Obaluje vygenerovaný content do LargeCard a pod ním zobrazuje debug panely s dotazy a JSON stavem
     return (
         <>
-            {/* Obaluje dynamicky sestavené rozhraní (content) do velké systémové karty */}
+            {/* Hlavní obsah stránky */}
             <LargeCard item={patchedItem}>
                 {content}
             </LargeCard>
-            
-            {/* Spodní řada ladících debugovacích panelů pro administrátory systému */}
+
+            {/* Debug panely pod stránkou */}
             <Row>
-                {/* Panel pro surové zobrazení aktuálního textu QueryById dotazu */}
                 <Col>
                     <CardCapsule header="QueryById">
                         <pre>{queryById}</pre>
                     </CardCapsule>
                 </Col>
-                
-                {/* Panel pro zobrazení formátovaného stavu předaných klientských parametrů (params) */}
+
                 <Col>
                     <CardCapsule header="Parametry">
                         <pre>{JSON.stringify(params, null, 2)}</pre>
                     </CardCapsule>
                 </Col>
-                
-                {/* Panel pro kompletní textový výpis aktuální podoby celého napatchovaného JSON objektu dat z databáze */}
+
                 <Col>
                     <CardCapsule header="Response">
                         <pre>{JSON.stringify(patchedItem, null, 2)}</pre>
@@ -787,37 +769,51 @@ export const PageContent = ({ queryById, queryVector, mutations = {}, children, 
                 </Col>
             </Row>
         </>
-    ); // Konec návratu celkového JSX struktury komponenty PageContent
-}; // Konec definice komponenty PageContent
+    );
+};
 
-// Definuje a exportuje hlavní kořenovou komponentu Page, která inicializuje GraphQL typy a dynamicky sestavuje celou stránku
+// =======================================================
+// Hlavní komponenta Page
+// =======================================================
+
+// Tato komponenta je hlavním vstupem stránky.
+// Z URL zjistí typ entity a ID,
+// podle typu najde správný GraphQL dotaz,
+// a potom obalí PageContent do AsyncActionProvideru.
 export const Page = ({ children }) => {
-    
-    // Vytahuje parametry 'id' a 'typename' (např. název GQL modelu) přímo z aktivní URL cesty routeru
+    // Z URL se načte id entity a typename GraphQL modelu.
     const { id, typename } = useParams();
-    
-    // Vytváří iniciální objekt položky s vytaženým identifikátorem ID
+
+    // Provider potřebuje alespoň ID položky.
     const item = { id };
-    
-    // Používá dynamický hook useGQLType, který na základě názvu typu v URL vyhledá příslušné thunky, dotazy a mutace z registru schémat (pokud typ chybí, použije RoleGQLModel)
+
+    // Podle typename se dynamicky získá:
+    // - ByIdAsyncAction pro načtení detailu,
+    // - queryById pro výpis dotazu,
+    // - queryVector pro výpis vektorového dotazu,
+    // - mutations pro výpis dostupných mutací.
     const { ByIdAsyncAction, queryById, queryVector, mutations } = useGQLType(typename || "RoleGQLModel");
 
-    // Vrací výslednou strukturu podmíněného renderu podle úspěšnosti nalezení thunku v registru typu
     return (
         <>
-            {/* Podmínka: Pokud byl asynchronní thunk pro daný typ úspěšně nalezen, obalí stránku do provideru a vykreslí obsah */}
+            {/* Pokud se podařilo najít async akci pro daný typ, zobrazí se stránka */}
             {ByIdAsyncAction && (
                 <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
-                    <PageContent queryById={queryById} queryVector={queryVector} mutations={mutations} params={item}>
+                    <PageContent
+                        queryById={queryById}
+                        queryVector={queryVector}
+                        mutations={mutations}
+                        params={item}
+                    >
                         {children}
                     </PageContent>
                 </AsyncActionProvider>
             )}
-            
-            {/* Podmínka: Pokud typ v registru schémat chybí a akce nebyla nalezena, vykreslí textové varování s názvem chybějícího typu */}
+
+            {/* Pokud typ není podporovaný, zobrazí se jednoduchá chyba */}
             {!ByIdAsyncAction && (
                 <div>No ByIdAsyncAction for type {typename}</div>
             )}
         </>
-    ); // Konec návratové hodnoty kořenové komponenty Page
-}; // Konec definice komponenty Page
+    );
+};
