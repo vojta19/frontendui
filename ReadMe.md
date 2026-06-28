@@ -1,4 +1,22 @@
-# Změny
+# Deníček změn
+
+## 28.6.2026
+**Co bylo změněno**
+- Úprava logiky finančních přesunů pomocí souboru `Store.js`.
+- Komentáře některých souborů.
+
+**Co jsme objevili**
+- Logika finančních přesunů nebyla úplně správně uchopena a potřebovala vylepšit.
+- Popisy klíčových funkcí neexistovali.
+
+**Problém**
+- Data při finančních přesunech se nikam neukládali a byli "naprázdno".
+- Komentáře u některých souborů nebyli přehledné a výstižné.
+
+**Řešení**
+- Tvorba souboru `Store.js` který tento problém řeší.
+- Slouží jako dočasná paměť při přesunech, aplikace si po dotazu vytáhne data právě z této paměti a použije je při transakcích.
+- Úprava komentářové sekce.
 
 ## 26.6.2026
 **Co bylo změněno**
@@ -198,6 +216,7 @@
 ## Časová osa commitů
 | Datum | Hlavní změna | Stručný popis |
 |---|---|---|
+| 28.6.2026 | Vytvoření store | Úprava komentářů a vylepšení samotné logiky přesunů pomocí `Store.js`. | 
 | 26.6.2026 | Formátování a komentáře | Editace všech souborů v rámci našeho FinaceGQL Modelu. |
 | 11.6.2026 | Přehlednější tabulka | Vylepšení `Table`, `Filter` a `MediumContent` pro čitelnější výsledky. |
 | 1.6.2026 | Synchronizace logiky | Sladění vizualizace a backend logiky pro stabilní editace. |
