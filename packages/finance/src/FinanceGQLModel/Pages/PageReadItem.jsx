@@ -1,10 +1,13 @@
 // Importuje komponentu GeneratedContentBase ze souboru Page.
 // GeneratedContentBase je výchozí obsah stránky,
 // který řeší načítání transferů, přepočet hodnot a vykreslení Sunburst grafu.
-// Importuje komponentu PageItemBase ze souboru Page.
+// Importuje komponentu PageItemBase ze souboru PageItemBase.
 // PageItemBase tvoří základní obal detailové stránky.
 // Stará se hlavně o načtení konkrétní entity podle ID z URL.
-import { GeneratedContentBase, PageItemBase } from "./Page";
+
+import { GeneratedContentBase } from "./Page"
+// PAVLE NAUČ SE ČÍST S POROZUMĚNÍM PROSÍM PAGEBASE A PAGE NEJSOU STEJNÉ SOUBORY :)
+import { PageItemBase } from "./PageBase"
 
 /**
  * Komponenta PageReadItem slouží pro zobrazení detailu entity v režimu čtení.

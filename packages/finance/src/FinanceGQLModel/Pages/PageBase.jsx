@@ -42,7 +42,7 @@ export const PageItemBase = ({
     
     // Vrací základní obalovou stránku ze šablony nakonfigurovanou podle předaných layoutů a thunků
     return (
-        <BasePageItem 
+        <PageItemBase_ 
             queryAsyncAction={queryAsyncAction} // Předává thunk pro načtení dat
             PageNavbar={PageNavbar} // Registruje komponentu navigační lišty
             ItemLayout={ItemLayout} // Určuje obalový styl (velkou kartu)
