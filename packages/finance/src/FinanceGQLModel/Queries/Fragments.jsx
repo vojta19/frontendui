@@ -1,7 +1,17 @@
-// Importuje funkci createQueryStrLazy ze sdíleného GraphQL balíčku pro bezpečné skládání závislých fragmentů
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 
-// Definuje řetězec základního fragmentu "Link" pro model FinanceGQLModel obsahující primární skaláry a vazby na projekt a subfinance
+
+/**
+ * GraphQL fragment containing the basic finance entity information.
+ *
+ * The fragment represents the minimum dataset required for displaying
+ * finance entities in lists, tables and links. Besides scalar properties,
+ * it also contains references to the parent finance, finance type,
+ * associated project and direct subfinances.
+ *
+ * @constant
+ * @type {string}
+ */
 const LinkFragmentStr = `
 fragment Link on FinanceGQLModel {
   __typename
@@ -48,9 +58,18 @@ fragment Link on FinanceGQLModel {
     name
   }
 }
-`; // Konec definice fragmentu Link
+`;
 
-// Definuje řetězec středního fragmentu "Medium", který rozšiřuje základní "Link" o RBAC kontrolu rolí uživatele
+
+/**
+ * GraphQL fragment extending the basic finance information with RBAC data.
+ *
+ * The fragment is primarily used by editable views where the current user's
+ * permissions determine which actions are available.
+ *
+ * @constant
+ * @type {string}
+ */
 const MediumFragmentStr = `
 fragment Medium on FinanceGQLModel {
   ...Link
@@ -58,9 +77,19 @@ fragment Medium on FinanceGQLModel {
     ...RBRoles
   }
 }
-`; // Konec definice fragmentu Medium
+`;
 
-// Definuje řetězec velkého fragmentu "Large", který rekurzivně aplikuje fragment "Medium" i na všechny podřízené subfinance
+
+/**
+ * GraphQL fragment containing the complete finance entity.
+ *
+ * Besides the medium-level data, this fragment recursively loads direct
+ * subfinances using the `Medium` fragment. It is typically used by the
+ * finance detail page and the Sunburst visualization.
+ *
+ * @constant
+ * @type {string}
+ */
 const LargeFragmentStr = `
 fragment Large on FinanceGQLModel {
   ...Medium
@@ -68,9 +97,18 @@ fragment Large on FinanceGQLModel {
     ...Medium
   }
 }
-`; // Konec definice fragmentu Large
+`;
 
-// Definuje řetězec fragmentu "Role" popisující model jedné uživatelské role (RoleGQLModel) včetně typu, uživatele a skupiny
+
+/**
+ * GraphQL fragment describing a user role.
+ *
+ * The fragment contains role metadata together with references to the
+ * associated user, role type and group.
+ *
+ * @constant
+ * @type {string}
+ */
 const RoleFragmentStr = `
 fragment Role on RoleGQLModel {
   __typename
@@ -94,9 +132,18 @@ fragment Role on RoleGQLModel {
   user { __typename id fullname }
   group { __typename id name }
 }
-`; // Konec definice fragmentu Role
+`;
 
-// Definuje řetězec fragmentu "RBRoles" (RBAC), který zjišťuje role aktuálně přihlášeného uživatele vůči danému objektu a jejich typy/skupiny
+
+/**
+ * GraphQL fragment describing RBAC information of a finance entity.
+ *
+ * The fragment provides information about the current user's roles,
+ * including the assigned role type and group hierarchy.
+ *
+ * @constant
+ * @type {string}
+ */
 const RBACFragmentStr = `
 fragment RBRoles on RBACObjectGQLModel {
   __typename
@@ -125,19 +172,65 @@ fragment RBRoles on RBACObjectGQLModel {
     }
   }
 }
-`; // Konec definice fragmentu RBRoles
+`;
 
-// Sestavuje a exportuje samostatný lazy fragment pro model role
-export const RoleFragment = createQueryStrLazy(`${RoleFragmentStr}`);
 
-// Sestavuje a exportuje samostatný lazy fragment pro strukturu RBAC oprávnění (RBRoles)
-export const RBACFragment = createQueryStrLazy(`${RBACFragmentStr}`);
+/**
+ * Lazy GraphQL fragment describing a user role.
+ *
+ * @constant
+ */
+export const RoleFragment =
+    createQueryStrLazy(RoleFragmentStr);
 
-// Sestavuje a exportuje základní finanční lazy fragment Link
-export const LinkFragment = createQueryStrLazy(`${LinkFragmentStr}`);
 
-// Sestavuje a exportuje střední finanční lazy fragment Medium s provázáním na závislosti LinkFragment a RBACFragment
-export const MediumFragment = createQueryStrLazy(`${MediumFragmentStr}`, LinkFragment, RBACFragment);
+/**
+ * Lazy GraphQL fragment describing RBAC permissions.
+ *
+ * @constant
+ */
+export const RBACFragment =
+    createQueryStrLazy(RBACFragmentStr);
 
-// Sestavuje a exportuje velký finanční lazy fragment Large s provázáním na závislý MediumFragment
-export const LargeFragment = createQueryStrLazy(`${LargeFragmentStr}`, MediumFragment);
+
+/**
+ * Lazy GraphQL fragment containing the basic finance entity.
+ *
+ * @constant
+ */
+export const LinkFragment =
+    createQueryStrLazy(LinkFragmentStr);
+
+
+/**
+ * Lazy GraphQL fragment containing finance data together with RBAC
+ * permissions.
+ *
+ * Depends on:
+ * - LinkFragment
+ * - RBACFragment
+ *
+ * @constant
+ */
+export const MediumFragment =
+    createQueryStrLazy(
+        MediumFragmentStr,
+        LinkFragment,
+        RBACFragment
+    );
+
+
+/**
+ * Lazy GraphQL fragment representing the complete finance entity,
+ * including direct subfinances.
+ *
+ * Depends on:
+ * - MediumFragment
+ *
+ * @constant
+ */
+export const LargeFragment =
+    createQueryStrLazy(
+        LargeFragmentStr,
+        MediumFragment
+    );

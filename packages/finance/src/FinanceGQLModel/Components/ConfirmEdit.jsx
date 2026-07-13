@@ -1,107 +1,146 @@
-import { UpdateAsyncAction } from "../Queries" // import async akce pro mutaci/aktualizaci
-import { MediumEditableContent } from "./MediumEditableContent" // import komponenty pro editaci s středním obsahem
-import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction" // hook pro správu edit stavu a akcí
-import { useCallback } from "react" // hook pro optimalizaci callback funkcí
-import { useGQLEntityContext } from "../../../../_template/src/Base/Helpers/GQLEntityProvider" // hook pro přístup ke GQL kontextu entity
+import { useCallback } from "react";
+
+import { UpdateAsyncAction } from "../Queries";
+import { MediumEditableContent } from "./MediumEditableContent";
+
+import {
+    useEditAction
+} from "../../../../dynamic/src/Hooks/useEditAction";
+
+import {
+    useGQLEntityContext
+} from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
+
 
 /**
- * A component that handles confirmation and saving of entity edits.
+ * Displays a confirmation-based editing interface for a finance entity.
  *
- * This component integrates with the GraphQL context and edit action hook to provide
- * a complete edit workflow with cancel and confirm buttons. It manages local draft state
- * and synchronizes changes with the GraphQL context upon confirmation.
+ * The component manages a local editable draft through `useEditAction`.
+ * Unlike live editing, changes are not persisted immediately. The user must
+ * explicitly confirm or cancel the modifications using the provided action
+ * buttons.
+ *
+ * After a successful update, the returned entity is propagated to the
+ * surrounding GraphQL entity context so that other components can use the
+ * current data.
  *
  * @component
- * @param {Object} props - The component props.
- * @param {Object} props.item - The entity item to be edited.
- * @param {React.ReactNode} props.children - Child elements to render inside the editable content.
  *
- * @returns {JSX.Element} A form with editable content and action buttons.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Original finance entity used to initialize the editable draft.
+ *
+ * @param {string} [props.item.id]
+ * Unique identifier of the finance entity.
+ *
+ * @param {string} [props.item.name]
+ * Czech name of the finance entity.
+ *
+ * @param {string} [props.item.nameEn]
+ * English name of the finance entity.
+ *
+ * @param {string} [props.item.description]
+ * Description of the finance entity.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional additional form fields or content rendered below the standard
+ * editable finance fields.
+ *
+ * @returns {JSX.Element}
+ * Confirmation-based finance editing form.
  *
  * @example
- * import { ConfirmEdit } from './ConfirmEdit';
- *
- * const item = { id: 1, name: "Finance Entry", amount: 100 };
- *
- * <ConfirmEdit item={item}>
- *   <CustomFormFields />
+ * <ConfirmEdit item={finance}>
+ *     <p>Změny se uloží až po potvrzení.</p>
  * </ConfirmEdit>
  */
-export const ConfirmEdit = ({ item, children }) => { // komponenta přijímá editovanou položku a potomky
-    // extrahuje GQL kontext: funkce run, error state, loading state, entitu, data a callback handlery
+export const ConfirmEdit = ({
+    item,
+    children
+}) => {
     const {
-        run,
-        error,
-        loading,
-        entity,
-        data,
-        onChange: contextOnChange,
-        onBlur: contextOnBlur,
-    } = useGQLEntityContext()
+        onChange: contextOnChange
+    } = useGQLEntityContext();
 
-    // callback pro zpracování mutace s notifikací - kombinuje změnu a notifikační handler
-    const localOnMutationEvent = useCallback(
-        (mutationHandler, notifyHandler) =>
-            async (e) => {
-                // vytvoří nový objekt položky s aktualizovanou hodnotou z targetu
-                const newItem = { ...item, [e.target.id]: e.target.value }
-                // vytvoří nový event objekt se zaktualizovanou hodnotou
-                const newEvent = { target: { value: newItem } }
-
-                // zavolá notifikační handler s novým eventem
-                await notifyHandler(newEvent)
-                // zavolá mutační handler s původním eventem
-                return await mutationHandler(e)
-            },
-        []
-    )
-
-    // extrahuje edit state a akce z hooku: draft, dirty flag, handlery pro změny a akce
-    const { draft, dirty, onChange, onBlur, onCancel, onConfirm } = useEditAction(
+    const {
+        draft,
+        dirty,
+        loading: saving,
+        onChange,
+        onBlur,
+        onCancel,
+        onConfirm
+    } = useEditAction(
         UpdateAsyncAction,
         item,
-        { mode: "confirm" }
-    )
+        {
+            mode: "confirm"
+        }
+    );
 
-    // callback pro potvrzení změn - provede mutaci a synchronizuje s kontextem
-    const handleConfirm = useCallback(
-        async () => {
-            // zavolá onConfirm z useEditAction, který provede mutaci
-            const result = await onConfirm()
-            // log pro debug: výsledek mutace a aktuální draft
-            console.log("ConfirmEdit handleConfirm result", result, "draft", draft)
-            // pokud mutace vrátila výsledek
-            if (result) {
-                // vytvoří event s výsledkem pro kontext
-                const event = { target: { value: result } }
-                // synchronizuje výsledek s GQL kontextem
-                await contextOnChange(event)
-            }
-            // vrací výsledek mutace
-            return result
-        },
-        [onConfirm, contextOnChange]
-    )
+
+    /**
+     * Persists the current finance draft and synchronizes the returned entity
+     * with the surrounding GraphQL context.
+     *
+     * @async
+     *
+     * @returns {Promise<Object|undefined>}
+     * Updated finance entity returned by the mutation, or `undefined` when
+     * the update was not completed.
+     */
+    const handleConfirm = useCallback(async () => {
+        const result = await onConfirm();
+
+        if (
+            result &&
+            typeof contextOnChange === "function"
+        ) {
+            await contextOnChange({
+                target: {
+                    value: result
+                }
+            });
+        }
+
+        return result;
+    }, [
+        contextOnChange,
+        onConfirm
+    ]);
+
 
     return (
-        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur}>
-            {children} {/* render potomků */}
-            <hr /> {/* vizuální oddělovač */}
-            {/* <pre>{JSON.stringify(item, null, 2)}</pre> */}
+        <MediumEditableContent
+            item={draft ?? item}
+            onChange={onChange}
+            onBlur={onBlur}
+        >
+            {children}
+
+            <hr />
+
             <button
-                className="btn btn-warning form-control" // warning styl tlačítka
-                onClick={onCancel} // zavolá cancel handler
-                disabled={!dirty || loading} // disable pokud není změn nebo je loading
+                type="button"
+                className="btn btn-warning form-control"
+                onClick={onCancel}
+                disabled={!dirty || saving}
             >
-                Zrušit změny {/* text tlačítka pro zrušení */}
+                Zrušit změny
             </button>
+
             <button
-                className="btn btn-primary form-control" // primary styl tlačítka
-                onClick={handleConfirm} // zavolá confirm handler
-                disabled={!dirty || loading} // disable pokud není změn nebo je loading
+                type="button"
+                className="btn btn-primary form-control"
+                onClick={handleConfirm}
+                disabled={!dirty || saving}
             >
-                Uložit změny {/* text tlačítka pro uložení */}
+                {saving
+                    ? "Ukládám změny..."
+                    : "Uložit změny"}
             </button>
         </MediumEditableContent>
-    )
-}
+    );
+};

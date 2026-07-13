@@ -1,225 +1,413 @@
-// Importuje hooky useMemo a useState z knihovny React pro správu stavu a optimalizaci výpočtů
-import { useMemo, useState } from "react";
+import {
+    useMemo,
+    useState
+} from "react";
 
-// Importuje základní komponentu tabulky a pomocnou funkci buildTableDef pro generování definice sloupců ze šablony
-import { Table as BaseTable, buildTableDef } from "../../../../_template/src/Base/Components/Table";
+import {
+    Table as BaseTable,
+    buildTableDef
+} from "../../../../_template/src/Base/Components/Table";
 
-// Definuje fixní objekt požadovaných sloupců mapující klíče z databáze na české popisky v záhlaví
+
+/**
+ * Column configuration used by the finance table.
+ *
+ * Keys correspond to finance entity attributes and values define the
+ * localized labels displayed in the table header.
+ *
+ * @constant
+ * @type {Object<string, string>}
+ */
 const WANTED_COLUMNS = {
-    __typename: "Typ", // Sloupec pro název GraphQL typu entity
-    id: "ID", // Sloupec pro identifikační číslo
-    name: "Název", // Sloupec pro český název položky
-    lastchange: "Naposledy změněno", // Sloupec pro čas poslední aktualizace
-    created: "Vytvořeno", // Sloupec pro čas vytvoření záznamu
-    nameEn: "EN název", // Sloupec pro anglickou mutaci názvu
-    value: "Částka", // Sloupec pro finanční obnos
-    description: "Popis", // Sloupec pro detailnější textový popis
-    tools: "Nástroje" // Sloupec vyhrazený pro kontextová akční tlačítka
-}; // Konec definice WANTED_COLUMNS
+    __typename: "Typ",
+    id: "ID",
+    name: "Název",
+    lastchange: "Naposledy změněno",
+    created: "Vytvořeno",
+    nameEn: "EN název",
+    value: "Částka",
+    description: "Popis",
+    tools: "Nástroje"
+};
 
-// Definuje pole klíčů, podle kterých má aplikace dovoleno na frontendu data řadit
-const ALLOWED_SORT_KEYS = ["id", "name", "value"];
 
-// --- FORMÁTOVACÍ FUNKCE ---
+/**
+ * Finance entity properties that support client-side sorting.
+ *
+ * @constant
+ * @type {string[]}
+ */
+const ALLOWED_SORT_KEYS = [
+    "id",
+    "name",
+    "value"
+];
 
-// Pomocná funkce pro převod číselné hodnoty na formátovanou měnu v Kč dle českých standardů
-const formatCurrency = (val) => {
-    
-    // Pokud hodnota není typu číslo, pokusí se ji přetypovat, případně použije nulu jako zálohu
-    if (typeof val !== "number") val = Number(val) || 0;
-    
-    // Vrací zformátované číslo s oddělovači tisíců doplněné o textový řetězec měny " Kč"
-    return val.toLocaleString("cs-CZ") + " Kč";
-}; // Konec definice funkce formatCurrency
 
-// Pomocná funkce pro převod ISO řetězce data a času na lidsky čitelný formát
-const formatDate = (dateStr) => {
-    
-    // Pokud řetězec neexistuje nebo je prázdný, vrátí pomlčku
-    if (!dateStr) return "-";
-    
-    // Blok try-catch zachycuje případné chyby při parsování nevalidních formátů dat
+/**
+ * Formats a numeric value as Czech currency.
+ *
+ * Non-numeric values are converted to numbers. Invalid values are represented
+ * as zero.
+ *
+ * @param {number|string|null|undefined} value
+ * Financial value to format.
+ *
+ * @returns {string}
+ * Localized currency string expressed in Czech crowns.
+ *
+ * @example
+ * formatCurrency(250000);
+ *
+ * // Returns: "250 000 Kč"
+ */
+const formatCurrency = (value) => {
+    const numericValue =
+        typeof value === "number"
+            ? value
+            : Number(value) || 0;
+
+    return `${numericValue.toLocaleString("cs-CZ")} Kč`;
+};
+
+
+/**
+ * Formats a date value using the Czech locale.
+ *
+ * Invalid or missing date values are returned as a fallback representation.
+ *
+ * @param {string|null|undefined} dateString
+ * ISO date string or another value accepted by the JavaScript `Date`
+ * constructor.
+ *
+ * @returns {string}
+ * Localized date and time, a dash for missing values, or the original string
+ * for invalid dates.
+ *
+ * @example
+ * formatDate("2026-07-13T15:18:34.884Z");
+ *
+ * // Returns a localized Czech date and time.
+ */
+const formatDate = (dateString) => {
+    if (!dateString) {
+        return "-";
+    }
+
     try {
-        
-        // Vytváří novou instanci objektu Date z předaného textového řetězce
-        const d = new Date(dateStr);
-        
-        // Pokud vytvořené datum není validní (isNaN), vrátí původní nezměněný řetězec
-        if (isNaN(d.getTime())) return dateStr;
-        
-        // Vrací spojené české datum a čas zkrácený na hodiny a minuty
-        return d.toLocaleDateString("cs-CZ") + " " + d.toLocaleTimeString("cs-CZ", { hour: '2-digit', minute: '2-digit' });
-        
+        const date = new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) {
+            return dateString;
+        }
+
+        const localizedDate =
+            date.toLocaleDateString("cs-CZ");
+
+        const localizedTime =
+            date.toLocaleTimeString(
+                "cs-CZ",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        return `${localizedDate} ${localizedTime}`;
     } catch {
-        
-        // V případě jakékoliv neočekávané výjimky vrátí původní surový řetězec jako zálohu
-        return dateStr;
-    } // Konec bloku try-catch
-}; // Konec definice funkce formatDate
+        return dateString;
+    }
+};
 
-// Definuje a exportuje komponentu Table, která přijímá pole objektů 'data'
-export const Table = ({ data }) => {
-    
-    // Pokud data chybí, nebo je pole prázdné, komponenta nevykreslí vůbec nic (vrátí null)
-    if (!data || data.length === 0) return null;
 
-    // Inicializuje stav pro konfiguraci řazení; výchozí je řazení podle sloupce 'id' vzestupně ('asc')
-    const [sortConfig, setSortConfig] = useState({ key: "id", direction: "asc" });
+/**
+ * Extracts the final numeric segment from an identifier.
+ *
+ * The helper is used for natural sorting of UUID-like values or custom
+ * identifiers whose meaningful ordering value is stored in the last
+ * hyphen-separated segment.
+ *
+ * @param {string|number|null|undefined} idValue
+ * Identifier whose final numeric segment should be extracted.
+ *
+ * @returns {number}
+ * Parsed numeric suffix or zero when no numeric value is available.
+ *
+ * @example
+ * getLastNumberFromId(
+ *     "30000000-0000-0000-0000-000000000003"
+ * );
+ *
+ * // Returns: 3
+ */
+const getLastNumberFromId = (idValue) => {
+    if (!idValue) {
+        return 0;
+    }
 
-    // Funkce měnící konfiguraci řazení při kliknutí na validní záhlaví sloupce
+    const parts = String(idValue).split("-");
+    const lastPart = parts.at(-1);
+
+    return Number.parseInt(lastPart, 10) || 0;
+};
+
+
+/**
+ * Displays finance entities in a sortable table.
+ *
+ * The component extends the shared table implementation with:
+ *
+ * - a restricted set of finance-specific columns,
+ * - client-side sorting by identifier, name and amount,
+ * - localized Czech currency formatting,
+ * - localized date and time formatting,
+ * - visual sort direction indicators in column headers.
+ *
+ * Sorting is triggered by clicking a supported table header. Clicking buttons
+ * or contextual menus does not change the current sorting configuration.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object[]} props.data
+ * Finance entities rendered as table rows.
+ *
+ * @returns {JSX.Element|null}
+ * Sortable finance table, or `null` when no data is available.
+ *
+ * @example
+ * <Table
+ *     data={[
+ *         {
+ *             id: "30000000-0000-0000-0000-000000000003",
+ *             name: "Rozpočet WP2",
+ *             value: 900000
+ *         }
+ *     ]}
+ * />
+ */
+export const Table = ({
+    data
+}) => {
+    if (!Array.isArray(data) || data.length === 0) {
+        return null;
+    }
+
+    const [sortConfig, setSortConfig] = useState({
+        key: "id",
+        direction: "asc"
+    });
+
+
+    /**
+     * Updates the active sort key and direction.
+     *
+     * Clicking the currently active ascending column changes the direction to
+     * descending. Selecting another supported column starts with ascending
+     * order.
+     *
+     * @param {string} key
+     * Finance property used for sorting.
+     *
+     * @returns {void}
+     */
     const handleSort = (key) => {
-        
-        // Pokud sloupec nepatří mezi povolené klíče pro řazení, operaci ihned ignoruje
-        if (!ALLOWED_SORT_KEYS.includes(key)) return;
-        
-        // Nastaví výchozí směr řazení na vzestupný
-        let direction = "asc";
-        
-        // Pokud se kliklo na stejný sloupec, který je již aktivní a řazený vzestupně, otočí směr na sestupný
-        if (sortConfig.key === key && sortConfig.direction === "asc") {
-            direction = "desc";
-        } // Konec podmínky pro změnu směru
-        
-        // Aktualizuje stav komponenty nově vyhodnoceným klíčem a směrem řazení
-        setSortConfig({ key, direction });
-    }; // Konec definice funkce handleSort
+        if (!ALLOWED_SORT_KEYS.includes(key)) {
+            return;
+        }
 
-    // Pomocná funkce pro vytažení posledního číselného segmentu z řetězcového ID (např. z UUID nebo "finance-123")
-    const getLastNumberFromId = (idString) => {
-        
-        // Pokud ID neexistuje, vrátí výchozí hodnotu 0
-        if (!idString) return 0;
-        
-        // Rozdělí řetězec na pole částí podle znaku pomlčky
-        const parts = idString.toString().split("-");
-        
-        // Získá poslední prvek z tohoto pole částí
-        const lastPart = parts[parts.length - 1];
-        
-        // Převede tento poslední segment na celé číslo o základu 10, v případě selhání vrátí 0
-        return parseInt(lastPart, 10) || 0;
-    }; // Konec definice funkce getLastNumberFromId
+        const direction =
+            sortConfig.key === key &&
+            sortConfig.direction === "asc"
+                ? "desc"
+                : "asc";
 
-    // Memoizuje seřazená data; výpočet se spustí znovu pouze při změně vstupních dat nebo konfigurace řazení
+        setSortConfig({
+            key,
+            direction
+        });
+    };
+
+
     const sortedData = useMemo(() => {
-        
-        // Vytváří mělkou kopii původního pole dat, aby nedocházelo k mutaci props
-        let sortableItems = [...data];
-        
-        // Pokud je vybrán klíč pro řazení, provede se řazení pole pomocí vestavěné metody .sort()
-        if (sortConfig.key !== null) {
-            
-            // Spouští porovnávací funkci pro dvojice položek (a, b)
-            sortableItems.sort((a, b) => {
-                
-                // Získává hodnoty řazeného atributu pro oba porovnávané objekty
-                let aValue = a[sortConfig.key];
-                let bValue = b[sortConfig.key];
+        const sortableItems = [...data];
 
-                // Specifické řazení pro sloupec 'id' na základě koncových čísel
-                if (sortConfig.key === "id") {
-                    return sortConfig.direction === "asc" 
-                        ? getLastNumberFromId(aValue) - getLastNumberFromId(bValue)
-                        : getLastNumberFromId(bValue) - getLastNumberFromId(aValue);
-                } // Konec řazení ID
+        if (!sortConfig.key) {
+            return sortableItems;
+        }
 
-                // Specifické číselné řazení pro sloupec 'value' (Částka) s ošetřením nevalidních hodnot
-                if (sortConfig.key === "value") {
-                    return sortConfig.direction === "asc" 
-                        ? (Number(aValue) || 0) - (Number(bValue) || 0)
-                        : (Number(bValue) || 0) - (Number(aValue) || 0);
-                } // Konec řazení Částky
+        sortableItems.sort((firstItem, secondItem) => {
+            let firstValue =
+                firstItem?.[sortConfig.key];
 
-                // Standardní textové (abecední) řazení pro ostatní sloupce (např. jméno)
-                aValue = (aValue ?? "").toString().toLowerCase(); // Převod hodnoty A na malá písmena
-                bValue = (bValue ?? "").toString().toLowerCase(); // Převod hodnoty B na malá písmena
-                
-                // Porovnání řetězců a vrácení výsledku na základě aktivního směru řazení
-                if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-                return 0; // Hodnoty jsou totožné
-            }); // Konec metody sort
-        } // Konec podmínky aktivního řazení
-        
-        // Vrací upravené a seřazené pole položek
+            let secondValue =
+                secondItem?.[sortConfig.key];
+
+            if (sortConfig.key === "id") {
+                const firstNumber =
+                    getLastNumberFromId(firstValue);
+
+                const secondNumber =
+                    getLastNumberFromId(secondValue);
+
+                return sortConfig.direction === "asc"
+                    ? firstNumber - secondNumber
+                    : secondNumber - firstNumber;
+            }
+
+            if (sortConfig.key === "value") {
+                const firstNumber =
+                    Number(firstValue) || 0;
+
+                const secondNumber =
+                    Number(secondValue) || 0;
+
+                return sortConfig.direction === "asc"
+                    ? firstNumber - secondNumber
+                    : secondNumber - firstNumber;
+            }
+
+            firstValue =
+                String(firstValue ?? "")
+                    .toLocaleLowerCase("cs-CZ");
+
+            secondValue =
+                String(secondValue ?? "")
+                    .toLocaleLowerCase("cs-CZ");
+
+            const comparison =
+                firstValue.localeCompare(
+                    secondValue,
+                    "cs-CZ"
+                );
+
+            return sortConfig.direction === "asc"
+                ? comparison
+                : -comparison;
+        });
+
         return sortableItems;
-        
-    }, [data, sortConfig]); // Závislosti memoizace: zdrojová data a stav řazení
+    }, [
+        data,
+        sortConfig
+    ]);
 
-    // Memoizuje definici tabulky pro šablonu; filtruje a transformuje sloupce, přidává ikony řazení a formátovací sub-komponenty
+
     const customTableDef = useMemo(() => {
-        
-        // Generuje základní objekt definice sloupců na základě aktuálně seřazených dat
-        const baseDef = buildTableDef(sortedData);
-        
-        // Inicializuje prázdný objekt pro výslednou přizpůsobenou definici sloupců
-        const filteredDef = {};
+        const baseDefinition =
+            buildTableDef(sortedData);
 
-        // Prochází všechny klíče definované v požadovaných sloupcích (WANTED_COLUMNS)
+        const filteredDefinition = {};
+
         Object.keys(WANTED_COLUMNS).forEach((key) => {
-            
-            // Pokud generovaná základní definice obsahuje odpovídající klíč, zpracuje ho
-            if (baseDef[key]) {
-                
-                // Načte výchozí český text popisku sloupce
-                let label = WANTED_COLUMNS[key];
-                
-                // Pokud je tento sloupec právě aktivní pro řazení, připojí k textu vizuální šipku směru
-                if (sortConfig.key === key && ALLOWED_SORT_KEYS.includes(key)) {
-                    label += sortConfig.direction === "asc" ? " ▲" : " ▼";
-                } // Konec doplňování šipky
+            if (!baseDefinition[key]) {
+                return;
+            }
 
-                // Zkopíruje vlastnosti sloupce z baseDef a přepíše label novou hodnotou (případně se šipkou)
-                filteredDef[key] = {
-                    ...baseDef[key], // Rozbalení původních parametrů sloupce
-                    label: label // Dosazení upraveného štítku
-                }; // Konec definice sloupce
+            let label = WANTED_COLUMNS[key];
 
-                // Pokud jde o sloupec 'value', vloží do definice vlastní komponentu buňky pro formát měny
-                if (key === "value") {
-                    filteredDef[key].component = ({ row }) => <td>{formatCurrency(row?.value)}</td>;
-                } // Konec custom komponenty pro Částku
-                
-                // Pokud jde o časové údaje, vloží vlastní komponentu buňky pro formát data a času
-                if (key === "lastchange" || key === "created") {
-                    filteredDef[key].component = ({ row }) => <td>{formatDate(row?.[key])}</td>;
-                } // Konec custom komponenty pro data
-            } // Konec kontroly existence klíče v baseDef
-        }); // Konec cyklu forEach přes WANTED_COLUMNS
+            if (
+                sortConfig.key === key &&
+                ALLOWED_SORT_KEYS.includes(key)
+            ) {
+                label +=
+                    sortConfig.direction === "asc"
+                        ? " ▲"
+                        : " ▼";
+            }
 
-        // O sloupce "tools" se vůbec nestaráme – šablona si tam sama vloží své originální KebabMenu 
-        // a provede ty importy z Mutations, které máš na obrázku.
-        return filteredDef;
-        
-    }, [sortedData, sortConfig]); // Závislosti memoizace: seřazená data a konfigurace šipek řazení
+            filteredDefinition[key] = {
+                ...baseDefinition[key],
+                label
+            };
 
-    // Společný event handler pro zachycení kliknutí nad celým kontejnerem tabulky (Event Delegation)
-    const handleTableClick = (e) => {
-        
-        // Pokud kliknutí přišlo z vnitřku rozbalovacího menu nebo akčního tlačítka nástrojů, událost ignoruje
-        if (e.target.closest("[role='menu']") || e.target.closest("button")) return;
-        
-        // Hledá nejbližší nadřazený element hlavičky tabulky (th) od místa kliknutí
-        const th = e.target.closest("th");
-        
-        // Pokud kliknutí neproběhlo uvnitř záhlaví th, ukončí funkci
-        if (!th) return;
+            if (key === "value") {
+                filteredDefinition[key].component =
+                    ({ row }) => (
+                        <td>
+                            {formatCurrency(row?.value)}
+                        </td>
+                    );
+            }
 
-        // Očistí text v záhlaví od případných šipek řazení a mezer, aby získal čistý název sloupce
-        const clickedLabel = th.innerText.replace(" ▲", "").replace(" ▼", "").trim();
-        
-        // Vyhledá v WANTED_COLUMNS klíč (např. 'id', 'name'), který odpovídá očištěnému textu záhlaví
-        const foundKey = Object.keys(WANTED_COLUMNS).find(key => WANTED_COLUMNS[key] === clickedLabel);
+            if (
+                key === "lastchange" ||
+                key === "created"
+            ) {
+                filteredDefinition[key].component =
+                    ({ row }) => (
+                        <td>
+                            {formatDate(row?.[key])}
+                        </td>
+                    );
+            }
+        });
 
-        // Pokud byl odpovídající systémový klíč nalezen, předá ho funkci pro spuštění/změnu řazení
-        if (foundKey) handleSort(foundKey);
-    }; // Konec definice handleTableClick
+        return filteredDefinition;
+    }, [
+        sortedData,
+        sortConfig
+    ]);
 
-    // Vrací obalový div prvek s třídou pro responzivitu, zachytáváním kliknutí a samotnou základní tabulkou
+
+    /**
+     * Handles delegated click events inside the table container.
+     *
+     * The handler detects sortable table headers while ignoring clicks on
+     * buttons and contextual menus.
+     *
+     * @param {React.MouseEvent<HTMLDivElement>} event
+     * Click event originating from the table wrapper.
+     *
+     * @returns {void}
+     */
+    const handleTableClick = (event) => {
+        const clickedElement = event.target;
+
+        if (
+            clickedElement.closest("[role='menu']") ||
+            clickedElement.closest("button")
+        ) {
+            return;
+        }
+
+        const headerCell =
+            clickedElement.closest("th");
+
+        if (!headerCell) {
+            return;
+        }
+
+        const clickedLabel =
+            headerCell.innerText
+                .replace(" ▲", "")
+                .replace(" ▼", "")
+                .trim();
+
+        const columnKey =
+            Object.keys(WANTED_COLUMNS).find(
+                (key) =>
+                    WANTED_COLUMNS[key] ===
+                    clickedLabel
+            );
+
+        if (columnKey) {
+            handleSort(columnKey);
+        }
+    };
+
+
     return (
-        <div className="table-responsive" onClick={handleTableClick}>
-            {/* Vykresluje BaseTable s předáním připravených dat a přizpůsobené definice sloupců */}
-            <BaseTable data={sortedData} table_def={customTableDef} />
+        <div
+            className="table-responsive"
+            onClick={handleTableClick}
+        >
+            <BaseTable
+                data={sortedData}
+                table_def={customTableDef}
+            />
         </div>
-    ); // Konec návratové hodnoty JSX
-}; // Konec definice komponenty Table
+    );
+};

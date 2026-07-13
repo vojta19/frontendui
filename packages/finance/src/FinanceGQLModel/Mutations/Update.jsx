@@ -1,4 +1,3 @@
-// Importuje základní aktualizační komponenty ze sdílené šablony a dává jim aliasy s prefixem Base
 import {
     UpdateBody as BaseUpdateBody,
     UpdateButton as BaseUpdateButton,
@@ -6,162 +5,258 @@ import {
     UpdateLink as BaseUpdateLink
 } from "../../../../_template/src/Base/Mutations/Update";
 
-// Importuje editační formulář (MediumEditableContent) a cílovou URI pro update konkrétní položky z adresáře Components
-import { MediumEditableContent, UpdateItemURI } from "../Components";
+import {
+    MediumEditableContent,
+    UpdateItemURI
+} from "../Components";
 
-// Importuje asynchronní síťovou akci (thunk) pro provedení úpravy ze souboru Queries
 import { UpdateAsyncAction } from "../Queries";
 
-// Definuje pomocnou komponentu DefaultContent, která zapouzdřuje formulář a předává mu všechny props
-const DefaultContent = (props) => <MediumEditableContent {...props} />;
 
-// Přiřazuje asynchronní akci úpravy (UpdateAsyncAction) do lokální proměnné mutationAsyncAction
+/**
+ * Default editable content used by all update workflows.
+ *
+ * @param {Object} props
+ * Properties forwarded to `MediumEditableContent`.
+ *
+ * @returns {JSX.Element}
+ * Editable finance form.
+ */
+const DefaultContent = (props) => (
+    <MediumEditableContent {...props} />
+);
+
+
+/**
+ * Default GraphQL async action used to update finance entities.
+ *
+ * @constant
+ * @type {Function}
+ */
 const mutationAsyncAction = UpdateAsyncAction;
 
-// Nastavuje výchozí objekt přístupových práv (RBAC) vyžadující roli administrátora v absolutním režimu kontroly
+
+/**
+ * Permission configuration applied to all finance update controls.
+ *
+ * Only users with the `administrátor` role can access the update actions.
+ *
+ * @constant
+ * @type {{oneOfRoles: string[], mode: string}}
+ */
 const permissions = {
-    oneOfRoles: ["administrátor"], // Pole povolených rolí uživatelů
-    mode: "absolute", // Striktní/absolutní režim ověřování na PermissionGate
-}; // Konec definice oprávnění
+    oneOfRoles: ["administrátor"],
+    mode: "absolute"
+};
 
-// ALTERNATIVNÍ, ZAKOMENTOVANÝ BLOK OPRÁVNĚNÍ: Kontrola vůči GQLENDPOINT
-// const permissions = {
-//     oneOfRoles: ["administrátor", "personalista"],
-//     mode: "item",
-// }
 
 /**
- * Link na update stránku / update route pro konkrétní entitu.
+ * Renders a link to the full-page finance update route.
  *
- * Wrapper nad `BaseUpdateLink`. Nastavuje výchozí `uriPattern` a aplikuje RBAC
- * přes `permissions`. Vše ostatní přeposílá do Base komponenty.
+ * The component wraps `BaseUpdateLink`, applies the default finance update URI
+ * and enforces the configured role permissions.
  *
- * @param {Object} params
- * @param {string} [params.uriPattern=UpdateItemURI]
- * URI pattern pro update route (typicky obsahuje `:id` nebo je již konkrétní URL dle routování).
- * @param {Object} params.props
- * Další props přeposílané do `BaseUpdateLink` (např. `children`, `className`,
- * `preserveSearch`, `preserveHash`, atd.).
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} [props.uriPattern=UpdateItemURI]
+ * URI pattern used for navigation to the update page.
+ *
+ * @param {Object} [props.item]
+ * Finance entity whose detail should be edited.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Content rendered inside the link.
+ *
  * @returns {JSX.Element}
+ * Permission-aware link to the finance update page.
+ *
+ * @example
+ * <UpdateLink
+ *     item={finance}
+ *     className="btn btn-outline-success"
+ * >
+ *     Upravit
+ * </UpdateLink>
  */
-// Definuje a exportuje komponentu UpdateLink pro celostránkový přechod na úpravu záznamu
 export const UpdateLink = ({
-    uriPattern = UpdateItemURI, // Výchozí URL adresa/vzor pro editaci s parametrem ID
-    ...props // Zachytává ostatní přebírané vlastnosti prvku (např. text odkazu, CSS třídy)
+    uriPattern = UpdateItemURI,
+    ...props
 }) => {
-    
-    // Vrací základní komponentu odkazu rozšířenou o zadanou URI a globální administrativní práva
-    return <BaseUpdateLink
-        {...props} // Rozbaluje zbylé klientské vlastnosti
-        uriPattern={uriPattern} // Dosazuje koncovou adresu pro přesměrování
-        {...permissions} // Aplikuje kontrolu role
-    />; // Konec návratové hodnoty komponenty UpdateLink
-}; // Konec definice komponenty UpdateLink
+    return (
+        <BaseUpdateLink
+            {...props}
+            uriPattern={uriPattern}
+            {...permissions}
+        />
+    );
+};
+
 
 /**
- * Dialog pro editaci entity.
+ * Displays a modal dialog for editing a finance entity.
  *
- * Wrapper nad `BaseUpdateDialog`. Dodává výchozí editovatelný obsah (`DefaultContent`)
- * a výchozí mutační akci (`mutationAsyncAction`) pro uložení změn. Aplikuje RBAC
- * přes `permissions`.
+ * The component wraps `BaseUpdateDialog`, injects the finance-specific
+ * editable content and uses `UpdateAsyncAction` as the default mutation.
  *
- * @param {Object} params
- * @param {React.ComponentType<Object>} [params.DefaultContent=DefaultContent]
- * Komponenta, která vykreslí editovatelný obsah dialogu (typicky MediumEditableContent).
- * @param {Function} [params.mutationAsyncAction=mutationAsyncAction]
- * Async action (thunk) pro uložení změn (např. UpdateAsyncAction). Použije se podle Base/General implementace.
- * @param {Object} params.props
- * Další props přeposílané do `BaseUpdateDialog` (např. `title`, `oklabel`, `cancellabel`,
- * `item`, `onOk`, `onCancel`, atd.).
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
+ *
+ * @param {Function} [props.mutationAsyncAction=UpdateAsyncAction]
+ * Async action used to persist finance changes.
+ *
+ * @param {Object} [props.item]
+ * Finance entity being edited.
+ *
+ * @param {Function} [props.onOk]
+ * Callback invoked after successful confirmation.
+ *
+ * @param {Function} [props.onCancel]
+ * Callback invoked when editing is cancelled.
+ *
+ * @param {string} [props.title]
+ * Dialog title.
+ *
  * @returns {JSX.Element}
+ * Permission-aware finance update dialog.
+ *
+ * @example
+ * <UpdateDialog
+ *     item={finance}
+ *     title="Upravit finance"
+ *     onOk={handleUpdate}
+ * />
  */
-// Definuje a exportuje komponentu UpdateDialog reprezentující vyskakovací okno s editačním formulářem
 export const UpdateDialog = ({
-    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí editační formulářové vstupy
-    mutationAsyncAction: mutationAsyncAction_ = mutationAsyncAction, // Výchozí thunk akce pro odeslání dat
-    ...props // Ostatní konfigurační props (callbacky onOk, onCancel, titulky, atd.)
+    DefaultContent: DefaultContent_ = DefaultContent,
+    mutationAsyncAction: mutationAsyncAction_ =
+        mutationAsyncAction,
+    ...props
 }) => {
-    
-    // Vrací vnitřní modální okno ze šablony nakonfigurované pro daný finanční model a práva
     return (
         <BaseUpdateDialog
-            {...props} // Předává obecné parametry modalu ze šablony
-            DefaultContent={DefaultContent_} // Vkládá editační formulář jako obsah okna
-            mutationAsyncAction={mutationAsyncAction_} // Registruje síťovou akci pro uložení změn
-            {...permissions} // Omezuje přístup k zobrazení dialogu na administrátora
+            {...props}
+            DefaultContent={DefaultContent_}
+            mutationAsyncAction={mutationAsyncAction_}
+            {...permissions}
         />
-    ); // Konec návratové hodnoty komponenty UpdateDialog
-}; // Konec definice komponenty UpdateDialog
+    );
+};
+
 
 /**
- * Tlačítko, které otevře update dialog a provede uložení.
+ * Renders a button that opens the finance update dialog.
  *
- * Wrapper nad `BaseUpdateButton`. Dodává výchozí `DefaultContent`, výchozí `Dialog`,
- * a výchozí `mutationAsyncAction`. Aplikuje RBAC přes `permissions`.
+ * The component wraps `BaseUpdateButton` and supplies the default editable
+ * content, dialog component, update mutation and role permissions.
  *
- * @param {Object} params
- * @param {React.ComponentType<Object>} [params.DefaultContent=DefaultContent]
- * Komponenta editovatelného obsahu (typicky MediumEditableContent).
- * @param {React.ComponentType<Object>} [params.Dialog=UpdateDialog]
- * Dialog komponenta použitá pro editaci (volá `onOk(draft)` / `onCancel()`).
- * @param {Function} [params.mutationAsyncAction=mutationAsyncAction]
- * Async action (thunk) pro uložení změn (např. UpdateAsyncAction).
- * @param {Object} params.props
- * Další props přeposílané do `BaseUpdateButton` (např. `children`, `className`, `title`,
- * `item`, `uriPattern`, `onOk`, `onCancel`, atd.).
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
+ *
+ * @param {React.ComponentType<Object>} [props.Dialog=UpdateDialog]
+ * Dialog component opened after clicking the button.
+ *
+ * @param {Function} [props.mutationAsyncAction=UpdateAsyncAction]
+ * Async action used to persist finance changes.
+ *
+ * @param {Object} [props.item]
+ * Finance entity being edited.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Content rendered inside the button.
+ *
  * @returns {JSX.Element}
+ * Permission-aware button for editing a finance entity in a dialog.
+ *
+ * @example
+ * <UpdateButton
+ *     item={finance}
+ *     className="btn btn-outline-success"
+ * >
+ *     Upravit dialog
+ * </UpdateButton>
  */
-// Definuje a exportuje komponentu UpdateButton, která slouží jako spouštěč editačního modalu
 export const UpdateButton = ({
-    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí formulářová komponenta
-    Dialog = UpdateDialog, // Komponenta dialogu, která se po stisku tlačítka vyvolá
-    mutationAsyncAction: mutationAsyncAction_ = mutationAsyncAction, // Výchozí asynchronní akce uložení
-    ...props // Ostatní props tlačítka (vzhled, ikony, text)
+    DefaultContent: DefaultContent_ = DefaultContent,
+    Dialog = UpdateDialog,
+    mutationAsyncAction: mutationAsyncAction_ =
+        mutationAsyncAction,
+    ...props
 }) => {
-    
-    // Vrací základní tlačítko ze šablony s navázaným formulářem, oknem a zabezpečením
     return (
         <BaseUpdateButton
-            {...props} // Propisuje standardní vlastnosti HTML elementu tlačítka
-            DefaultContent={DefaultContent_} // Posílá formulář do vnitřního workflow tlačítka
-            Dialog={Dialog} // Definuje modal k zobrazení
-            mutationAsyncAction={mutationAsyncAction_} // Předává uložení na backend
-            {...permissions} // Obaluje prvek tlačítka vnitřní kontrolou PermissionGate
+            {...props}
+            DefaultContent={DefaultContent_}
+            Dialog={Dialog}
+            mutationAsyncAction={mutationAsyncAction_}
+            {...permissions}
         />
-    ); // Konec návratové hodnoty komponenty UpdateButton
-}; // Konec definice komponenty UpdateButton
+    );
+};
+
 
 /**
- * “Page-level” update workflow (inline edit / celá stránka editace).
+ * Renders the full-page finance update workflow.
  *
- * Wrapper nad `BaseUpdateBody`. Typicky vykreslí editovatelný obsah (`DefaultContent`)
- * a zajistí uložení přes `mutationAsyncAction` (dle Base/General implementace).
- * Aplikuje RBAC přes `permissions`.
+ * The component wraps `BaseUpdateBody`, injects the finance-specific editable
+ * content, uses the default update mutation and enforces role permissions.
  *
- * @param {Object} params
- * @param {React.ComponentType<Object>} [params.DefaultContent=DefaultContent]
- * Komponenta editovatelného obsahu (typicky MediumEditableContent).
- * @param {Function} [params.mutationAsyncAction=mutationAsyncAction]
- * Async action (thunk) pro uložení změn (např. UpdateAsyncAction).
- * @param {Object} params.props
- * Další props přeposílané do `BaseUpdateBody` (např. `title`, `oklabel`, `cancellabel`,
- * `item`, `onOk`, `onCancel`, `className`, atd.).
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
+ *
+ * @param {Function} [props.mutationAsyncAction=UpdateAsyncAction]
+ * Async action used to persist finance changes.
+ *
+ * @param {Object} [props.item]
+ * Finance entity being edited.
+ *
+ * @param {Function} [props.onOk]
+ * Callback invoked after successful confirmation.
+ *
+ * @param {Function} [props.onCancel]
+ * Callback invoked when editing is cancelled.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional content rendered inside the update workflow.
+ *
  * @returns {JSX.Element}
+ * Permission-aware full-page finance editing interface.
+ *
+ * @example
+ * <UpdateBody
+ *     item={finance}
+ *     onOk={handleUpdateFinished}
+ * />
  */
-// Definuje a exportuje komponentu UpdateBody pro celostránkový editační kontext
 export const UpdateBody = ({
-    DefaultContent: DefaultContent_ = DefaultContent, // Výchozí editační komponenta (inputy)
-    mutationAsyncAction: mutationAsyncAction_ = mutationAsyncAction, // Výchozí thunk akce aktualizace dat
-    ...props // Ostatní parametry (nadpisy na stránce, tlačítka pro uložení/zrušení změn)
+    DefaultContent: DefaultContent_ = DefaultContent,
+    mutationAsyncAction: mutationAsyncAction_ =
+        mutationAsyncAction,
+    ...props
 }) => {
-    
-    // Vrací celostránkový kontejner se zabudovaným odesíláním formuláře a právy administrátora
     return (
         <BaseUpdateBody
-            {...props} // Předává zbylé klientské parametry z nadřazeného view
-            DefaultContent={DefaultContent_} // Vykresluje editační pole přímo do těla stránky
-            mutationAsyncAction={mutationAsyncAction_} // Připojuje akci mutace ke strákovému submit tlačítku
-            {...permissions} // Omezuje celostránkovou editaci pouze pro uživatele s rolí administrátor
+            {...props}
+            DefaultContent={DefaultContent_}
+            mutationAsyncAction={mutationAsyncAction_}
+            {...permissions}
         />
-    ); // Konec návratové hodnoty komponenty UpdateBody
-}; // Konec definice komponenty UpdateBody
+    );
+};

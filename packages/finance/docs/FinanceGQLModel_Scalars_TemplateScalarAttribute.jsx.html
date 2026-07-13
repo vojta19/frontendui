@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: FinanceGQLModel/Scalars/TemplateScalarAttribute.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: FinanceGQLModel/Scalars/TemplateScalarAttribute.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Importuje tvůrce asynchronních GraphQL akcí a hook pro správu dotazů ze sdíleného balíčku @hrbolek/uoisfrontend-gql-shared
+import { createAsyncGraphQLAction, useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared";
+
+// Importuje komponenty pro vykreslení chyb a indikátoru načítání ze sdíleného balíčku @hrbolek/uoisfrontend-shared
+import { ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
+
+/**
+ * A component for displaying the `scalar` attribute of an template entity.
+ *
+ * This component checks if the `scalar` attribute exists on the `template` object. If `scalar` is undefined,
+ * the component returns `null` and renders nothing. Otherwise, it displays a placeholder message
+ * and a JSON representation of the `scalar` attribute.
+ *
+ * @component
+ * @param {Object} props - The props for the TemplateScalarAttribute component.
+ * @param {Object} props.template - The object representing the template entity.
+ * @param {*} [props.template.scalar] - The scalar attribute of the template entity to be displayed, if defined.
+ *
+ * @returns {JSX.Element|null} A JSX element displaying the `scalar` attribute or `null` if the attribute is undefined.
+ *
+ * @example
+ * // Example usage:
+ * const templateEntity = { scalar: { id: 1, name: "Sample Scalar" } };
+ *
+ * &lt;TemplateScalarAttribute template={templateEntity} />
+ */
+// Definuje a exportuje komponentu TemplateScalarAttribute pro statické zobrazení detailu skalární relace
+export const TemplateScalarAttribute = ({ template }) => {
+    
+    // Destrukturalizací bezpečně vytáhne vlastnost scalar ze zadaného objektu šablony
+    const { scalar } = template;
+    
+    // Podmínka: Pokud je vlastnost scalar zcela nedefinovaná (undefined), komponenta nic nevykreslí
+    if (typeof scalar === 'undefined') return null;
+    
+    // Vrací JSX fragment obsahující textový náhled a formátovaný JSON výpis objektu
+    return (
+        &lt;>
+            {/* PŮVODNÍ ZAKOMENTOVANÝ KÓD: &lt;ScalarMediumCard scalar={scalar} /> */}
+            {/* PŮVODNÍ ZAKOMENTOVANÝ KÓD: &lt;ScalarLink scalar={scalar} /> */}
+            
+            {/* Vykresluje textový řetězec informující o chybějící sub-komponentě */}
+            Probably {'&lt;ScalarMediumCard scalar={scalar} />'} &lt;br />
+            
+            {/* Vykresluje lidsky čitelnou podobu JSON struktury objektu scalar se čtyřmi mezerami odsazení */}
+            &lt;pre>{JSON.stringify(scalar, null, 4)}&lt;/pre>
+        &lt;/>
+    ); // Konec návratové hodnoty JSX fragmentu
+}; // Konec definice komponenty TemplateScalarAttribute
+
+// Definuje řetězec čistého GraphQL dotazu (Query) pro stažení skalárního objektu podle ID mateřské entity
+const TemplateScalarAttributeQuery = `
+query TemplateQueryRead($id: UUID!) {
+    result: templateById(id: $id) {
+        __typename
+        id
+        scalar {
+            __typename
+            id
+        }
+    }
+}
+`; // Konec definice GraphQL dotazu
+
+// Vytváří a přiřazuje asynchronní síťovou akci (thunk) pro provádění GraphQL operace na základě definovaného dotazu
+const TemplateScalarAttributeAsyncAction = createAsyncGraphQLAction(
+    TemplateScalarAttributeQuery
+); // Konec inicializace akce
+
+/**
+ * A lazy-loading component for displaying filtered `scalar` from a `template` entity.
+ *
+ * This component uses the `TemplateScalarAttributeAsyncAction` to asynchronously fetch
+ * the `template.scalar` data. It shows a loading spinner while fetching, handles errors,
+ * and filters the resulting list using a custom `filter` function (defaults to `Boolean` to remove falsy values).
+ *
+ * Each vector item is rendered as a `&lt;div>` with its `id` as both the `key` and the `id` attribute,
+ * and displays a formatted JSON preview using `&lt;pre>`.
+ *
+ * @component
+ * @param {Object} props - The properties object.
+ * @param {Object} props.template - The template entity or identifying query variables used to fetch it.
+ * @param {Function} [props.filter=Boolean] - A filtering function applied to the `scalar` array before rendering.
+ *
+ * @returns {JSX.Element} A rendered list of filtered scalar or a loading/error placeholder.
+ *
+ * @example
+ * &lt;TemplateScalarAttributeLazy template={{ id: "abc123" }} />
+ *
+ * * @example
+ * &lt;TemplateScalarAttributeLazy
+ * template={{ id: "abc123" }}
+ * filter={(v) => v.status === "active"}
+ * />
+ */
+// Definuje a exportuje komponentu TemplateScalarAttributeLazy, která automaticky spouští a řídí síťový dotaz při svém mountu
+export const TemplateScalarAttributeLazy = ({ template }) => {
+    
+    // Inicializuje hook useAsyncAction pro automatickou správu stavů loading, error, dat (entity) a spouštěcí funkce (fetch)
+    const { loading, error, entity, fetch } = useAsyncAction(TemplateScalarAttributeAsyncAction, template);
+
+    // Podmínka: Pokud síťové stahování dat z backendu stále probíhá, vrátí komponentu načítacího spinneru
+    if (loading) return &lt;LoadingSpinner />;
+    
+    // Podmínka: Pokud během GraphQL dotazu nastala chyba, předá pole chyb komponentě ErrorHandler pro zobrazení uživateli
+    if (error) return &lt;ErrorHandler errors={error} />;
+
+    // Po úspěšném dokončení dotazu vyrenderuje standardní zobrazení a předá mu stažená data (entity) z kontextu dotazu
+    return &lt;TemplateScalarAttribute template={entity} />;    
+}; // Konec definice komponenty TemplateScalarAttributeLazy</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:21:25 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,10 +1,17 @@
-// Importuje funkci createQueryStrLazy ze sdíleného GraphQL balíčku pro odložené sestavení dotazu
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 
-// Importuje pokročilého tvůrce asynchronních akcí createAsyncGraphQLAction2 z dynamického jádra aplikace
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
-// Definuje řetězec GraphQL mutace pro vytvoření a vložení nového finančního přesunu (transferu) mezi zdrojem a cílem
+
+/**
+ * GraphQL mutation used for creating a finance transfer.
+ *
+ * The mutation creates a new transfer between two finance entities and
+ * returns either the created transfer or an insertion error.
+ *
+ * @constant
+ * @type {string}
+ */
 const FinanceTransferInsertMutationStr = `
 mutation financeTransferInsert(
   $financeTransfer_financeSourceId: UUID!
@@ -39,14 +46,42 @@ mutation financeTransferInsert(
     }
   }
 }
-`; // Konec definice řetězce GraphQL mutace
+`;
 
-// Sestavuje finální GraphQL operaci z textového řetězce mutace pomocí lazy generátoru
-const FinanceTransferInsertMutation = createQueryStrLazy(
-  `${FinanceTransferInsertMutationStr}`
-); // Konec odloženého sestavení mutace
 
-// Vytváří a exportuje výslednou asynchronní akci (thunk) pro odeslání mutace vložení přesunu na server
-export const FinanceTransferInsertAsyncAction = createAsyncGraphQLAction2(
-  FinanceTransferInsertMutation
-); // Konec definice asynchronní akce FinanceTransferInsertAsyncAction
+/**
+ * Lazily generated GraphQL mutation used for inserting finance transfers.
+ *
+ * The mutation is converted into an executable GraphQL request that can
+ * be dispatched by the asynchronous action framework.
+ *
+ * @constant
+ */
+const FinanceTransferInsertMutation =
+    createQueryStrLazy(
+        FinanceTransferInsertMutationStr
+    );
+
+
+/**
+ * Asynchronous GraphQL action responsible for creating finance transfers.
+ *
+ * The action sends the prepared GraphQL mutation to the backend and
+ * stores the result in the application state.
+ *
+ * @constant
+ *
+ * @example
+ * dispatch(
+ *     FinanceTransferInsertAsyncAction({
+ *         financeTransfer_financeSourceId: sourceId,
+ *         financeTransfer_financeDestinationId: destinationId,
+ *         financeTransfer_name: "Přesun rozpočtu",
+ *         financeTransfer_amount: 25000
+ *     })
+ * );
+ */
+export const FinanceTransferInsertAsyncAction =
+    createAsyncGraphQLAction2(
+        FinanceTransferInsertMutation
+    );

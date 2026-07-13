@@ -1,96 +1,230 @@
-// Importuje useState z Reactu.
-// useState se zde používá pro ukládání vybraného zdroje, cíle a částky přesunu.
 import { useState } from "react";
 
-// Importuje komponentu SunburstDiagram.
-// Tato komponenta vykresluje kruhový Sunburst diagram finanční struktury.
 import { SunburstDiagram } from "./SunBurstDiagram";
 
-// Importuje vlastní hook pro spouštění asynchronních akcí.
-// Používá se pro spuštění GraphQL mutace.
 import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
 
-// Importuje GraphQL async akci pro vložení finančního transferu.
-// Tato akce odešle na backend informaci o zdroji, cíli a částce přesunu.
-import { FinanceTransferInsertAsyncAction } from "../Queries/FinanceTransferInsertAsyncAction";
+import {
+    FinanceTransferInsertAsyncAction
+} from "../Queries/FinanceTransferInsertAsyncAction";
 
-// Pomocná funkce pro získání zobrazitelného názvu finance.
-// Pokud finance nemá name, použije nameEn.
-// Pokud nemá ani nameEn, použije id.
-// Pokud není dostupné nic, vrátí text "Neznámý prvek".
+
+/**
+ * Returns a human-readable name for a finance entity.
+ *
+ * The function prefers the Czech name stored in `name`. If the Czech
+ * name is unavailable, it uses the English name, the entity identifier,
+ * or a fallback label.
+ *
+ * @param {Object|null|undefined} finance
+ * Finance entity whose display name should be determined.
+ *
+ * @param {string} [finance.name]
+ * Czech name of the finance entity.
+ *
+ * @param {string} [finance.nameEn]
+ * English name of the finance entity.
+ *
+ * @param {string} [finance.id]
+ * Unique identifier of the finance entity.
+ *
+ * @returns {string}
+ * Human-readable finance name.
+ *
+ * @example
+ * getFinanceName({
+ *     id: "30000000-0000-0000-0000-000000000003",
+ *     name: "Rozpočet WP2"
+ * });
+ *
+ * // Returns: "Rozpočet WP2"
+ */
 const getFinanceName = (finance) => {
-    return finance?.name || finance?.nameEn || finance?.id || "Neznámý prvek";
+    return (
+        finance?.name ||
+        finance?.nameEn ||
+        finance?.id ||
+        "Neznámý prvek"
+    );
 };
 
-// Pomocná funkce, která kontroluje,
-// jestli je možné provést přesun mezi dvěma finančními prvky.
+
+/**
+ * Determines whether a financial transfer between two finance entities
+ * is allowed.
+ *
+ * A transfer is rejected when:
+ *
+ * - the source or destination is missing,
+ * - both entities have the same identifier,
+ * - both entities belong to different parent finances.
+ *
+ * If one of the entities does not provide `masterfinanceId`, the transfer
+ * is currently allowed.
+ *
+ * @param {Object|null|undefined} source
+ * Source finance entity.
+ *
+ * @param {string} [source.id]
+ * Unique identifier of the source finance.
+ *
+ * @param {string} [source.masterfinanceId]
+ * Identifier of the parent finance of the source entity.
+ *
+ * @param {Object|null|undefined} destination
+ * Destination finance entity.
+ *
+ * @param {string} [destination.id]
+ * Unique identifier of the destination finance.
+ *
+ * @param {string} [destination.masterfinanceId]
+ * Identifier of the parent finance of the destination entity.
+ *
+ * @returns {boolean}
+ * `true` when the transfer is allowed; otherwise `false`.
+ *
+ * @example
+ * canTransferBetween(
+ *     {
+ *         id: "source-id",
+ *         masterfinanceId: "parent-id"
+ *     },
+ *     {
+ *         id: "destination-id",
+ *         masterfinanceId: "parent-id"
+ *     }
+ * );
+ *
+ * // Returns: true
+ */
 const canTransferBetween = (source, destination) => {
-    // Pokud chybí zdroj nebo cíl, přesun není možný.
-    if (!source || !destination) return false;
-
-    // Nelze přesouvat finance ze stejného prvku do stejného prvku.
-    if (source.id === destination.id) return false;
-
-    // Pokud mají oba prvky masterfinanceId,
-    // povolíme přesun pouze v rámci stejné nadřazené finance.
-    if (source.masterfinanceId && destination.masterfinanceId) {
-        return source.masterfinanceId === destination.masterfinanceId;
+    if (!source || !destination) {
+        return false;
     }
 
-    // Pokud masterfinanceId není u obou prvků dostupné,
-    // přesun zatím povolíme.
+    if (source.id === destination.id) {
+        return false;
+    }
+
+    if (
+        source.masterfinanceId &&
+        destination.masterfinanceId
+    ) {
+        return (
+            source.masterfinanceId ===
+            destination.masterfinanceId
+        );
+    }
+
     return true;
 };
 
-// Komponenta FinanceTransferSunburst řeší:
-// - výběr zdrojového finančního prvku,
-// - výběr cílového finančního prvku,
-// - zadání částky,
-// - odeslání transferu na backend,
-// - vykreslení Sunburst diagramu.
+
+/**
+ * Interactive component for displaying a finance hierarchy and creating
+ * transfers between finance entities.
+ *
+ * The component renders a Sunburst diagram and allows the user to:
+ *
+ * - select a source finance,
+ * - select a destination finance,
+ * - enter a transfer amount,
+ * - validate whether the transfer is allowed,
+ * - execute the GraphQL transfer mutation,
+ * - notify the parent component after a successful transfer.
+ *
+ * The first selected diagram node becomes the source. The second selected
+ * node becomes the destination. Transfers are allowed only between different
+ * finance entities and, when both parent identifiers are available, within
+ * the same parent finance.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Root finance entity containing the hierarchy displayed by the Sunburst
+ * diagram.
+ *
+ * @param {string} props.item.id
+ * Unique identifier of the root finance.
+ *
+ * @param {string} [props.item.name]
+ * Name of the root finance.
+ *
+ * @param {number} [props.item.value]
+ * Current value of the root finance.
+ *
+ * @param {Array<Object>} [props.item.subfinances]
+ * Child finance entities displayed in the diagram.
+ *
+ * @param {string} [props.header="Finance – přesun financí"]
+ * Heading displayed above the Sunburst diagram.
+ *
+ * @param {Function} [props.onTransferInserted]
+ * Callback invoked after a finance transfer has been inserted successfully.
+ *
+ * @returns {JSX.Element}
+ * Interactive finance transfer interface with a Sunburst diagram.
+ *
+ * @example
+ * <FinanceTransferSunburst
+ *     item={finance}
+ *     header="Graf finančních přesunů"
+ *     onTransferInserted={(transfer) => {
+ *         console.log("Inserted transfer:", transfer);
+ *     }}
+ * />
+ */
 export const FinanceTransferSunburst = ({
-    item, // Kořenový finanční objekt, ze kterého se vykresluje diagram.
-    header = "Finance – přesun financí", // Výchozí nadpis diagramu.
-    onTransferInserted = () => {}, // Callback zavolaný po úspěšném vložení transferu.
+    item,
+    header = "Finance – přesun financí",
+    onTransferInserted = () => {},
 }) => {
-    // Ukládá vybraný zdroj přesunu.
     const [source, setSource] = useState(null);
 
-    // Ukládá vybraný cíl přesunu.
     const [destination, setDestination] = useState(null);
 
-    // Ukládá ID cílového prvku pro vizuální zvýraznění v diagramu.
     const [hoveredTarget, setHoveredTarget] = useState(null);
 
-    // Ukládá částku zadanou uživatelem v inputu.
-    // Hodnota je string, protože přichází přímo z HTML inputu.
     const [transferAmount, setTransferAmount] = useState("");
 
-    // Připraví funkci pro spuštění GraphQL mutace financeTransferInsert.
     const {
-        run: runFinanceTransferInsert, // Funkce, která skutečně odešle mutaci.
-        loading, // Boolean hodnota, která říká, jestli právě probíhá request.
+        run: runFinanceTransferInsert,
+        loading,
     } = useAsyncThunkAction(
         FinanceTransferInsertAsyncAction,
         {},
         {
-            deferred: true, // Akce se nespustí hned automaticky.
-            network: true, // Akce má jít přes síť na backend.
+            deferred: true,
+            network: true,
         }
     );
 
-    // Handler pro kliknutí na uzel v diagramu.
-    // První klik vybere zdroj.
-    // Druhý klik vybere cíl.
+
+    /**
+     * Handles selection of a finance node in the Sunburst diagram.
+     *
+     * The first valid node becomes the transfer source. After a source
+     * has been selected, the next valid node becomes the destination.
+     *
+     * @param {Object|null|undefined} node
+     * Finance node selected in the diagram.
+     *
+     * @param {string} [node.id]
+     * Unique identifier of the selected finance node.
+     *
+     * @returns {void}
+     */
     const handleSelect = (node) => {
         console.log("KLIK V DIAGRAMU:", node);
         console.log("AKTUALNI SOURCE:", source);
 
-        // Pokud kliknutý uzel nemá ID, ignorujeme ho.
-        if (!node?.id) return;
+        if (!node?.id) {
+            return;
+        }
 
-        // Pokud ještě není vybraný zdroj,
-        // kliknutý uzel nastavíme jako zdroj přesunu.
         if (!source) {
             setSource(node);
             setDestination(null);
@@ -99,8 +233,6 @@ export const FinanceTransferSunburst = ({
             return;
         }
 
-        // Pokud už zdroj existuje, kontrolujeme,
-        // jestli je možné kliknutý uzel použít jako cíl.
         if (!canTransferBetween(source, node)) {
             window.alert(
                 "Přesun je povolen pouze mezi dvěma různými finančními prvky."
@@ -108,99 +240,146 @@ export const FinanceTransferSunburst = ({
             return;
         }
 
-        // Pokud je přesun povolený, nastavíme kliknutý uzel jako cíl.
         setDestination(node);
-
-        // Nastavíme ID cíle pro zvýraznění v diagramu.
         setHoveredTarget(node.id);
     };
 
-    // Handler pro potvrzení přesunu.
-    // Spouští se po kliknutí na tlačítko "Provést přesun".
+
+    /**
+     * Validates and executes the selected finance transfer.
+     *
+     * The function verifies that:
+     *
+     * - both source and destination are selected,
+     * - the transfer amount is a valid positive number,
+     * - the source contains sufficient funds.
+     *
+     * After validation, the function executes the GraphQL mutation. On
+     * success, it invokes `onTransferInserted` and resets the component
+     * selection state.
+     *
+     * @async
+     *
+     * @returns {Promise<void>}
+     * Promise resolved after the transfer has been processed.
+     */
     const handleTransferConfirm = async () => {
-        // Nejprve musí být vybraný zdroj i cíl.
         if (!source || !destination) {
-            window.alert("Nejdřív vyber zdroj i cíl přesunu.");
+            window.alert(
+                "Nejdřív vyber zdroj i cíl přesunu."
+            );
             return;
         }
 
-        // Částku převedeme ze stringu na číslo.
-        // replace(",", ".") umožní zadat desetinné číslo i s českou čárkou.
-        const amount = Number(String(transferAmount).replace(",", "."));
+        const amount = Number(
+            String(transferAmount).replace(",", ".")
+        );
 
-        // Částka musí být platné kladné číslo.
         if (!Number.isFinite(amount) || amount <= 0) {
-            window.alert("Nejdřív zadej platnou částku k přesunu.");
+            window.alert(
+                "Nejdřív zadej platnou částku k přesunu."
+            );
             return;
         }
 
-        // Kontrola, jestli má zdroj dostatek financí.
         if (Number(source.value) < amount) {
-            window.alert("Zdroj nemá dostatek financí pro tento přesun.");
+            window.alert(
+                "Zdroj nemá dostatek financí pro tento přesun."
+            );
             return;
         }
 
         try {
-            // Proměnné pro GraphQL mutaci.
-            // Názvy musí odpovídat názvům proměnných v query/mutation definici.
             const variables = {
-                financeTransfer_financeSourceId: source.id,
-                financeTransfer_financeDestinationId: destination.id,
-                financeTransfer_name: `Přesun: ${getFinanceName(source)} → ${getFinanceName(destination)}`,
-                financeTransfer_amount: amount,
+                financeTransfer_financeSourceId:
+                    source.id,
+
+                financeTransfer_financeDestinationId:
+                    destination.id,
+
+                financeTransfer_name:
+                    `Přesun: ${getFinanceName(source)} → ` +
+                    `${getFinanceName(destination)}`,
+
+                financeTransfer_amount:
+                    amount,
             };
 
-            console.log("ODESILAM TRANSFER:", variables);
+            console.log(
+                "ODESILAM TRANSFER:",
+                variables
+            );
 
-            // Spuštění GraphQL mutace.
-            const result = await runFinanceTransferInsert(variables);
+            const result =
+                await runFinanceTransferInsert(variables);
 
-            console.log("VYSLEDEK TRANSFERU:", result);
+            console.log(
+                "VYSLEDEK TRANSFERU:",
+                result
+            );
 
-            // Z odpovědi vytáhneme výsledek mutace.
-            const inserted = result?.data?.financeTransferInsert;
+            const inserted =
+                result?.data?.financeTransferInsert;
 
-            // Ověření, že backend opravdu vrátil úspěšně vložený FinanceTransferGQLModel.
-            if (inserted?.__typename !== "FinanceTransferGQLModel") {
-                console.error("TRANSFER NEPROBEHL USPESNE:", inserted);
+            if (
+                inserted?.__typename !==
+                "FinanceTransferGQLModel"
+            ) {
+                console.error(
+                    "TRANSFER NEPROBEHL USPESNE:",
+                    inserted
+                );
                 return;
             }
 
-            // Vytvoření zjednodušeného objektu transferu,
-            // který předáme rodičovské komponentě přes callback.
             const insertedTransfer = {
-                financeSourceId: variables.financeTransfer_financeSourceId,
-                financeDestinationId: variables.financeTransfer_financeDestinationId,
-                amount: Number(variables.financeTransfer_amount || 0),
-                name: variables.financeTransfer_name,
+                financeSourceId:
+                    variables.financeTransfer_financeSourceId,
+
+                financeDestinationId:
+                    variables.financeTransfer_financeDestinationId,
+
+                amount:
+                    Number(
+                        variables.financeTransfer_amount || 0
+                    ),
+
+                name:
+                    variables.financeTransfer_name,
             };
 
-            console.log("USPESNY TRANSFER:", insertedTransfer);
+            console.log(
+                "USPESNY TRANSFER:",
+                insertedTransfer
+            );
 
-            // Informujeme rodičovskou komponentu,
-            // že transfer byl úspěšně vložen.
-            // Rodič může například znovu načíst data z backendu.
-            await onTransferInserted?.(insertedTransfer);
+            await onTransferInserted?.(
+                insertedTransfer
+            );
 
-            // Po úspěšném přesunu resetujeme výběr a input.
             setSource(null);
             setDestination(null);
             setHoveredTarget(null);
             setTransferAmount("");
         } catch (error) {
-            // Pokud nastane chyba při requestu nebo při zpracování odpovědi,
-            // vypíšeme detail do konzole.
-            console.error("CHYBA PRI PRESUNU:", error);
+            console.error(
+                "CHYBA PRI PRESUNU:",
+                error
+            );
 
-            // Uživateli zobrazíme jednoduchou hlášku.
             window.alert(
-                "Přesun financí se nepodařilo provést. Detail chyby je v konzoli."
+                "Přesun financí se nepodařilo provést. " +
+                "Detail chyby je v konzoli."
             );
         }
     };
 
-    // Handler pro zrušení aktuálního výběru.
-    // Vrátí komponentu do počátečního stavu.
+
+    /**
+     * Clears the currently selected source, destination and transfer amount.
+     *
+     * @returns {void}
+     */
     const handleCancel = () => {
         setSource(null);
         setDestination(null);
@@ -208,41 +387,63 @@ export const FinanceTransferSunburst = ({
         setTransferAmount("");
     };
 
+
     return (
         <div>
-            {/* Informační panel se zobrazí pouze tehdy, když je vybraný zdroj. */}
             {source && (
-                <div className="alert alert-info d-flex justify-content-between align-items-center">
+                <div
+                    className={
+                        "alert alert-info " +
+                        "d-flex justify-content-between " +
+                        "align-items-center"
+                    }
+                >
                     <div>
                         <div>
-                            Zdroj financí: <strong>{getFinanceName(source)}</strong>.
+                            Zdroj financí:{" "}
+                            <strong>
+                                {getFinanceName(source)}
+                            </strong>.
                         </div>
 
-                        {/* Pokud ještě není vybraný cíl, uživateli řekneme, co má udělat dál. */}
                         {!destination && (
                             <div>
                                 Teď klikni na cílový prvek.
                             </div>
                         )}
 
-                        {/* Pokud už je vybraný cíl, zobrazíme cíl, input na částku a potvrzovací tlačítko. */}
                         {destination && (
                             <>
                                 <div>
-                                    Cíl financí: <strong>{getFinanceName(destination)}</strong>.
+                                    Cíl financí:{" "}
+                                    <strong>
+                                        {getFinanceName(
+                                            destination
+                                        )}
+                                    </strong>.
                                 </div>
 
                                 <div className="mt-2">
-                                    <label className="form-label mb-1">
+                                    <label
+                                        className={
+                                            "form-label mb-1"
+                                        }
+                                    >
                                         Částka k přesunu:
                                     </label>
 
                                     <input
                                         type="number"
                                         className="form-control"
-                                        style={{ maxWidth: "260px" }}
+                                        style={{
+                                            maxWidth: "260px",
+                                        }}
                                         value={transferAmount}
-                                        onChange={(e) => setTransferAmount(e.target.value)}
+                                        onChange={(event) =>
+                                            setTransferAmount(
+                                                event.target.value
+                                            )
+                                        }
                                         placeholder="Zadej částku"
                                         min="0"
                                         step="0.01"
@@ -251,8 +452,13 @@ export const FinanceTransferSunburst = ({
 
                                 <button
                                     type="button"
-                                    className="btn btn-success btn-sm mt-2"
-                                    onClick={handleTransferConfirm}
+                                    className={
+                                        "btn btn-success " +
+                                        "btn-sm mt-2"
+                                    }
+                                    onClick={
+                                        handleTransferConfirm
+                                    }
                                     disabled={loading}
                                 >
                                     Provést přesun
@@ -261,10 +467,12 @@ export const FinanceTransferSunburst = ({
                         )}
                     </div>
 
-                    {/* Tlačítko pro zrušení aktuálního výběru. */}
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className={
+                            "btn btn-sm " +
+                            "btn-outline-secondary"
+                        }
                         onClick={handleCancel}
                     >
                         Zrušit výběr
@@ -272,14 +480,12 @@ export const FinanceTransferSunburst = ({
                 </div>
             )}
 
-            {/* Loading hláška se zobrazí během probíhajícího requestu. */}
             {loading && (
                 <div className="alert alert-warning">
                     Probíhá přesun financí...
                 </div>
             )}
 
-            {/* Samotný Sunburst diagram. */}
             <SunburstDiagram
                 item={item}
                 header={header}
