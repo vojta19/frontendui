@@ -29,11 +29,24 @@ fragment Link on FinanceGQLModel {
   value
   description
   financeTypeId
-  masterfinanceId
-  masterfinance {
+  masterfinance 
+  {
     __typename
     id
     name
+    projectId
+    project {
+      __typename
+      id
+      name
+      subprojects 
+      {
+        __typename
+        id
+        name
+        nameEn
+      }
+    }
   }
   subfinances {
     __typename

@@ -122,6 +122,22 @@ export const MediumContent = ({
     item,
     children
 }) => {
+    const getWpCode = (name = "") => {
+        return name
+            .match(/\bWP\s*\d+\b/i)?.[0]
+            ?.replace(/\s+/g, "")
+            .toUpperCase();
+    };
+
+    const financeWpCode = getWpCode(item?.name);
+
+    const matchedProject = item?.masterfinance?.project?.subprojects?.find(
+        (project) => getWpCode(project?.name) === financeWpCode
+    );
+
+    const displayedProject = item?.project ?? matchedProject;
+
+    
     return (
         <>
             <Attribute label="Název">
@@ -210,15 +226,14 @@ export const MediumContent = ({
             </Attribute>
 
             <Attribute label="Projekt">
-                {item?.project?.id &&
-                item?.project?.name ? (
+                {displayedProject?.id && displayedProject?.name ? (
                     <ProjectLink
                         to={
                             `/projekt/ProjectGQLModel/view/` +
-                            `${item.project.id}`
+                            `${displayedProject.id}`
                         }
                     >
-                        {item.project.name}
+                        {displayedProject.name}
                     </ProjectLink>
                 ) : (
                     "-"
