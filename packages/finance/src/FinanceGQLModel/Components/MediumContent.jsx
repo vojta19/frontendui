@@ -44,6 +44,26 @@ export const MediumContent = ({
     // Volitelný obsah připojený za standardní výpis atributů.
     children
 }) => {
+    const getWpCode = (name = "") => {
+        return name
+            .match(/\bWP\s*\d+\b/i)?.[0]
+            ?.replace(/\s+/g, "")
+            .toUpperCase();
+    };
+
+    const financeWpCode = getWpCode(item?.name);
+
+    const matchedProject = item?.masterfinance?.project?.subprojects?.find(
+        (project) => getWpCode(project?.name) === financeWpCode
+    );
+
+    const displayedProject = item?.project ?? matchedProject;
+
+    console.log("FINANCE WP:", financeWpCode);
+    console.log("MATCHED PROJECT:", matchedProject);
+
+    console.log("FINANCE WP:", financeWpCode);
+    console.log("MATCHED PROJECT:", matchedProject);
     return (
         <>
             {/* Český název finanční položky s odkazem na její detail. */}
@@ -172,24 +192,18 @@ export const MediumContent = ({
             {/* Navázaný projekt,
                 pokud je finanční položka přiřazena k projektu. */}
             <Attribute label="Projekt">
-                {
-                    item?.project?.id &&
-                    item?.project?.name ? (
-                        <ProjectLink
-                            // Dynamicky sestavená cesta
-                            // na detail konkrétního projektu.
-                            to={
-                                `/projekt/ProjectGQLModel/view/` +
-                                `${item.project.id}`
-                            }
-                        >
-                            {/* Název propojeného projektu. */}
-                            {item.project.name}
-                        </ProjectLink>
-                    ) : (
-                        "-"
-                    )
-                }
+                {displayedProject?.id && displayedProject?.name ? (
+                    <ProjectLink
+                        to={
+                            `/projekt/ProjectGQLModel/view/` +
+                            `${displayedProject.id}`
+                        }
+                    >
+                        {displayedProject.name}
+                    </ProjectLink>
+                ) : (
+                    "-"
+                )}
             </Attribute>
 
             {/* Doplňkový obsah předaný z nadřazené komponenty,

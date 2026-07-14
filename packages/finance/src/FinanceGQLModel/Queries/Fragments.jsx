@@ -31,12 +31,23 @@ fragment Link on FinanceGQLModel {
   value
   description
   financeTypeId
-  masterfinanceId
-  masterfinance {
+masterfinance {
+  __typename
+  id
+  name
+  projectId
+  project {
     __typename
     id
     name
+    subprojects {
+      __typename
+      id
+      name
+      nameEn
+    }
   }
+}
   subfinances {
     __typename
     id
@@ -188,7 +199,7 @@ fragment RBRoles on RBACObjectGQLModel {
  */
 // Vytvoření lazy fragmentu pro RoleFragment.
 export const RoleFragment =
-    createQueryStrLazy(RoleFragmentStr);
+  createQueryStrLazy(RoleFragmentStr);
 
 
 /**
@@ -198,7 +209,7 @@ export const RoleFragment =
  */
 // Vytvoření lazy fragmentu pro RBAC informace.
 export const RBACFragment =
-    createQueryStrLazy(RBACFragmentStr);
+  createQueryStrLazy(RBACFragmentStr);
 
 
 /**
@@ -208,7 +219,7 @@ export const RBACFragment =
  */
 // Vytvoření lazy fragmentu obsahujícího základní informace o financích.
 export const LinkFragment =
-    createQueryStrLazy(LinkFragmentStr);
+  createQueryStrLazy(LinkFragmentStr);
 
 
 /**
@@ -223,11 +234,11 @@ export const LinkFragment =
  */
 // Sestavení středního fragmentu včetně všech jeho závislostí.
 export const MediumFragment =
-    createQueryStrLazy(
-        MediumFragmentStr,
-        LinkFragment,
-        RBACFragment
-    );
+  createQueryStrLazy(
+    MediumFragmentStr,
+    LinkFragment,
+    RBACFragment
+  );
 
 
 /**
@@ -241,7 +252,7 @@ export const MediumFragment =
  */
 // Nejvyšší fragment používaný pro detail finance a Sunburst diagram.
 export const LargeFragment =
-    createQueryStrLazy(
-        LargeFragmentStr,
-        MediumFragment
-    );
+  createQueryStrLazy(
+    LargeFragmentStr,
+    MediumFragment
+  );
