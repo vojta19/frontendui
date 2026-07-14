@@ -1,0 +1,20 @@
+{
+  "source": {
+    "include": [
+      "./src/FinanceGQLModel/Components",
+      "./src/FinanceGQLModel/Mutations",
+      "./src/FinanceGQLModel/Pages/Page.jsx",
+      "./src/FinanceGQLModel/Queries"
+    ],
+    "includePattern": ".+\\.(js|jsx)$",
+    "excludePattern": "(^|\\/|\\\\)(node_modules|dist|docs)(\\/|\\\\)"
+  },
+  "opts": {
+    "destination": "./docs",
+    "recurse": true,
+    "encoding": "utf8"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ]
+}

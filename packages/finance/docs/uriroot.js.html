@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: uriroot.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: uriroot.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Očistí segment URL/URI od přebytečných lomítek na začátku a na konci.
+ *
+ * Používá se pro segmenty `app`, `model`, `action` tak, aby výsledná cesta
+ * nevznikala jako `//app//model/...` a aby se dalo bezpečně skládat i z hodnot,
+ * které už obsahují `/`.
+ *
+ * @private
+ * @param {any} s
+ *   Hodnota segmentu (typicky string); `null/undefined` se převede na prázdný string.
+ * @returns {string}
+ *   Segment bez úvodních a koncových `/`.
+ */
+const clean = (s) => String(s ?? "").replace(/^\/+|\/+$/g, "");
+
+/**
+ * Vytvoří "stringovatelný" objekt reprezentující kanonickou aplikací definovanou URI cestu
+ * ve tvaru:
+ *
+ * - bez `:id`: `/{app}/{model}/{action}`
+ * - s `:id`:   `/{app}/{model}/{action}/{:id}`
+ *
+ * Objekt je určený pro postupné skládání a odvozování cest napříč aplikací:
+ * - sdílení společného základu (např. `app` nebo `app+model`)
+ * - tvorbu odvozenin přes `.change(...)` bez mutace původního objektu
+ * - pohodlné použití v routeru, linkách a šablonách díky "stringovatelnosti"
+ *
+ * ### Stringovatelnost
+ * Vrácený objekt se chová jako string:
+ * - `String(obj)` vrátí finální cestu
+ * - template literal: `` `${obj}` `` vrátí finální cestu
+ * - `obj.path` obsahuje totéž explicitně
+ *
+ * ### Odvozování bez mutace (immutable styl)
+ * Metoda `.change(patch)` vrací NOVÝ URI objekt s aplikovanými změnami.
+ * Původní objekt zůstává nedotčen, takže je bezpečné ho sdílet napříč moduly.
+ *
+ * ### Zkratky
+ * Kromě `.change(...)` poskytuje i zkratky:
+ * - `.app("...")`
+ * - `.model("...")`
+ * - `.action("...")`
+ * - `.id(true|false)` (alias pro `withId`)
+ * - `.idParam(":id")` (změna názvu parametru id)
+ *
+ * @example
+ * // Základ pro konkrétní model:
+ * const GroupView = uri({ app: "app", model: "group", action: "view" });
+ *
+ * String(GroupView)        // "/app/group/view"
+ * String(GroupView.id())   // "/app/group/view/:id"
+ *
+ * @example
+ * // Odvozené akce nad stejným modelem:
+ * const Group = uri({ app: "app", model: "group", action: "view" });
+ * const GroupEdit = Group.action("edit").id(true);
+ * const GroupDelete = Group.action("delete").id(true);
+ *
+ * String(GroupEdit)   // "/app/group/edit/:id"
+ * String(GroupDelete) // "/app/group/delete/:id"
+ *
+ * @example
+ * // Přepnutí id parametru:
+ * const UserView = uri({ app: "app", model: "user", action: "view" }).id(true).idParam(":userId");
+ * String(UserView) // "/app/user/view/:userId"
+ *
+ * @function uri
+ * @param {object} [options]
+ * @param {string} [options.app]
+ *   První segment cesty (např. "app"). Přebytečné "/" na začátku/konci se odstraní.
+ * @param {string} [options.model]
+ *   Druhý segment cesty (např. "group", "roleType"...).
+ * @param {string} [options.action]
+ *   Třetí segment cesty (např. "view", "create", "edit", "delete", "rolesOn"...).
+ * @param {boolean} [options.withId=false]
+ *   Pokud `true`, připojí se na konec ještě segment s parametrem id (`/:idParam`).
+ * @param {string} [options.idParam=":id"]
+ *   Název parametru pro identifikátor entity. Můžeš zadat `":id"` nebo `"id"` – v obou
+ *   případech bude interně normalizováno na formát s dvojtečkou (např. `":id"`).
+ *
+ * @returns {UriBuilder}
+ *   "Stringovatelný" objekt s výslednou cestou, segmenty a metodami pro odvozování.
+ *
+ * @typedef {object} UriBuilder
+ * @property {string} path
+ *   Finální cesta (např. `"/app/group/view"` nebo `"/app/group/view/:id"`).
+ * @property {{app:string, model:string, action:string, withId:boolean, idParam:string}} segments
+ *   Normalizované segmenty, ze kterých byla cesta složena.
+ *   Pozn.: pokud `segments` budeš ručně měnit, `path` se tím nezmění (je spočítaný).
+ *   Doporučení: segmenty používej jen pro čtení.
+ *
+ * @property {() => string} toString
+ *   Vrací `path`. Umožňuje použití v template literal a při `String(obj)`.
+ * @property {() => string} valueOf
+ *   Vrací `path`. Doplňková string/primitive konverze.
+ * @property {(hint: "number"|"string"|"default") => string} [Symbol.toPrimitive]
+ *   Vrací `path` pro implicitní konverzi (např. `` `${obj}` ``).
+ *
+ * @property {(patch?: Partial&lt;UriPatch>) => UriBuilder} change
+ *   Vytvoří nový `UriBuilder` s aplikovaným patchem (libovolná část URI může být změněna).
+ *
+ * @property {(app: string) => UriBuilder} app
+ *   Zkratka pro `change({ app })`.
+ * @property {(model: string) => UriBuilder} model
+ *   Zkratka pro `change({ model })`.
+ * @property {(action: string) => UriBuilder} action
+ *   Zkratka pro `change({ action })`.
+ * @property {(on?: boolean) => UriBuilder} id
+ *   Zkratka pro `change({ withId: on })`. Default `true`.
+ * @property {(p?: string) => UriBuilder} idParam
+ *   Zkratka pro `change({ idParam: p })`. Default `":id"`.
+ *
+ * @typedef {object} UriPatch
+ * @property {string} [app]
+ * @property {string} [model]
+ * @property {string} [action]
+ * @property {boolean} [withId]
+ * @property {string} [idParam]
+ */
+export const uri = ({ app="_", model="_", action="view", withId = false, idParam = ":id" } = {}) => {
+    const seg = {
+        app: clean(app),
+        model: clean(model),
+        action: clean(action),
+        withId: Boolean(withId),
+        idParam: String(idParam).startsWith(":") ? String(idParam) : `:${String(idParam)}`,
+    };
+
+    const base = `/${seg.app}/${seg.model}/${seg.action}`.replace(/\/+/g, "/");
+    const path = seg.withId ? `${base}/${seg.idParam}` : base;
+
+    const obj = {
+        path,
+        segments: seg,
+
+        // stringovatelnost
+        toString() { return path; },
+        valueOf() { return path; },
+        [Symbol.toPrimitive]() { return path; },
+
+        // "immutable" změna: vrátí nový objekt
+        change(patch = {}) {
+            return uri({ ...seg, ...patch });
+        },
+
+        // volitelné zkratky
+        app(app) { return obj.change({ app }); },
+        model(model) { return obj.change({ model }); },
+        action(action) { return obj.change({ action }); },
+        id(on = true) { return obj.change({ withId: on }); },
+        idParam(p = ":id") { return obj.change({ idParam: p }); },
+    };
+
+    return obj;
+};
+
+export const URIRoot = "/finance"
+export const URIRootObj = uri({ app: URIRoot })</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:21:25 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

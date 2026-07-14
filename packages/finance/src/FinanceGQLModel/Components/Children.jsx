@@ -1,31 +1,46 @@
-import { ChildWrapper } from "@hrbolek/uoisfrontend-shared" // import ChildWrapper komponenty pro obalení potomků
+import { ChildWrapper } from "@hrbolek/uoisfrontend-shared";
+
 
 /**
- * A utility component that wraps children with the `ChildWrapper` component.
+ * Wraps child components and automatically injects the current finance entity
+ * into all descendants.
  *
- * This component passes down an `item` entity along with other props to all child elements,
- * allowing children to access common data while preserving their functionality.
+ * This helper component eliminates the need to manually pass the same
+ * `item` property to every nested component. All additional properties are
+ * forwarded to `ChildWrapper`.
  *
  * @component
- * @param {Object} props - The component props.
- * @param {any} props.item - An entity (object, string, or other data) to be passed to children.
- * @param {React.ReactNode} props.children - The child elements to be wrapped.
- * @param {...any} props - Additional props to be forwarded to each child element.
  *
- * @returns {JSX.Element} A `ChildWrapper` component containing the children with injected `item`.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Finance entity that will be propagated to all child components.
+ *
+ * @param {React.ReactNode} props.children
+ * Child components rendered inside the wrapper.
+ *
+ * @param {...Object} props
+ * Additional properties forwarded to `ChildWrapper`.
+ *
+ * @returns {JSX.Element}
+ * Wrapper providing the current finance entity to all nested components.
  *
  * @example
- * import { Children } from './Children';
- *
- * const item = { id: 1, name: "Finance Item" };
- *
- * <Children item={item}>
- *   <CustomMessage />
- *   <CustomIcon />
+ * <Children item={finance}>
+ *     <MediumContent />
+ *     <InteractiveMutations />
  * </Children>
- *
- * // Both children receive the 'item' prop with the specified entity.
  */
-export const Children = ({ item, children, ...props }) => ( // komponenta destructuje item, children a zbytek props
-    <ChildWrapper item={item} children={children} {...props} /> // vrací ChildWrapper s předaným item, potomky a ostatními props
-)
+export const Children = ({
+    item,
+    children,
+    ...props
+}) => (
+    <ChildWrapper
+        item={item}
+        {...props}
+    >
+        {children}
+    </ChildWrapper>
+);

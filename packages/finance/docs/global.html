@@ -1,0 +1,9967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Global</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Global</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2></h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="ALLOWED_SORT_KEYS"><span class="type-signature">(constant) </span>ALLOWED_SORT_KEYS<span class="type-signature"> :Array.&lt;string></span></h4>
+
+
+
+
+<div class="description">
+    <p>Finance entity properties that support client-side sorting.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="COLORS"><span class="type-signature">(constant) </span>COLORS<span class="type-signature"> :Array.&lt;string></span></h4>
+
+
+
+
+<div class="description">
+    <p>Color palette used cyclically for Sunburst sectors.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line12">line 12</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="CardCapsule"><span class="type-signature">(constant) </span>CardCapsule<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Card container used throughout the finance module.</p>
+<p>The component extends the shared <code>CardCapsule</code> by automatically generating
+a finance-specific header containing an icon and a link to the current
+finance entity. A custom title may be provided to replace the default
+header.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_CardCapsule.jsx.html">Components/CardCapsule.jsx</a>, <a href="Components_CardCapsule.jsx.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CardCapsule item={finance}>    &lt;FinanceDetails />&lt;/CardCapsule></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="Children"><span class="type-signature">(constant) </span>Children<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Wraps child components and automatically injects the current finance entity
+into all descendants.</p>
+<p>This helper component eliminates the need to manually pass the same
+<code>item</code> property to every nested component. All additional properties are
+forwarded to <code>ChildWrapper</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Children.jsx.html">Components/Children.jsx</a>, <a href="Components_Children.jsx.html#line35">line 35</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;Children item={finance}>    &lt;MediumContent />    &lt;InteractiveMutations />&lt;/Children></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="ConfirmEdit"><span class="type-signature">(constant) </span>ConfirmEdit<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays a confirmation-based editing interface for a finance entity.</p>
+<p>The component manages a local editable draft through <code>useEditAction</code>.
+Unlike live editing, changes are not persisted immediately. The user must
+explicitly confirm or cancel the modifications using the provided action
+buttons.</p>
+<p>After a successful update, the returned entity is propagated to the
+surrounding GraphQL entity context so that other components can use the
+current data.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_ConfirmEdit.jsx.html">Components/ConfirmEdit.jsx</a>, <a href="Components_ConfirmEdit.jsx.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;ConfirmEdit item={finance}>    &lt;p>Změny se uloží až po potvrzení.&lt;/p>&lt;/ConfirmEdit></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="CreateBody"><span class="type-signature">(constant) </span>CreateBody<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders the full-page finance creation workflow.</p>
+<p>The component wraps <code>BaseCreateBody</code>, injects the finance creation form,
+configures the default GraphQL mutation and determines the destination
+page after successful creation.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line254">line 254</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CreateBody /></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="CreateButton"><span class="type-signature">(constant) </span>CreateButton<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a button that opens the finance creation dialog.</p>
+<p>The component wraps <code>BaseCreateButton</code>, supplies the default finance form,
+creation dialog, GraphQL mutation and permission configuration.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line194">line 194</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CreateButton className="btn btn-success">    Vytvořit nový&lt;/CreateButton></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="CreateDialog"><span class="type-signature">(constant) </span>CreateDialog<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays a modal dialog used for creating a finance entity.</p>
+<p>The component wraps <code>BaseCreateDialog</code>, injects the finance-specific
+editable form and initializes the dialog with the default finance draft.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line135">line 135</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="CreateLink"><span class="type-signature">(constant) </span>CreateLink<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a navigation link to the finance creation page.</p>
+<p>The component wraps <code>BaseCreateLink</code>, applies the default create URI
+and enforces role permissions.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line91">line 91</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CreateLink className="btn btn-success">    Vytvořit nový&lt;/CreateLink></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="CustomStringFilter"><span class="type-signature">(constant) </span>CustomStringFilter<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Provides case-insensitive filtering for finance names.</p>
+<p>The component uses GraphQL <code>_ilike</code> filtering and displays autocomplete
+suggestions based on the currently available finance data. Suggestion
+matching ignores capitalization and diacritical marks.</p>
+<p>The component must be rendered inside <code>BaseFilter</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line343">line 343</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CustomStringFilter    id="name"    label="Název"    suggestions={financeNames}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="CustomUUIDFilter"><span class="type-signature">(constant) </span>CustomUUIDFilter<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Provides filtering functionality for finance UUID identifiers.</p>
+<p>The component accepts either a complete UUID or a partial identifier.
+Partial identifiers are matched against the available suggestions.
+Once a valid identifier is resolved, the component updates the shared
+filter context using the GraphQL <code>_eq</code> operator.</p>
+<p>The component must be rendered inside <code>BaseFilter</code>, because it relies on
+the context provided by <code>useFilterDesigner</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line116">line 116</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;CustomUUIDFilter    id="id"    label="ID"    suggestions={financeIds}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="DeleteBody"><span class="type-signature">(constant) </span>DeleteBody<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>“Page-level” delete workflow (mazání na celé stránce / v těle stránky).</p>
+<p>Wrapper nad <code>BaseDeleteBody</code>. Dodává výchozí <code>DefaultContent</code>, <code>mutationAsyncAction</code>
+a <code>vectorItemsURI</code> a aplikuje RBAC přes <code>permissions</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Delete.jsx.html">Mutations/Delete.jsx</a>, <a href="Mutations_Delete.jsx.html#line177">line 177</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DeleteButton"><span class="type-signature">(constant) </span>DeleteButton<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Tlačítko pro smazání entity (obvykle otevře confirm dialog a spustí delete mutaci).</p>
+<p>Wrapper nad <code>BaseDeleteButton</code>. Dodává výchozí <code>DefaultContent</code>, <code>mutationAsyncAction</code>
+a <code>vectorItemsURI</code> (kam se naviguje po úspěšném smazání, pokud není použit <code>onOk</code>).</p>
+<p>Chování navigace / callback:</p>
+<ul>
+<li>Pokud je definované <code>onOk</code>, použije se pro “feedback”, že mazání proběhlo (tj. uživatel si
+rozhodne, co dál).</li>
+<li>Pokud <code>onOk</code> definované není, Base implementace typicky naviguje na <code>vectorItemsURI</code>.</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Delete.jsx.html">Mutations/Delete.jsx</a>, <a href="Mutations_Delete.jsx.html#line89">line 89</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DeleteDialog"><span class="type-signature">(constant) </span>DeleteDialog<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Confirm dialog pro smazání entity.</p>
+<p>Wrapper nad <code>BaseDeleteDialog</code>. Dodává výchozí <code>DefaultContent</code> (read-only zobrazení entity),
+<code>mutationAsyncAction</code> a <code>vectorItemsURI</code> pro návrat po úspěchu (dle Base/General implementace).</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Delete.jsx.html">Mutations/Delete.jsx</a>, <a href="Mutations_Delete.jsx.html#line135">line 135</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DeleteLink"><span class="type-signature">(constant) </span>DeleteLink<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Link na delete route pro konkrétní entitu.</p>
+<p>Wrapper nad <code>BaseDeleteLink</code>. Nastavuje výchozí <code>uriPattern</code> pro delete route a aplikuje RBAC
+přes <code>permissions</code>. Ostatní props přeposílá do Base komponenty.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Delete.jsx.html">Mutations/Delete.jsx</a>, <a href="Mutations_Delete.jsx.html#line43">line 43</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="Filter"><span class="type-signature">(constant) </span>Filter<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Provides the primary filtering interface for <code>FinanceGQLModel</code> entities.</p>
+<p>The component combines UUID and name filtering into one filter form.
+Unique identifier and name suggestions are extracted automatically from
+the supplied finance data.</p>
+<p>Additional custom filter controls can be appended through <code>children</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line526">line 526</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;Filter    id="finance-filter"    data={finances}    onChange={handleFilterChange}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="FinanceTransferInsertAsyncAction"><span class="type-signature">(constant) </span>FinanceTransferInsertAsyncAction<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Asynchronous GraphQL action responsible for creating finance transfers.</p>
+<p>The action sends the prepared GraphQL mutation to the backend and
+stores the result in the application state.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html">Queries/FinanceTransferInsertAsyncAction.jsx</a>, <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html#line84">line 84</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>dispatch(    FinanceTransferInsertAsyncAction({        financeTransfer_financeSourceId: sourceId,        financeTransfer_financeDestinationId: destinationId,        financeTransfer_name: "Přesun rozpočtu",        financeTransfer_amount: 25000    }));</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="FinanceTransferInsertMutation"><span class="type-signature">(constant) </span>FinanceTransferInsertMutation<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazily generated GraphQL mutation used for inserting finance transfers.</p>
+<p>The mutation is converted into an executable GraphQL request that can
+be dispatched by the asynchronous action framework.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html">Queries/FinanceTransferInsertAsyncAction.jsx</a>, <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html#line60">line 60</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="FinanceTransferInsertMutationStr"><span class="type-signature">(constant) </span>FinanceTransferInsertMutationStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL mutation used for creating a finance transfer.</p>
+<p>The mutation creates a new transfer between two finance entities and
+returns either the created transfer or an insertion error.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html">Queries/FinanceTransferInsertAsyncAction.jsx</a>, <a href="Queries_FinanceTransferInsertAsyncAction.jsx.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="FinanceTransferSunburst"><span class="type-signature">(constant) </span>FinanceTransferSunburst<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Interactive component for displaying a finance hierarchy and creating
+transfers between finance entities.</p>
+<p>The component renders a Sunburst diagram and allows the user to:</p>
+<ul>
+<li>select a source finance,</li>
+<li>select a destination finance,</li>
+<li>enter a transfer amount,</li>
+<li>validate whether the transfer is allowed,</li>
+<li>execute the GraphQL transfer mutation,</li>
+<li>notify the parent component after a successful transfer.</li>
+</ul>
+<p>The first selected diagram node becomes the source. The second selected
+node becomes the destination. Transfers are allowed only between different
+finance entities and, when both parent identifiers are available, within
+the same parent finance.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_FinanceTransferSunburst.jsx.html">Components/FinanceTransferSunburst.jsx</a>, <a href="Components_FinanceTransferSunburst.jsx.html#line180">line 180</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;FinanceTransferSunburst    item={finance}    header="Graf finančních přesunů"    onTransferInserted={(transfer) => {        console.log("Inserted transfer:", transfer);    }}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="GeneratedContentBase"><span class="type-signature">(constant) </span>GeneratedContentBase<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays the finance visualization and vector attributes for an entity.</p>
+<p>The component loads finance transfers from the backend, selects transfers
+relevant to the current finance hierarchy, recalculates displayed values
+and renders both the interactive Sunburst diagram and vector attributes.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line507">line 507</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="InsertAsyncAction"><span class="type-signature">(constant) </span>InsertAsyncAction<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Asynchronous GraphQL action responsible for creating a new entity.</p>
+<p>The action executes the insert mutation and stores the result inside the
+application state through the shared asynchronous action framework.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_InsertAsyncAction.jsx.html">Queries/InsertAsyncAction.jsx</a>, <a href="Queries_InsertAsyncAction.jsx.html#line79">line 79</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>dispatch(InsertAsyncAction(newEntity));</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="InsertMutation"><span class="type-signature">(constant) </span>InsertMutation<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazily generated GraphQL mutation.</p>
+<p>The mutation automatically includes all dependencies required by the
+<code>Large</code> fragment.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_InsertAsyncAction.jsx.html">Queries/InsertAsyncAction.jsx</a>, <a href="Queries_InsertAsyncAction.jsx.html#line62">line 62</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="InsertMutationStr"><span class="type-signature">(constant) </span>InsertMutationStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL mutation used for inserting a new entity.</p>
+<p>The mutation returns either an insertion error or the complete created
+entity represented by the <code>Large</code> GraphQL fragment.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_InsertAsyncAction.jsx.html">Queries/InsertAsyncAction.jsx</a>, <a href="Queries_InsertAsyncAction.jsx.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="InteractiveMutations"><span class="type-signature">(constant) </span>InteractiveMutations<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays the interactive mutation controls for a finance entity.</p>
+<p>The component groups the primary finance actions into a single tools card.
+Available operations include:</p>
+<ul>
+<li>navigation to the finance list,</li>
+<li>opening the full edit page,</li>
+<li>opening the inline edit dialog,</li>
+<li>opening the create dialog,</li>
+<li>deleting the current finance entity.</li>
+</ul>
+<p>Permission handling for individual actions is delegated to the imported
+mutation components.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_InteractiveMutations.jsx.html">Mutations/InteractiveMutations.jsx</a>, <a href="Mutations_InteractiveMutations.jsx.html#line110">line 110</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;InteractiveMutations    item={{        id: "30000000-0000-0000-0000-000000000003",        name: "Rozpočet WP2"    }}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="LargeCard"><span class="type-signature">(constant) </span>LargeCard<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays the main two-column detail layout of a finance entity.</p>
+<p>The left column contains the finance details and available mutation
+controls. The middle column is reserved for additional content such as
+visualizations, scalar attributes or vector attributes.</p>
+<p>The default card and detail components can be replaced through component
+properties, which allows the layout to be reused with custom rendering
+implementations.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_LargeCard.jsx.html">Components/LargeCard.jsx</a>, <a href="Components_LargeCard.jsx.html#line65">line 65</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;LargeCard item={finance}>    &lt;FinanceTransferSunburst item={finance} />&lt;/LargeCard></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="LargeFragment"><span class="type-signature">(constant) </span>LargeFragment<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazy GraphQL fragment representing the complete finance entity,
+including direct subfinances.</p>
+<p>Depends on:</p>
+<ul>
+<li>MediumFragment</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line232">line 232</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="LargeFragmentStr"><span class="type-signature">(constant) </span>LargeFragmentStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL fragment containing the complete finance entity.</p>
+<p>Besides the medium-level data, this fragment recursively loads direct
+subfinances using the <code>Medium</code> fragment. It is typically used by the
+finance detail page and the Sunburst visualization.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line93">line 93</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="Link"><span class="type-signature">(constant) </span>Link<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a navigation link to a Finance entity.</p>
+<p>The component automatically constructs the destination URL from the
+configured route and the entity identifier. By default it navigates to
+the detail page, but any supported action (such as edit or delete) can
+be selected through the <code>action</code> property.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Link.jsx.html">Components/Link.jsx</a>, <a href="Components_Link.jsx.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>&lt;Link item={finance} /></code></pre>
+
+    <pre class="prettyprint"><code>&lt;Link item={finance} action="edit">    Upravit&lt;/Link></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="LinkFragment"><span class="type-signature">(constant) </span>LinkFragment<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazy GraphQL fragment containing the basic finance entity.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line201">line 201</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="LinkFragmentStr"><span class="type-signature">(constant) </span>LinkFragmentStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL fragment containing the basic finance entity information.</p>
+<p>The fragment represents the minimum dataset required for displaying
+finance entities in lists, tables and links. Besides scalar properties,
+it also contains references to the parent finance, finance type,
+associated project and direct subfinances.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="LiveEdit"><span class="type-signature">(constant) </span>LiveEdit<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays a standalone live-edit form for a finance entity.</p>
+<p>The component uses <code>useEditAction</code> in live mode. Input changes are stored in
+a local draft and persisted through the configured update mutation when the
+corresponding field loses focus.</p>
+<p>A loading indicator is displayed while an update request is being processed.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_LiveEdit.jsx.html">Components/LiveEdit.jsx</a>, <a href="Components_LiveEdit.jsx.html#line217">line 217</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;LiveEdit    item={finance}    asyncMutationAction={UpdateAsyncAction}>    &lt;small>Změny se ukládají automaticky.&lt;/small>&lt;/LiveEdit></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="LiveEdit_"><span class="type-signature">(constant) </span>LiveEdit_<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Provides the context-based live-edit workflow for a finance entity.</p>
+<p>The component reads the current finance entity and its event handlers from
+the surrounding GraphQL entity context. It then creates a nested asynchronous
+action provider configured to execute the supplied update action.</p>
+<p>This variant is intended for pages that already use
+<code>GQLEntityProvider</code> or <code>AsyncActionProvider</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_LiveEdit.jsx.html">Components/LiveEdit.jsx</a>, <a href="Components_LiveEdit.jsx.html#line52">line 52</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;LiveEdit_>    &lt;p>Změny se ukládají po opuštění pole.&lt;/p>&lt;/LiveEdit_></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="MediumCard"><span class="type-signature">(constant) </span>MediumCard<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays the detail card of a finance entity.</p>
+<p>The component combines the finance-specific <code>CardCapsule</code> with the
+<code>MediumContent</code> component to provide a complete detail view. The card
+header contains an icon together with a navigation link to the current
+finance entity, while any child components are rendered before the
+standard detail section.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_MediumCard.jsx.html">Components/MediumCard.jsx</a>, <a href="Components_MediumCard.jsx.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;MediumCard item={finance}>    &lt;FinanceTransferSunburst item={finance} />&lt;/MediumCard></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="MediumContent"><span class="type-signature">(constant) </span>MediumContent<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays detailed information about a finance entity.</p>
+<p>The component presents the main scalar and relational attributes of a
+finance record, including its names, identifier, parent finance, amount,
+description, audit information and associated project.</p>
+<p>Links are provided for the current finance, its parent finance, related
+users and associated project where the required relation data is available.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_MediumContent.jsx.html">Components/MediumContent.jsx</a>, <a href="Components_MediumContent.jsx.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const finance = {    id: "30000000-0000-0000-0000-000000000003",    name: "Rozpočet WP2",    nameEn: "WP2 Budget",    description: "Rozpočet pracovního balíčku WP2",    value: 900000,    masterfinanceId: "30000000-0000-0000-0000-000000000001",    masterfinance: {        id: "30000000-0000-0000-0000-000000000001",        name: "Celkový rozpočet programu"    },    project: {        id: "project-id",        name: "Projekt modernizace"    }};&lt;MediumContent item={finance} /></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="MediumEditableContent"><span class="type-signature">(constant) </span>MediumEditableContent<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders an editable form for a finance entity.</p>
+<p>The component provides form controls for editing the most commonly
+modified properties of a finance record. It is primarily used inside
+create and update dialogs.</p>
+<p>The edited values are propagated through the supplied event handlers.
+Additional controls (such as Save or Cancel buttons) can be injected
+through the <code>children</code> property.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_MediumEditableContent.jsx.html">Components/MediumEditableContent.jsx</a>, <a href="Components_MediumEditableContent.jsx.html#line54">line 54</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;MediumEditableContent    item={finance}    onChange={handleChange}    onBlur={handleBlur}>    &lt;button className="btn btn-primary">        Save    &lt;/button>&lt;/MediumEditableContent></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="MediumFragment"><span class="type-signature">(constant) </span>MediumFragment<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazy GraphQL fragment containing finance data together with RBAC
+permissions.</p>
+<p>Depends on:</p>
+<ul>
+<li>LinkFragment</li>
+<li>RBACFragment</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line215">line 215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="MediumFragmentStr"><span class="type-signature">(constant) </span>MediumFragmentStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL fragment extending the basic finance information with RBAC data.</p>
+<p>The fragment is primarily used by editable views where the current user's
+permissions determine which actions are available.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line73">line 73</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="MutationAsyncAction"><span class="type-signature">(constant) </span>MutationAsyncAction<span class="type-signature"> :function</span></h4>
+
+
+
+
+<div class="description">
+    <p>Default GraphQL mutation used to create finance entities.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">function</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="Page"><span class="type-signature">(constant) </span>Page<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Root page component of the dynamic finance module.</p>
+<p>The component resolves the entity type and identifier from the route,
+obtains the appropriate GraphQL action and definitions, and initializes
+the provider used by <code>PageContent</code>.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line956">line 956</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="PageContent"><span class="type-signature">(constant) </span>PageContent<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders finance page content according to the route action.</p>
+<p>Supported modes include the standard detail view, GraphQL definition
+display, vector attributes and scalar attributes.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line774">line 774</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="PageItemBase"><span class="type-signature">(constant) </span>PageItemBase<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Creates the provider and page structure for a finance entity detail.</p>
+<p>The entity identifier is read from the current route and passed to the
+configured asynchronous GraphQL action.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line718">line 718</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="PageLink"><span class="type-signature">(constant) </span>PageLink<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a navigation link to the main finance collection page.</p>
+<p>The link uses the configured <code>VectorItemsURI</code> and can optionally preserve
+the current URL hash and query string.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_InteractiveMutations.jsx.html">Mutations/InteractiveMutations.jsx</a>, <a href="Mutations_InteractiveMutations.jsx.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;PageLink className="btn btn-outline-success">    Stránka&lt;/PageLink></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="RBACFragment"><span class="type-signature">(constant) </span>RBACFragment<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazy GraphQL fragment describing RBAC permissions.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line192">line 192</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="RBACFragmentStr"><span class="type-signature">(constant) </span>RBACFragmentStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL fragment describing RBAC information of a finance entity.</p>
+<p>The fragment provides information about the current user's roles,
+including the assigned role type and group hierarchy.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line147">line 147</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="ReadAsyncAction"><span class="type-signature">(constant) </span>ReadAsyncAction<span class="type-signature"> :function</span></h4>
+
+
+
+
+<div class="description">
+    <p>An async action for executing a GraphQL query to read  entities.</p>
+<p>This action is created using <code>createAsyncGraphQLAction</code> with a predefined <code>QueryRead</code> query.
+It can be dispatched with query variables to fetch data related to  entities from the GraphQL API.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">function</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_ReadAsyncAction.jsx.html">Queries/ReadAsyncAction.jsx</a>, <a href="Queries_ReadAsyncAction.jsx.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>// Example usage:const queryVariables = { id: "12345" };dispatch(ReadAsyncAction(queryVariables)).then((result) => {console.log("Fetched data:", result);}).catch((error) => {console.error("Error fetching data:", error);});</code></pre>
+
+
+
+        
+            
+<h4 class="name" id="RoleFragment"><span class="type-signature">(constant) </span>RoleFragment<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Lazy GraphQL fragment describing a user role.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line183">line 183</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="RoleFragmentStr"><span class="type-signature">(constant) </span>RoleFragmentStr<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    <p>GraphQL fragment describing a user role.</p>
+<p>The fragment contains role metadata together with references to the
+associated user, role type and group.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Queries_Fragments.jsx.html">Queries/Fragments.jsx</a>, <a href="Queries_Fragments.jsx.html#line112">line 112</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="SunburstDiagram"><span class="type-signature">(constant) </span>SunburstDiagram<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays an interactive SVG Sunburst diagram of a finance hierarchy.</p>
+<p>The component converts a nested finance structure into concentric sectors.
+Sector sizes correspond to finance values, while hierarchy depth determines
+the rendered ring. The root finance is displayed as a central circle.</p>
+<p>The diagram supports selecting individual nodes through <code>onSelect</code>. A
+selected source is rendered with diagonal hatching, while a selected target
+receives a thicker border and glow effect.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line403">line 403</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;SunburstDiagram    item={finance}    header="Struktura rozpočtu"    onSelect={(node) => console.log(node)}    selectedSourceId={sourceId}    selectedTargetId={targetId}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="Table"><span class="type-signature">(constant) </span>Table<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays finance entities in a sortable table.</p>
+<p>The component extends the shared table implementation with:</p>
+<ul>
+<li>a restricted set of finance-specific columns,</li>
+<li>client-side sorting by identifier, name and amount,</li>
+<li>localized Czech currency formatting,</li>
+<li>localized date and time formatting,</li>
+<li>visual sort direction indicators in column headers.</li>
+</ul>
+<p>Sorting is triggered by clicking a supported table header. Clicking buttons
+or contextual menus does not change the current sorting configuration.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line191">line 191</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;Table    data={[        {            id: "30000000-0000-0000-0000-000000000003",            name: "Rozpočet WP2",            value: 900000        }    ]}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="UUID_RE"><span class="type-signature">(constant) </span>UUID_RE<span class="type-signature"> :RegExp</span></h4>
+
+
+
+
+<div class="description">
+    <p>Regular expression used to validate UUID version 1–5 identifiers.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">RegExp</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="UpdateBody"><span class="type-signature">(constant) </span>UpdateBody<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders the full-page finance update workflow.</p>
+<p>The component wraps <code>BaseUpdateBody</code>, injects the finance-specific editable
+content, uses the default update mutation and enforces role permissions.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line248">line 248</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;UpdateBody    item={finance}    onOk={handleUpdateFinished}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="UpdateButton"><span class="type-signature">(constant) </span>UpdateButton<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a button that opens the finance update dialog.</p>
+<p>The component wraps <code>BaseUpdateButton</code> and supplies the default editable
+content, dialog component, update mutation and role permissions.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line191">line 191</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;UpdateButton    item={finance}    className="btn btn-outline-success">    Upravit dialog&lt;/UpdateButton></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="UpdateDialog"><span class="type-signature">(constant) </span>UpdateDialog<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Displays a modal dialog for editing a finance entity.</p>
+<p>The component wraps <code>BaseUpdateDialog</code>, injects the finance-specific
+editable content and uses <code>UpdateAsyncAction</code> as the default mutation.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line137">line 137</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;UpdateDialog    item={finance}    title="Upravit finance"    onOk={handleUpdate}/></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="UpdateLink"><span class="type-signature">(constant) </span>UpdateLink<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>Renders a link to the full-page finance update route.</p>
+<p>The component wraps <code>BaseUpdateLink</code>, applies the default finance update URI
+and enforces the configured role permissions.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line84">line 84</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;UpdateLink    item={finance}    className="btn btn-outline-success">    Upravit&lt;/UpdateLink></code></pre>
+
+
+
+        
+            
+<h4 class="name" id="WANTED_COLUMNS"><span class="type-signature">(constant) </span>WANTED_COLUMNS<span class="type-signature"> :Object.&lt;string, string></span></h4>
+
+
+
+
+<div class="description">
+    <p>Column configuration used by the finance table.</p>
+<p>Keys correspond to finance entity attributes and values define the
+localized labels displayed in the table header.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="defaultitem"><span class="type-signature">(constant) </span>defaultitem<span class="type-signature"> :Object</span></h4>
+
+
+
+
+<div class="description">
+    <p>Default draft used when creating a new finance entity.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="mutationAsyncAction"><span class="type-signature">(constant) </span>mutationAsyncAction<span class="type-signature"> :function</span></h4>
+
+
+
+
+<div class="description">
+    <p>Default GraphQL async action used to update finance entities.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">function</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line36">line 36</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="permissions"><span class="type-signature">(constant) </span>permissions<span class="type-signature"> :Object</span></h4>
+
+
+
+
+<div class="description">
+    <p>Permission configuration applied to all finance creation controls.</p>
+<p>Only users with the <code>administrátor</code> role are allowed to create
+new finance entities.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line49">line 49</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="permissions"><span class="type-signature">(constant) </span>permissions<span class="type-signature"> :Object</span></h4>
+
+
+
+
+<div class="description">
+    <p>Permission configuration applied to all finance update controls.</p>
+<p>Only users with the <code>administrátor</code> role can access the update actions.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line47">line 47</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="DefaultContent"><span class="type-signature"></span>DefaultContent<span class="signature">(props)</span><span class="type-signature"> &rarr; {JSX.Element}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Default editable content used by all finance creation workflows.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Properties forwarded to <code>MediumEditableContent</code>.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Create.jsx.html">Mutations/Create.jsx</a>, <a href="Mutations_Create.jsx.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Editable finance form.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">JSX.Element</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="DefaultContent"><span class="type-signature"></span>DefaultContent<span class="signature">(props)</span><span class="type-signature"> &rarr; {JSX.Element}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Default editable content used by all update workflows.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Properties forwarded to <code>MediumEditableContent</code>.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Mutations_Update.jsx.html">Mutations/Update.jsx</a>, <a href="Mutations_Update.jsx.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Editable finance form.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">JSX.Element</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="LiveEditWrapper"><span class="type-signature"></span>LiveEditWrapper<span class="signature">(props)</span><span class="type-signature"> &rarr; {JSX.Element}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Adapts field-level input events to the object-level events expected by the
+asynchronous entity context.</p>
+<p><code>MediumEditableContent</code> emits events containing a field identifier and its
+new value. The wrapper creates an updated copy of the complete finance
+entity and passes it to the context handler.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Component properties.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Finance entity currently being edited.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>children</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">React.ReactNode</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Optional content rendered inside the editable form.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_LiveEdit.jsx.html">Components/LiveEdit.jsx</a>, <a href="Components_LiveEdit.jsx.html#line103">line 103</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Editable finance form connected to the asynchronous entity context.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">JSX.Element</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="PageItemInnerStructure"><span class="type-signature"></span>PageItemInnerStructure<span class="signature">(props)</span><span class="type-signature"> &rarr; {JSX.Element}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Composes the internal layout of a finance entity page.</p>
+<p>The component reads the current entity from GraphQL context, applies any
+transfers embedded in the entity, renders optional navigation and wraps
+the selected subpage with additional components.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>props</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Component properties.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>PageNavbar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">React.ComponentType.&lt;Object></span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last"><p>Optional page navigation component.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ItemLayout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;React.ComponentType></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    LargeCard
+                
+                </td>
+            
+
+            <td class="description last"><p>Layout component used to wrap the entity content.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>SubPage</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">React.ComponentType.&lt;Object></span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    GeneratedContentBase
+                
+                </td>
+            
+
+            <td class="description last"><p>Component rendering the main page content.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>OtherComponents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;React.ComponentType></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>Components that wrap <code>children</code> from right to left.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>children</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">React.ReactNode</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Additional nested page content.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line632">line 632</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Composed finance entity page.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">JSX.Element</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="applyTransfersToFinanceTree"><span class="type-signature"></span>applyTransfersToFinanceTree<span class="signature">(finances<span class="signature-attributes">opt</span>, transfers<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Applies transfers to a finance hierarchy and recalculates finance values.</p>
+<p>Each finance receives its original value minus outgoing transfers plus
+incoming transfers. Child finance collections are processed recursively.
+Input objects are not mutated.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>finances</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>Finance nodes to recalculate.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>transfers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>Normalized finance transfers.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line231">line 231</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Recalculated finance hierarchy.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="buildParentMap"><span class="type-signature"></span>buildParentMap<span class="signature">(finance)</span><span class="type-signature"> &rarr; {Map.&lt;string, (string|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Builds a map describing parent-child relationships in a finance hierarchy.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>finance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Root finance entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line350">line 350</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Map whose keys are finance IDs and values are parent finance IDs.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Map.&lt;string, (string|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="buildSunburstNodes"><span class="type-signature"></span>buildSunburstNodes<span class="signature">(root, maxDepth<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;{node: Object, depth: number, startAngle: number, endAngle: number, colorIndex: number}>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Transforms a hierarchical finance structure into flat Sunburst sectors.</p>
+<p>The function performs a depth-first traversal. Every node receives its
+depth, angular range and palette index. Child sectors are sized
+proportionally according to their <code>value</code> property. Missing or zero values
+use a fallback weight of one so that every node remains visually present.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>root</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Root finance node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxDepth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    4
+                
+                </td>
+            
+
+            <td class="description last"><p>Maximum hierarchy depth included in the diagram.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line290">line 290</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Flat collection of renderable Sunburst sectors.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;{node: Object, depth: number, startAngle: number, endAngle: number, colorIndex: number}></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="canTransferBetween"><span class="type-signature"></span>canTransferBetween<span class="signature">(source, destination)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Determines whether a financial transfer between two finance entities
+is allowed.</p>
+<p>A transfer is rejected when:</p>
+<ul>
+<li>the source or destination is missing,</li>
+<li>both entities have the same identifier,</li>
+<li>both entities belong to different parent finances.</li>
+</ul>
+<p>If one of the entities does not provide <code>masterfinanceId</code>, the transfer
+is currently allowed.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Source finance entity.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Unique identifier of the source finance.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>masterfinanceId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Identifier of the parent finance of the source entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>destination</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Destination finance entity.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Unique identifier of the destination finance.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>masterfinanceId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Identifier of the parent finance of the destination entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_FinanceTransferSunburst.jsx.html">Components/FinanceTransferSunburst.jsx</a>, <a href="Components_FinanceTransferSunburst.jsx.html#line100">line 100</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p><code>true</code> when the transfer is allowed; otherwise <code>false</code>.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>canTransferBetween(    {        id: "source-id",        masterfinanceId: "parent-id"    },    {        id: "destination-id",        masterfinanceId: "parent-id"    });// Returns: true</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="collectFinanceIds"><span class="type-signature"></span>collectFinanceIds<span class="signature">(finance)</span><span class="type-signature"> &rarr; {Set.&lt;string>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Collects all finance identifiers contained in a hierarchy.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>finance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Root finance entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line318">line 318</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Set containing identifiers of the root and all descendant finances.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Set.&lt;string></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="collectTransfers"><span class="type-signature"></span>collectTransfers<span class="signature">(item)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Collects finance transfers recursively from a finance hierarchy.</p>
+<p>The function searches all supported transfer collections on every finance
+node, prevents cyclic traversal and removes duplicate records.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Root finance entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Unique normalized transfers found in the hierarchy.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="describeArc"><span class="type-signature"></span>describeArc<span class="signature">(centerX, centerY, innerRadius, outerRadius, startAngle, endAngle)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Builds an SVG path describing an annular sector.</p>
+<p>The generated path contains an outer arc, a radial connection, an inner
+arc and a closing segment. It is used to draw all non-root Sunburst nodes.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>centerX</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Horizontal coordinate of the diagram center.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>centerY</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Vertical coordinate of the diagram center.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>innerRadius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Inner radius of the sector.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>outerRadius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Outer radius of the sector.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>startAngle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Starting angle in degrees.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>endAngle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Ending angle in degrees.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line93">line 93</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>SVG path definition suitable for the <code>d</code> attribute of a path element.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="filterRelevantTransfers"><span class="type-signature"></span>filterRelevantTransfers<span class="signature">(transfers, item)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Filters transfers to those relevant for the current finance hierarchy.</p>
+<p>Transfers are retained only when both endpoints belong to the hierarchy.
+Parent-child transfers are excluded because they represent structural
+relationships rather than redistribution between peer finance entities.
+Duplicate transfers are removed.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>transfers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Candidate finance transfers.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Root finance entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line426">line 426</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Relevant unique transfers.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatCurrency"><span class="type-signature"></span>formatCurrency<span class="signature">(value)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Formats a numeric value as Czech currency.</p>
+<p>Non-numeric values are converted to numbers. Invalid values are represented
+as zero.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Financial value to format.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line64">line 64</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Localized currency string expressed in Czech crowns.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatCurrency(250000);// Returns: "250 000 Kč"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="formatDate"><span class="type-signature"></span>formatDate<span class="signature">(dateString)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Formats a date value using the Czech locale.</p>
+<p>Invalid or missing date values are returned as a fallback representation.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dateString</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>ISO date string or another value accepted by the JavaScript <code>Date</code>
+constructor.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line92">line 92</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Localized date and time, a dash for missing values, or the original string
+for invalid dates.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>formatDate("2026-07-13T15:18:34.884Z");// Returns a localized Czech date and time.</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getFinanceName"><span class="type-signature"></span>getFinanceName<span class="signature">(finance)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns a human-readable name for a finance entity.</p>
+<p>The function prefers the Czech name stored in <code>name</code>. If the Czech
+name is unavailable, it uses the English name, the entity identifier,
+or a fallback label.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>finance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Finance entity whose display name should be determined.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Czech name of the finance entity.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nameEn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>English name of the finance entity.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Unique identifier of the finance entity.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_FinanceTransferSunburst.jsx.html">Components/FinanceTransferSunburst.jsx</a>, <a href="Components_FinanceTransferSunburst.jsx.html#line42">line 42</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Human-readable finance name.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>getFinanceName({    id: "30000000-0000-0000-0000-000000000003",    name: "Rozpočet WP2"});// Returns: "Rozpočet WP2"</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getLastNumberFromId"><span class="type-signature"></span>getLastNumberFromId<span class="signature">(idValue)</span><span class="type-signature"> &rarr; {number}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Extracts the final numeric segment from an identifier.</p>
+<p>The helper is used for natural sorting of UUID-like values or custom
+identifiers whose meaningful ordering value is stored in the last
+hyphen-separated segment.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>idValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">number</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Identifier whose final numeric segment should be extracted.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Table.jsx.html">Components/Table.jsx</a>, <a href="Components_Table.jsx.html#line143">line 143</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Parsed numeric suffix or zero when no numeric value is available.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>getLastNumberFromId(    "30000000-0000-0000-0000-000000000003");// Returns: 3</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNodeChildren"><span class="type-signature"></span>getNodeChildren<span class="signature">(node)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns child nodes from different supported hierarchy structures.</p>
+<p>Standard properties such as <code>children</code>, <code>items</code> and <code>nodes</code> are preferred.
+If none of them is present, the helper scans other array-valued properties
+and merges them into a normalized child collection.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Parent hierarchy node.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line220">line 220</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Normalized collection of direct child nodes.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNodeLabel"><span class="type-signature"></span>getNodeLabel<span class="signature">(node)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Resolves the preferred display label of a finance node.</p>
+<p>The function checks commonly used title properties in priority order and
+falls back to the entity identifier or a generic label.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Finance or hierarchy node.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Human-readable node label.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNodeUrl"><span class="type-signature"></span>getNodeUrl<span class="signature">(node)</span><span class="type-signature"> &rarr; {string|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Resolves an application URL for a finance node.</p>
+<p>Explicit navigation properties are preferred. When no explicit URL is
+available, the function builds a model detail URL from the GraphQL type and
+identifier. The helper is currently available for future navigation support.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Finance node whose URL should be resolved.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line181">line 181</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Resolved application URL, or <code>null</code> when the node cannot be linked.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTransferDestinationId"><span class="type-signature"></span>getTransferDestinationId<span class="signature">(transfer)</span><span class="type-signature"> &rarr; {string|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Resolves the destination finance identifier from a transfer object.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>transfer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Finance transfer record.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Destination finance identifier, or <code>null</code> when it cannot be resolved.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTransferSourceId"><span class="type-signature"></span>getTransferSourceId<span class="signature">(transfer)</span><span class="type-signature"> &rarr; {string|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Resolves the source finance identifier from a transfer object.</p>
+<p>Several accepted property names are checked because transfer data can be
+produced by different GraphQL queries, mutations or local transformations.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>transfer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Finance transfer record.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Source finance identifier, or <code>null</code> when it cannot be resolved.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="isAncestor"><span class="type-signature"></span>isAncestor<span class="signature">(ancestorId, childId, parentById)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Determines whether one finance entity is an ancestor of another.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ancestorId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Potential ancestor finance identifier.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>childId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Potential descendant finance identifier.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>parentById</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Map.&lt;string, (string|null)></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Parent relationship map.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line390">line 390</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p><code>true</code> when <code>ancestorId</code> is found in the parent chain of <code>childId</code>.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="matchText"><span class="type-signature"></span>matchText<span class="signature">(itemText, searchInput)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Determines whether a text value begins with the provided search input.</p>
+<p>Comparison is case-insensitive and ignores diacritical marks.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>itemText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Text value from a finance entity.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchInput</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Search expression entered by the user.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line69">line 69</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p><code>true</code> when the normalized item text starts with the normalized search
+input; otherwise <code>false</code>.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>matchText("Rozpočet WP2", "rozpocet");// Returns: true</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="normalizeText"><span class="type-signature"></span>normalizeText<span class="signature">(value)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Normalizes a text value for case-insensitive and accent-insensitive
+comparison.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Text value to normalize.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_Filter.jsx.html">Components/Filter.jsx</a>, <a href="Components_Filter.jsx.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Lowercase text without diacritical marks.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="normalizeTransfer"><span class="type-signature"></span>normalizeTransfer<span class="signature">(transfer)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Converts a finance transfer into the normalized structure used by the page.</p>
+<p>A valid normalized transfer contains <code>financeSourceId</code>,
+<code>financeDestinationId</code> and a non-zero numeric <code>amount</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>transfer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Transfer in an arbitrary supported backend or local format.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line110">line 110</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Normalized transfer, or <code>null</code> when the input is invalid.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="patchFinanceItem"><span class="type-signature"></span>patchFinanceItem<span class="signature">(item, localTransfers<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object|null|undefined}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Creates a finance item whose child values reflect the supplied transfers.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Root finance entity.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>localTransfers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;Object></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    []
+                
+                </td>
+            
+
+            <td class="description last"><p>Transfers to normalize and apply.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Pages_Page.jsx.html">Pages/Page.jsx</a>, <a href="Pages_Page.jsx.html#line287">line 287</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Patched finance entity, or the original invalid value.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="polarToCartesian"><span class="type-signature"></span>polarToCartesian<span class="signature">(centerX, centerY, radius, angle)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Converts polar coordinates into Cartesian SVG coordinates.</p>
+<p>The angle is expressed in degrees and rotated by 90 degrees so that
+zero degrees starts at the top of the diagram.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>centerX</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Horizontal coordinate of the diagram center.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>centerY</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Vertical coordinate of the diagram center.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>radius</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Distance from the diagram center.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>angle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Angle in degrees.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Components_SunBurstDiagram.jsx.html">Components/SunBurstDiagram.jsx</a>, <a href="Components_SunBurstDiagram.jsx.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Cartesian point corresponding to the supplied polar coordinates.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>polarToCartesian(300, 300, 100, 90);// Returns a point located 100 pixels to the right of the center.</code></pre>
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:35:09 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

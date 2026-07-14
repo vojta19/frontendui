@@ -1,46 +1,61 @@
-import { PersonFill } from "react-bootstrap-icons" // ikonka pro záhlaví karty
-import { Link } from "./Link" // komponenta místního odkazu pro zobrazení položky
-import { CardCapsule as CardCapsule_ } from "../../../../_template/src/Base/Components" // základní kard komponenta
+import { PersonFill } from "react-bootstrap-icons";
+
+import { Link } from "./Link";
+
+import {
+    CardCapsule as CardCapsule_
+} from "../../../../_template/src/Base/Components";
+
 
 /**
- * A specialized card component that renders a title and encapsulates children content.
+ * Card container used throughout the finance module.
  *
- * This component wraps the base `CardCapsule` component and provides a default title
- * that includes an icon plus a link rendered from the provided `item`.
+ * The component extends the shared `CardCapsule` by automatically generating
+ * a finance-specific header containing an icon and a link to the current
+ * finance entity. A custom title may be provided to replace the default
+ * header.
  *
  * @component
- * @param {Object} props - The component props.
- * @param {Object} props.item - The object representing the item entity.
- * @param {string|number} props.item.id - The unique identifier for the item.
- * @param {string} props.item.name - The display name for the item.
- * @param {React.ReactNode} [props.children=null] - Content rendered inside the card body.
- * @param {JSX.Element|null} [props.title=null] - Custom title element, overrides default title.
  *
- * @returns {JSX.Element} The rendered card component with a dynamic title and body content.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Finance entity displayed by the card.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Content rendered inside the card body.
+ *
+ * @param {React.ReactNode|null} [props.title=null]
+ * Optional custom card title. When omitted, a default header containing
+ * a finance icon and entity link is displayed.
+ *
+ * @returns {JSX.Element}
+ * Rendered finance card.
  *
  * @example
- * import { CardCapsule } from './CardCapsule';
- * import { Button } from 'react-bootstrap';
- *
- * const item = { id: 123, name: "Example Entity" };
- *
- * <CardCapsule item={item}>
- *   <Button variant="primary">Click Me</Button>
+ * <CardCapsule item={finance}>
+ *     <FinanceDetails />
  * </CardCapsule>
  */
-export const CardCapsule = ({ item, children, title = null }) => { // komponenta přijímá položku, potomky a volitelný titul
-    if (!title) { // pokud není poskytnut vlastní titul, vytvoříme výchozí
+export const CardCapsule = ({
+    item,
+    children,
+    title = null
+}) => {
+
+    if (!title) {
         title = (
-            <> {/* fragment pro kombinaci ikonky a odkazu */}
-                <PersonFill /> {/* ikona osoby v titulku */}
-                <Link item={item} /> {/* lokální odkaz na položku */}
+            <>
+                <PersonFill />
+                <Link item={item} />
             </>
-        )
+        );
     }
 
     return (
-        <CardCapsule_ title={title}> {/* render základní kapsle s titulkem */}
-            {children} {/* obsah karty předaný z rodiče */}
+        <CardCapsule_ title={title}>
+            {children}
         </CardCapsule_>
-    )
-}
+    );
+};

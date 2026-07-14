@@ -1,58 +1,153 @@
-// Importuje obalovou kartu (CardCapsule) a výchozí URI seznamu položek (VectorItemsURI) z lokálních komponent
-import { CardCapsule, VectorItemsURI } from "../Components";
+import {
+    CardCapsule,
+    VectorItemsURI
+} from "../Components";
 
-// Importuje komponenty pro operaci vytvoření (CreateButton, CreateLink) z lokálního adresáře Create
-import { CreateButton, CreateLink } from "./Create";
+import { CreateButton } from "./Create";
 
-// Importuje komponenty pro operaci aktualizace (UpdateButton, UpdateLink) z lokálního adresáře Update
-import { UpdateButton, UpdateLink } from "./Update";
+import {
+    UpdateButton,
+    UpdateLink
+} from "./Update";
 
-// Importuje optimalizovanou komponentu ProxyLink pro bezpečné vnitřní routování ze sdílené šablony
-import { ProxyLink } from "../../../../_template/src/Base/Components/ProxyLink";
-
-// Importuje tlačítko pro operaci smazání (DeleteButton) z lokálního adresáře Delete
 import { DeleteButton } from "./Delete";
 
-// Definuje a exportuje komponentu PageLink pro rychlé odkazování na celkovou kolekci/seznam modelů
-export const PageLink = ({ children, preserveHash = true, preserveSearch = true, ...props }) => {
-    
-    // Vrací komponentu ProxyLink nastavenou pro navigaci na VectorItemsURI
+import {
+    ProxyLink
+} from "../../../../_template/src/Base/Components/ProxyLink";
+
+
+/**
+ * Renders a navigation link to the main finance collection page.
+ *
+ * The link uses the configured `VectorItemsURI` and can optionally preserve
+ * the current URL hash and query string.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ReactNode} props.children
+ * Content rendered inside the navigation link.
+ *
+ * @param {boolean} [props.preserveHash=true]
+ * Determines whether the current URL hash should be preserved.
+ *
+ * @param {boolean} [props.preserveSearch=true]
+ * Determines whether the current query string should be preserved.
+ *
+ * @returns {JSX.Element}
+ * Navigation link to the finance list page.
+ *
+ * @example
+ * <PageLink className="btn btn-outline-success">
+ *     Stránka
+ * </PageLink>
+ */
+export const PageLink = ({
+    children,
+    preserveHash = true,
+    preserveSearch = true,
+    ...props
+}) => {
     return (
         <ProxyLink
-            to={VectorItemsURI} // Cílová URL adresa (seznam prvků)
-            preserveHash={preserveHash} // Volba zachování kotev (#) v URL adrese při přesměrování
-            preserveSearch={preserveSearch} // Volba zachování vyhledávacích parametrů (?query=) v URL adrese
-            {...props} // Přeposílá všechny zbylé atributy (např. className nebo titulek)
+            to={VectorItemsURI}
+            preserveHash={preserveHash}
+            preserveSearch={preserveSearch}
+            {...props}
         >
-            {/* Vykresluje vnitřní text nebo elementy odkazu */}
             {children}
         </ProxyLink>
-    ); // Konec návratové hodnoty komponenty PageLink
-}; // Konec definice komponenty PageLink
+    );
+};
 
-// Definuje a exportuje komponentu InteractiveMutations, která sdružuje všechna akční tlačítka (nástroje) pro danou entitu
-export const InteractiveMutations = ({ item }) => {
-    
-    // Vrací designovou kartu (kapsli) naplněnou sadou odkazů a tlačítek pro mutaci dat
+
+/**
+ * Displays the interactive mutation controls for a finance entity.
+ *
+ * The component groups the primary finance actions into a single tools card.
+ * Available operations include:
+ *
+ * - navigation to the finance list,
+ * - opening the full edit page,
+ * - opening the inline edit dialog,
+ * - opening the create dialog,
+ * - deleting the current finance entity.
+ *
+ * Permission handling for individual actions is delegated to the imported
+ * mutation components.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Finance entity for which the mutation controls are displayed.
+ *
+ * @param {string} props.item.id
+ * Unique identifier of the finance entity.
+ *
+ * @param {string} [props.item.name]
+ * Display name of the finance entity.
+ *
+ * @param {Object} [props.item.rbacobject]
+ * RBAC object used by permission-aware mutation controls.
+ *
+ * @returns {JSX.Element}
+ * Tools card containing finance navigation and mutation controls.
+ *
+ * @example
+ * <InteractiveMutations
+ *     item={{
+ *         id: "30000000-0000-0000-0000-000000000003",
+ *         name: "Rozpočet WP2"
+ *     }}
+ * />
+ */
+export const InteractiveMutations = ({
+    item
+}) => {
     return (
-        // Obaluje tlačítka do karty s nadpisem "Nástroje" a předává jí aktuální položku
-        <CardCapsule item={item} title="Nástroje">
-            
-            {/* Odkaz typu tlačítko pro přechod na hlavní přehledovou stránku seznamu */}
-            <PageLink className="btn btn-outline-success">Stránka</PageLink>
-            
-            {/* Odkaz pro celostránkový přechod na editační formulář konkrétní položky */}
-            <UpdateLink className="btn btn-outline-success" item={item}>Upravit</UpdateLink>
-            
-            {/* Tlačítko, které otevře modální dialogové okno pro inline úpravu položky na místě */}
-            <UpdateButton className="btn btn-outline-success" item={item}>Upravit Dialog</UpdateButton>
-            
-            {/* Tlačítko, které otevře modální dialog pro vytvoření nové položky s prázdným RBAC kontextem */}
-            <CreateButton className="btn btn-outline-success" rbacitem={{}}>Vytvořit nový</CreateButton>
-            
-            {/* Destruktivní tlačítko červené barvy, které vyvolá potvrzovací dialog pro smazání této položky */}
-            <DeleteButton className="btn btn-outline-danger" item={item}>Odstranit</DeleteButton>
-            
-        </CardCapsule> // Konec obalové komponenty karty
-    ); // Konec návratové hodnoty komponenty InteractiveMutations
-}; // Konec definice komponenty InteractiveMutations
+        <CardCapsule
+            item={item}
+            title="Nástroje"
+        >
+            <PageLink
+                className="btn btn-outline-success"
+            >
+                Stránka
+            </PageLink>
+
+            <UpdateLink
+                className="btn btn-outline-success"
+                item={item}
+            >
+                Upravit
+            </UpdateLink>
+
+            <UpdateButton
+                className="btn btn-outline-success"
+                item={item}
+            >
+                Upravit dialog
+            </UpdateButton>
+
+            <CreateButton
+                className="btn btn-outline-success"
+                rbacitem={{}}
+            >
+                Vytvořit nový
+            </CreateButton>
+
+            <DeleteButton
+                className="btn btn-outline-danger"
+                item={item}
+            >
+                Odstranit
+            </DeleteButton>
+        </CardCapsule>
+    );
+};

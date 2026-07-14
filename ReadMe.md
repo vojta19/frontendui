@@ -1,5 +1,26 @@
 # Deníček změn
 
+## 13.7.2026
+**Co bylo změněno**
+- Sjednocena dokumentace hlavních komponent pomocí JSDoc.
+- Doplněny popisy komponent v adresářích `finance/Components` , `finance/Mutations` , `finance/Queries` , `finance/Pages`.¨
+- Vytvořen konfigurační soubor `jsdoc.json`.
+- Doplnění `package.json` o podporu generování dokumentace.
+- Úspěšně vygenerovaná HTML dokumentace projektu do složky `packages/finance/docs`.
+
+**Co jsme objevili**
+- Byla potřeba upravit a doplnit klíčové komponenty o speciální JSDoc komentáře.
+- Některé soubory speciální komentáře vůbec neobsahovali nebo byli nepřesné.
+
+**Problém**
+- Struktura a popisy neodpovídali jednomu z požadavků hodnocení ke zkoušce.
+- Chyběl konfigurační soubor a samotný spouštěcí command pro chod JSDoc dokumentace.
+
+**Řešení**
+- Zformátovali jsme všechny soubory s klíčovými komponenty.
+- Vytvořili jsem složku `docs` , která obsahuje odkazy na všechny důležité funkce.
+- Sestavili jsme kompletní složku s dokumentací a souborem `index.html` k jejímu přístupu.
+
 ## 28.6.2026
 **Co bylo změněno**
 - Úprava logiky finančních přesunů pomocí souboru `Store.js`.
@@ -216,6 +237,7 @@
 ## Časová osa commitů
 | Datum | Hlavní změna | Stručný popis |
 |---|---|---|
+| 13.7.2026 | JSDoc dokumentace | Tvorba kompletní HTML dokumentace `docs` pro klíčové komponenty. |
 | 28.6.2026 | Vytvoření store | Úprava komentářů a vylepšení samotné logiky přesunů pomocí `Store.js`. | 
 | 26.6.2026 | Formátování a komentáře | Editace všech souborů v rámci našeho FinaceGQL Modelu. |
 | 11.6.2026 | Přehlednější tabulka | Vylepšení `Table`, `Filter` a `MediumContent` pro čitelnější výsledky. |

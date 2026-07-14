@@ -1,47 +1,95 @@
-// Importuje komponentu Input pro tvorbu formulářových polí ze sdílené šablony prvků
 import { Input } from "../../../../_template/src/Base/FormControls/Input";
 
 /**
- * A component that displays medium-level content for an template entity.
+ * Renders an editable form for a finance entity.
  *
- * This component renders a label "TemplateMediumContent" followed by a serialized representation of the `template` object
- * and any additional child content. It is designed to handle and display information about an template entity object.
+ * The component provides form controls for editing the most commonly
+ * modified properties of a finance record. It is primarily used inside
+ * create and update dialogs.
+ *
+ * The edited values are propagated through the supplied event handlers.
+ * Additional controls (such as Save or Cancel buttons) can be injected
+ * through the `children` property.
  *
  * @component
- * @param {Object} props - The properties for the TemplateMediumContent component.
- * @param {Object} props.template - The object representing the template entity.
- * @param {string|number} props.template.id - The unique identifier for the template entity.
- * @param {string} props.template.name - The name or label of the template entity.
- * @param {React.ReactNode} [props.children=null] - Additional content to render after the serialized `template` object.
  *
- * @returns {JSX.Element} A JSX element displaying the entity's details and optional content.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Finance entity currently being edited.
+ *
+ * @param {string} [props.item.name]
+ * Czech name of the finance entity.
+ *
+ * @param {string} [props.item.nameEn]
+ * English name of the finance entity.
+ *
+ * @param {string} [props.item.description]
+ * Description of the finance entity.
+ *
+ * @param {Function} [props.onChange]
+ * Callback invoked whenever the value of an input field changes.
+ *
+ * @param {Function} [props.onBlur]
+ * Callback invoked when an input field loses focus.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional additional controls rendered below the editable fields.
+ *
+ * @returns {JSX.Element}
+ * Editable finance form.
  *
  * @example
- * // Example usage:
- * const templateEntity = { id: 123, name: "Sample Entity" };
- * * <TemplateMediumContent template={templateEntity}>
- * <p>Additional information about the entity.</p>
- * </TemplateMediumContent>
+ * <MediumEditableContent
+ *     item={finance}
+ *     onChange={handleChange}
+ *     onBlur={handleBlur}
+ * >
+ *     <button className="btn btn-primary">
+ *         Save
+ *     </button>
+ * </MediumEditableContent>
  */
-// Definuje a exportuje editační komponentu MediumEditableContent s výchozími prázdnými funkcemi pro eventy
-export const MediumEditableContent = ({ item, onChange = (e) => null, onBlur = (e) => null, children }) => {
-    
-    // Vrací JSX fragment seskupující editační formulářová pole
+export const MediumEditableContent = ({
+    item,
+    onChange = () => null,
+    onBlur = () => null,
+    children
+}) => {
     return (
-        <>           
-            {/* PŮVODNÍ POZNÁMKA: defaultValue={item?.name|| "Název"}  */}
-            
-            {/* Vstupní pole pro editaci českého názvu (Jméno) s provázáním na ID, handlery a fallback hodnotu */}
-            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name ?? ""} placeholder={"Název"} onChange={onChange} onBlur={onBlur} />
-            
-            {/* Vstupní pole pro editaci anglického názvu (EN název) s provázáním na ID, handlery a fallback hodnotu */}
-            <Input id={"nameEn"} label={"EN název"} className="form-control" value={item?.nameEn ?? ""} placeholder={"English name"} onChange={onChange} onBlur={onBlur} />
-            
-            {/* Vstupní pole pro editaci textového popisu (Popis) s provázáním na ID, handlery a fallback hodnotu */}
-            <Input id={"description"} label={"Popis"} className="form-control" value={item?.description ?? ""} placeholder={"Popis"} onChange={onChange} onBlur={onBlur} />
+        <>
+            <Input
+                id="name"
+                label="Jméno"
+                className="form-control"
+                value={item?.name ?? ""}
+                placeholder="Název"
+                onChange={onChange}
+                onBlur={onBlur}
+            />
 
-            {/* Vykresluje jakékoliv dodatečné vnořené komponenty nebo elementy předané jako children */}
+            <Input
+                id="nameEn"
+                label="EN název"
+                className="form-control"
+                value={item?.nameEn ?? ""}
+                placeholder="English name"
+                onChange={onChange}
+                onBlur={onBlur}
+            />
+
+            <Input
+                id="description"
+                label="Popis"
+                className="form-control"
+                value={item?.description ?? ""}
+                placeholder="Popis"
+                onChange={onChange}
+                onBlur={onBlur}
+            />
+
             {children}
         </>
-    ); // Konec návratové hodnoty JSX fragmentu
-}; // Konec definice komponenty MediumEditableContent
+    );
+};

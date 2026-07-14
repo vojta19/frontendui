@@ -1,71 +1,65 @@
-// Importuje základní hooky z Reactu.
-// useCallback slouží k zapamatování funkce mezi rendery.
-// useEffect slouží ke spuštění vedlejší logiky po renderu.
-// useMemo slouží k zapamatování vypočítané hodnoty, aby se zbytečně nepřepočítávala.
-import { useCallback, useEffect, useMemo } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo
+} from "react";
 
-// Importuje hook useParams z react-routeru.
-// Díky němu můžeme číst hodnoty z URL adresy, například id, typename nebo action.
 import { useParams } from "react-router";
-
-// Importuje hook useSelector z Reduxu.
-// Ten slouží ke čtení hodnot uložených v globálním Redux store.
 import { useSelector } from "react-redux";
 
-// Importuje selector, který ze store vytáhne seznam finančních transferů.
 import { selectFinanceTransfers } from "../Store/FinanceTransferSlice";
-
-// Importuje vlastní hook pro spouštění asynchronních thunk akcí.
 import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
-
-// Importuje thunk akci, která načítá stránkovaný seznam finančních transferů z backendu.
-import { FinanceTransferPageAsyncAction } from "../Queries/FinanceTransferPageAsyncAction";
-
-// Importuje hook, který podle GraphQL typu dynamicky získá správné dotazy, mutace a async akce.
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType";
 
-// Importuje komponentu pro zobrazení a ovládání Sunburst diagramu finančních přesunů.
-import { FinanceTransferSunburst } from "../Components/FinanceTransferSunburst";
-
-// Importuje hlavní obalovou kartu stránky.
-import { LargeCard } from "../../../../_template/src/Base/Components/LargeCard";
-
-// Importuje menší obalovou kartu pro jednotlivé sekce stránky.
-import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule";
-
-// Importuje komponenty pro zobrazení jednoduchých hodnot entity, například name, value, description.
-import { MediumCardScalars, ScalarAttribute } from "../../../../_template/src/Base/Scalars/ScalarAttribute";
-
-// Importuje komponenty pro zobrazení polí / kolekcí entity, například subfinances.
-import { MediumCardVectors, VectorAttribute } from "../../../../_template/src/Base/Vectors/VectorAttribute";
-
-// Importuje GraphQL kontext entity a provider, který se stará o načtení dat podle async akce.
-import { useGQLEntityContext, AsyncActionProvider } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
-
-// Importuje layout komponentu pro řádek.
-import { Row } from "../../../../_template/src/Base/Components/Row";
-
-// Importuje layout komponentu pro sloupec.
-import { Col } from "../../../../_template/src/Base/Components/Col";
-
-// Importuje komponentu pro pravý horní roh CardCapsule, typicky pro tlačítka.
-import { SimpleCardCapsuleRightCorner } from "@hrbolek/uoisfrontend-shared";
-
-// Importuje tlačítko pro kopírování textu do schránky.
-import { CopyButton } from "../../../../_template/src/Base/Components/CopyButton";
-
-// Importuje výchozí async akci pro načtení detailu entity.
+import {
+    FinanceTransferPageAsyncAction
+} from "../Queries/FinanceTransferPageAsyncAction";
 import { ReadAsyncAction } from "../Queries";
 
-console.log("FINANCE Page.jsx MODULE LOADED");
+import {
+    FinanceTransferSunburst
+} from "../Components/FinanceTransferSunburst";
 
-// =======================================================
-// Pomocné funkce pro práci s finančními transfery
-// =======================================================
+import {
+    LargeCard
+} from "../../../../_template/src/Base/Components/LargeCard";
+import {
+    CardCapsule
+} from "../../../../_template/src/Base/Components/CardCapsule";
+import {
+    MediumCardScalars,
+    ScalarAttribute
+} from "../../../../_template/src/Base/Scalars/ScalarAttribute";
+import {
+    MediumCardVectors,
+    VectorAttribute
+} from "../../../../_template/src/Base/Vectors/VectorAttribute";
+import {
+    AsyncActionProvider,
+    useGQLEntityContext
+} from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
+import { Row } from "../../../../_template/src/Base/Components/Row";
+import { Col } from "../../../../_template/src/Base/Components/Col";
+import {
+    SimpleCardCapsuleRightCorner
+} from "@hrbolek/uoisfrontend-shared";
+import {
+    CopyButton
+} from "../../../../_template/src/Base/Components/CopyButton";
 
-// Funkce se snaží bezpečně získat ID zdrojové finance z objektu transferu.
-// Backend nebo různé části aplikace mohou vracet stejnou hodnotu pod jinými názvy,
-// proto se zde kontroluje více možných variant.
+
+/**
+ * Resolves the source finance identifier from a transfer object.
+ *
+ * Several accepted property names are checked because transfer data can be
+ * produced by different GraphQL queries, mutations or local transformations.
+ *
+ * @param {Object|null|undefined} transfer
+ * Finance transfer record.
+ *
+ * @returns {string|null}
+ * Source finance identifier, or `null` when it cannot be resolved.
+ */
 const getTransferSourceId = (transfer) => {
     return (
         transfer?.financeSourceId ??
@@ -78,8 +72,16 @@ const getTransferSourceId = (transfer) => {
     );
 };
 
-// Funkce se snaží bezpečně získat ID cílové finance z objektu transferu.
-// Stejně jako u source ID se zde počítá s více možnými názvy stejné hodnoty.
+
+/**
+ * Resolves the destination finance identifier from a transfer object.
+ *
+ * @param {Object|null|undefined} transfer
+ * Finance transfer record.
+ *
+ * @returns {string|null}
+ * Destination finance identifier, or `null` when it cannot be resolved.
+ */
 const getTransferDestinationId = (transfer) => {
     return (
         transfer?.financeDestinationId ??
@@ -92,21 +94,26 @@ const getTransferDestinationId = (transfer) => {
     );
 };
 
-// Funkce normalizuje jeden transfer.
-// Cílem je převést různé možné podoby transferu na jednotný tvar:
-// financeSourceId, financeDestinationId a amount.
+
+/**
+ * Converts a finance transfer into the normalized structure used by the page.
+ *
+ * A valid normalized transfer contains `financeSourceId`,
+ * `financeDestinationId` and a non-zero numeric `amount`.
+ *
+ * @param {Object|null|undefined} transfer
+ * Transfer in an arbitrary supported backend or local format.
+ *
+ * @returns {Object|null}
+ * Normalized transfer, or `null` when the input is invalid.
+ */
 const normalizeTransfer = (transfer) => {
-    // Pokud transfer neexistuje nebo není objekt, nemá smysl s ním dál pracovat.
-    if (!transfer || typeof transfer !== "object") return null;
+    if (!transfer || typeof transfer !== "object") {
+        return null;
+    }
 
-    // Získání zdrojového ID pomocí pomocné funkce.
     const financeSourceId = getTransferSourceId(transfer);
-
-    // Získání cílového ID pomocí pomocné funkce.
     const financeDestinationId = getTransferDestinationId(transfer);
-
-    // Částka se může nacházet pod amount, financeTransfer_amount nebo value.
-    // Number() ji převede na číslo.
     const amount = Number(
         transfer.amount ??
         transfer.financeTransfer_amount ??
@@ -114,158 +121,212 @@ const normalizeTransfer = (transfer) => {
         0
     );
 
-    // Transfer považujeme za neplatný, pokud:
-    // - nemá zdroj,
-    // - nemá cíl,
-    // - amount není platné číslo,
-    // - amount je nula.
-    if (!financeSourceId || !financeDestinationId || !Number.isFinite(amount) || amount === 0) {
+    if (
+        !financeSourceId ||
+        !financeDestinationId ||
+        !Number.isFinite(amount) ||
+        amount === 0
+    ) {
         return null;
     }
 
-    // Vracíme původní transfer doplněný o sjednocené hodnoty.
     return {
         ...transfer,
         financeSourceId,
         financeDestinationId,
-        amount,
+        amount
     };
 };
 
-// Funkce projde celý finanční strom a pokusí se z něj najít všechny transfery,
-// pokud jsou někde zanořené přímo v itemu nebo jeho subfinances.
-const collectTransfers = (item) => {
-    // Sem se budou ukládat nalezené transfery.
-    const transfers = [];
 
-    // Ochrana proti zacyklení při rekurzivním procházení objektů.
+/**
+ * Collects finance transfers recursively from a finance hierarchy.
+ *
+ * The function searches all supported transfer collections on every finance
+ * node, prevents cyclic traversal and removes duplicate records.
+ *
+ * @param {Object|null|undefined} item
+ * Root finance entity.
+ *
+ * @returns {Object[]}
+ * Unique normalized transfers found in the hierarchy.
+ */
+const collectTransfers = (item) => {
+    const transfers = [];
     const visitedNodes = new Set();
 
-    // Vnitřní rekurzivní funkce pro průchod stromem.
     const collect = (node) => {
-        // Pokud uzel neexistuje nebo není objekt, přeskočí se.
-        if (!node || typeof node !== "object") return;
+        if (!node || typeof node !== "object") {
+            return;
+        }
 
-        // Pokud jsme tento objekt už viděli, přeskočí se.
-        if (visitedNodes.has(node)) return;
+        if (visitedNodes.has(node)) {
+            return;
+        }
 
-        // Označíme aktuální objekt jako navštívený.
         visitedNodes.add(node);
 
-        // Možné názvy polí, kde by se mohly nacházet transfery.
         const possibleTransferArrays = [
             node.financeTransfers,
             node.transfers,
             node.incomingTransfers,
             node.outgoingTransfers,
             node.financeSourceTransfers,
-            node.financeDestinationTransfers,
+            node.financeDestinationTransfers
         ];
 
-        // Projde všechna možná pole transferů.
-        possibleTransferArrays.forEach(array => {
-            // Pokud daná hodnota není pole, ignoruje se.
-            if (!Array.isArray(array)) return;
+        possibleTransferArrays.forEach((array) => {
+            if (!Array.isArray(array)) {
+                return;
+            }
 
-            // Každý nalezený transfer se znormalizuje.
-            array.forEach(transfer => {
+            array.forEach((transfer) => {
                 const normalizedTransfer = normalizeTransfer(transfer);
 
-                // Do výsledku se vloží jen validní transfer.
-                if (normalizedTransfer) transfers.push(normalizedTransfer);
+                if (normalizedTransfer) {
+                    transfers.push(normalizedTransfer);
+                }
             });
         });
 
-        // Pokud má finance potomky, pokračujeme rekurzivně do subfinances.
         if (Array.isArray(node.subfinances)) {
             node.subfinances.forEach(collect);
         }
     };
 
-    // Spuštění průchodu od kořenového itemu.
     collect(item);
 
-    // Map slouží k odstranění duplicitních transferů.
     const transferMap = new Map();
 
     transfers.forEach((transfer, index) => {
-        // Pokud má transfer vlastní ID, použije se jako unikátní klíč.
-        // Pokud ID nemá, vytvoří se náhradní klíč z hodnot transferu.
-        const key = transfer.id ?? `${transfer.financeSourceId}-${transfer.financeDestinationId}-${transfer.amount}-${index}`;
+        const key =
+            transfer.id ??
+            `${transfer.financeSourceId}-` +
+            `${transfer.financeDestinationId}-` +
+            `${transfer.amount}-${index}`;
 
-        // Vložení do mapy odstraní duplicitní hodnoty se stejným klíčem.
         transferMap.set(key, transfer);
     });
 
-    // Vrací čisté pole unikátních transferů.
     return [...transferMap.values()];
 };
 
-// Funkce aplikuje transfery na finanční strom.
-// Pro každou finance vypočítá novou hodnotu podle pravidla:
-// původní hodnota - odchozí transfery + příchozí transfery.
-const applyTransfersToFinanceTree = (finances = [], transfers = []) => {
-    return finances.map(finance => {
-        // Součet všech transferů, kde je aktuální finance zdrojem.
+
+/**
+ * Applies transfers to a finance hierarchy and recalculates finance values.
+ *
+ * Each finance receives its original value minus outgoing transfers plus
+ * incoming transfers. Child finance collections are processed recursively.
+ * Input objects are not mutated.
+ *
+ * @param {Object[]} [finances=[]]
+ * Finance nodes to recalculate.
+ *
+ * @param {Object[]} [transfers=[]]
+ * Normalized finance transfers.
+ *
+ * @returns {Object[]}
+ * Recalculated finance hierarchy.
+ */
+const applyTransfersToFinanceTree = (
+    finances = [],
+    transfers = []
+) => {
+    return finances.map((finance) => {
         const outgoing = transfers
-            .filter(transfer => transfer.financeSourceId === finance.id)
-            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0);
+            .filter(
+                (transfer) =>
+                    transfer.financeSourceId === finance.id
+            )
+            .reduce(
+                (sum, transfer) =>
+                    sum + Number(transfer.amount || 0),
+                0
+            );
 
-        // Součet všech transferů, kde je aktuální finance cílem.
         const incoming = transfers
-            .filter(transfer => transfer.financeDestinationId === finance.id)
-            .reduce((sum, transfer) => sum + Number(transfer.amount || 0), 0);
+            .filter(
+                (transfer) =>
+                    transfer.financeDestinationId === finance.id
+            )
+            .reduce(
+                (sum, transfer) =>
+                    sum + Number(transfer.amount || 0),
+                0
+            );
 
-        // Vrací novou kopii finance s přepočítanou hodnotou.
-        // Původní objekt se nemění přímo.
         return {
             ...finance,
-            value: Number(finance.value || 0) - outgoing + incoming,
-
-            // Pokud má finance potomky, transfery se rekurzivně aplikují i na ně.
+            value:
+                Number(finance.value || 0) -
+                outgoing +
+                incoming,
             subfinances: Array.isArray(finance.subfinances)
-                ? applyTransfersToFinanceTree(finance.subfinances, transfers)
-                : finance.subfinances,
+                ? applyTransfersToFinanceTree(
+                    finance.subfinances,
+                    transfers
+                )
+                : finance.subfinances
         };
     });
 };
 
-// Funkce vytvoří upravenou kopii hlavního itemu,
-// kde jsou jeho subfinances přepočítané podle transferů.
-const patchFinanceItem = (item, localTransfers = []) => {
-    // Pokud item není validní objekt, vrací se beze změny.
-    if (!item || typeof item !== "object") return item;
 
-    // Transfery se nejdřív normalizují a neplatné hodnoty se odstraní.
+/**
+ * Creates a finance item whose child values reflect the supplied transfers.
+ *
+ * @param {Object|null|undefined} item
+ * Root finance entity.
+ *
+ * @param {Object[]} [localTransfers=[]]
+ * Transfers to normalize and apply.
+ *
+ * @returns {Object|null|undefined}
+ * Patched finance entity, or the original invalid value.
+ */
+const patchFinanceItem = (
+    item,
+    localTransfers = []
+) => {
+    if (!item || typeof item !== "object") {
+        return item;
+    }
+
     const normalizedLocalTransfers = localTransfers
         .map(normalizeTransfer)
         .filter(Boolean);
 
-    // Vrací novou kopii itemu s přepočítanými subfinances.
     return {
         ...item,
         subfinances: applyTransfersToFinanceTree(
             item.subfinances ?? [],
             normalizedLocalTransfers
-        ),
+        )
     };
 };
 
-// Funkce projde finanční strom a posbírá všechna ID financí,
-// která se v aktuálním stromu nachází.
+
+/**
+ * Collects all finance identifiers contained in a hierarchy.
+ *
+ * @param {Object|null|undefined} finance
+ * Root finance entity.
+ *
+ * @returns {Set<string>}
+ * Set containing identifiers of the root and all descendant finances.
+ */
 const collectFinanceIds = (finance) => {
     const ids = new Set();
 
     const walk = (node) => {
-        // Neplatný uzel se přeskočí.
-        if (!node || typeof node !== "object") return;
+        if (!node || typeof node !== "object") {
+            return;
+        }
 
-        // Pokud má uzel ID, vloží se do Setu.
         if (node.id) {
             ids.add(node.id);
         }
 
-        // Rekurzivní průchod potomků.
         if (Array.isArray(node.subfinances)) {
             node.subfinances.forEach(walk);
         }
@@ -276,23 +337,32 @@ const collectFinanceIds = (finance) => {
     return ids;
 };
 
-// Funkce sestaví mapu vztahů dítě -> rodič.
-// Klíčem je ID finance, hodnotou je ID jejího rodiče.
+
+/**
+ * Builds a map describing parent-child relationships in a finance hierarchy.
+ *
+ * @param {Object|null|undefined} finance
+ * Root finance entity.
+ *
+ * @returns {Map<string, string|null>}
+ * Map whose keys are finance IDs and values are parent finance IDs.
+ */
 const buildParentMap = (finance) => {
     const parentById = new Map();
 
     const walk = (node, parentId = null) => {
-        // Neplatný uzel se přeskočí.
-        if (!node || typeof node !== "object") return;
+        if (!node || typeof node !== "object") {
+            return;
+        }
 
-        // Pokud má uzel ID, uložíme vztah aktuální finance k jejímu rodiči.
         if (node.id) {
             parentById.set(node.id, parentId);
         }
 
-        // Potomci dostanou jako parentId ID aktuálního uzlu.
         if (Array.isArray(node.subfinances)) {
-            node.subfinances.forEach(child => walk(child, node.id));
+            node.subfinances.forEach((child) =>
+                walk(child, node.id)
+            );
         }
     };
 
@@ -301,214 +371,264 @@ const buildParentMap = (finance) => {
     return parentById;
 };
 
-// Funkce ověřuje, zda je ancestorId předkem childId.
-// Používá se pro odhalení transferů mezi rodičem a potomkem.
-const isAncestor = (ancestorId, childId, parentById) => {
-    // Začínáme u přímého rodiče childId.
+
+/**
+ * Determines whether one finance entity is an ancestor of another.
+ *
+ * @param {string} ancestorId
+ * Potential ancestor finance identifier.
+ *
+ * @param {string} childId
+ * Potential descendant finance identifier.
+ *
+ * @param {Map<string, string|null>} parentById
+ * Parent relationship map.
+ *
+ * @returns {boolean}
+ * `true` when `ancestorId` is found in the parent chain of `childId`.
+ */
+const isAncestor = (
+    ancestorId,
+    childId,
+    parentById
+) => {
     let currentId = parentById.get(childId);
 
-    // Postupujeme směrem nahoru ke kořeni stromu.
     while (currentId) {
-        // Pokud narazíme na hledaného předka, vracíme true.
-        if (currentId === ancestorId) return true;
+        if (currentId === ancestorId) {
+            return true;
+        }
 
-        // Posun o úroveň výše.
         currentId = parentById.get(currentId);
     }
 
-    // Předek nebyl nalezen.
     return false;
 };
 
-// Funkce vyfiltruje transfery tak, aby zůstaly pouze transfery relevantní pro aktuální strom.
-// Zároveň odstraňuje transfery mezi rodičem a potomkem, protože ty jsou brané jako strukturální.
-const filterRelevantTransfers = (transfers, item) => {
-    // Všechna ID financí, která jsou v aktuálním stromu.
+
+/**
+ * Filters transfers to those relevant for the current finance hierarchy.
+ *
+ * Transfers are retained only when both endpoints belong to the hierarchy.
+ * Parent-child transfers are excluded because they represent structural
+ * relationships rather than redistribution between peer finance entities.
+ * Duplicate transfers are removed.
+ *
+ * @param {Object[]} transfers
+ * Candidate finance transfers.
+ *
+ * @param {Object} item
+ * Root finance entity.
+ *
+ * @returns {Object[]}
+ * Relevant unique transfers.
+ */
+const filterRelevantTransfers = (
+    transfers,
+    item
+) => {
     const financeIds = collectFinanceIds(item);
-
-    // Mapa vztahů dítě -> rodič.
     const parentById = buildParentMap(item);
-
-    // Mapa pro odstranění duplicit.
     const uniqueTransfers = new Map();
 
     for (const transfer of transfers || []) {
-        const sourceId = transfer?.financeSourceId;
-        const destinationId = transfer?.financeDestinationId;
+        const normalizedTransfer = normalizeTransfer(transfer);
 
-        // Transfer je relevantní jen tehdy, pokud zdroj i cíl existují v aktuálním stromu.
-        const bothAreInCurrentTree = financeIds.has(sourceId) && financeIds.has(destinationId);
+        if (!normalizedTransfer) {
+            continue;
+        }
 
-        // Pokud jeden z uzlů není v aktuálním stromu, transfer ignorujeme.
-        if (!bothAreInCurrentTree) continue;
+        const sourceId = normalizedTransfer.financeSourceId;
+        const destinationId =
+            normalizedTransfer.financeDestinationId;
 
-        // Detekce strukturálního transferu mezi rodičem a potomkem.
+        if (
+            !financeIds.has(sourceId) ||
+            !financeIds.has(destinationId)
+        ) {
+            continue;
+        }
+
         const isStructuralTransfer =
-            isAncestor(sourceId, destinationId, parentById) ||
-            isAncestor(destinationId, sourceId, parentById);
+            isAncestor(
+                sourceId,
+                destinationId,
+                parentById
+            ) ||
+            isAncestor(
+                destinationId,
+                sourceId,
+                parentById
+            );
 
-        // Strukturální transfer se ignoruje.
-        if (isStructuralTransfer) continue;
+        if (isStructuralTransfer) {
+            continue;
+        }
 
-        // Unikátní klíč transferu.
-        const key = transfer.id || `${sourceId}-${destinationId}-${transfer.amount}-${transfer.name}`;
+        const key =
+            normalizedTransfer.id ||
+            `${sourceId}-${destinationId}-` +
+            `${normalizedTransfer.amount}-` +
+            `${normalizedTransfer.name}`;
 
-        // Do výsledku se uloží jen první výskyt daného transferu.
         if (!uniqueTransfers.has(key)) {
-            uniqueTransfers.set(key, transfer);
+            uniqueTransfers.set(
+                key,
+                normalizedTransfer
+            );
         }
     }
 
-    // Vrací pole relevantních a unikátních transferů.
     return Array.from(uniqueTransfers.values());
 };
 
-// =======================================================
-// Komponenta GeneratedContentBase
-// =======================================================
 
-// Tato komponenta:
-// 1. dostane aktuální finance item,
-// 2. načte transfery z backendu,
-// 3. vybere transfery relevantní pro aktuální strom,
-// 4. přepočítá hodnoty,
-// 5. vykreslí Sunburst graf a vektorové atributy.
+/**
+ * Displays the finance visualization and vector attributes for an entity.
+ *
+ * The component loads finance transfers from the backend, selects transfers
+ * relevant to the current finance hierarchy, recalculates displayed values
+ * and renders both the interactive Sunburst diagram and vector attributes.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Root finance entity.
+ *
+ * @param {Function} [props.onTransferInserted]
+ * Callback invoked after a transfer is inserted and backend data is reloaded.
+ *
+ * @returns {JSX.Element}
+ * Finance visualization and vector attributes.
+ */
 export const GeneratedContentBase = ({
     item,
-    onTransferInserted = () => {},
+    onTransferInserted = () => {}
 }) => {
-    console.log("JSEM V GENERATEDCONTENTBASE", item);
+    const backendTransfers = useSelector(
+        selectFinanceTransfers
+    );
 
-    // Načte transfery uložené v Redux store.
-    // Store se naplní po zavolání FinanceTransferPageAsyncAction.
-    const backendTransfers = useSelector(selectFinanceTransfers);
-
-    // Připraví funkci runFinanceTransferPage.
-    // deferred: true znamená, že se akce nespustí automaticky hned při inicializaci.
-    // network: true říká, že se má skutečně sahat na backend.
     const {
-        run: runFinanceTransferPage,
+        run: runFinanceTransferPage
     } = useAsyncThunkAction(
         FinanceTransferPageAsyncAction,
         {},
-        { deferred: true, network: true }
+        {
+            deferred: true,
+            network: true
+        }
     );
 
-    // Funkce načte transfery z backendu.
-    // Po úspěšném načtení by se data měla propsat do Redux store.
+    /**
+     * Loads finance transfers from the backend into the Redux store.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
     const loadTransfers = useCallback(async () => {
-        console.log("LOAD TRANSFERS START");
-
         try {
-            const result = await runFinanceTransferPage({
+            await runFinanceTransferPage({
                 skip: 0,
                 limit: 1000,
-                orderby: "created",
+                orderby: "created"
             });
-
-            // Surový výsledek se loguje pro kontrolu,
-            // jestli backend opravdu vrací očekávaná data.
-            console.log("RAW FINANCE TRANSFER PAGE RESULT:", result);
         } catch (error) {
-            // Pokud dotaz selže, chyba se vypíše do konzole.
-            console.error("LOAD TRANSFERS ERROR:", error);
+            console.error(
+                "Finance transfers could not be loaded:",
+                error
+            );
         }
     }, [runFinanceTransferPage]);
 
-    // Po prvním renderu komponenty se načtou transfery z backendu.
     useEffect(() => {
         loadTransfers();
     }, [loadTransfers]);
 
-    // patchedItem je přepočítaná verze itemu.
-    // Přepočet se provede pouze tehdy, když se změní item nebo backendTransfers.
     const patchedItem = useMemo(() => {
-        if (!item) return item;
+        if (!item) {
+            return item;
+        }
 
-        // Z celého seznamu transferů ve store vybereme jen ty,
-        // které se týkají aktuálně zobrazeného finančního stromu.
-        const relevantTransfers = filterRelevantTransfers(
-            backendTransfers,
-            item
+        const relevantTransfers =
+            filterRelevantTransfers(
+                backendTransfers,
+                item
+            );
+
+        return patchFinanceItem(
+            item,
+            relevantTransfers
         );
-
-        console.log("ALL BACKEND TRANSFERS FROM STORE:", backendTransfers);
-        console.log("RELEVANT TRANSFERS:", relevantTransfers);
-
-        // Mapa slouží jen pro hezčí debug výpis.
-        // Díky ní se v console.table zobrazí i názvy financí, ne jen ID.
-        const financeNameById = new Map();
-
-        // Rekurzivně projde strom a uloží názvy financí podle jejich ID.
-        const collectFinanceNames = (node) => {
-            if (!node || typeof node !== "object") return;
-
-            if (node.id) {
-                financeNameById.set(node.id, node.name);
-            }
-
-            if (Array.isArray(node.subfinances)) {
-                node.subfinances.forEach(collectFinanceNames);
-            }
-        };
-
-        collectFinanceNames(item);
-
-        // Tabulkový výpis transferů v konzoli.
-        // Pomáhá ověřit, odkud kam transfer jde a jaká částka se používá.
-        console.table(
-            relevantTransfers.map((transfer) => ({
-                id: transfer.id,
-                name: transfer.name,
-                amount: Number(transfer.amount || 0),
-                sourceId: transfer.financeSourceId,
-                sourceName: financeNameById.get(transfer.financeSourceId),
-                destinationId: transfer.financeDestinationId,
-                destinationName: financeNameById.get(transfer.financeDestinationId),
-            }))
-        );
-
-        // Vrací item s přepočítanými hodnotami podle relevantních transferů.
-        return patchFinanceItem(item, relevantTransfers);
     }, [item, backendTransfers]);
 
-    // Funkce se zavolá po úspěšném vložení nového transferu v Sunburst komponentě.
+    /**
+     * Reloads backend transfer data after a successful transfer insertion.
+     *
+     * @param {Object} transfer
+     * Newly created finance transfer.
+     *
+     * @returns {Promise<void>}
+     */
     const handleTransferInserted = async (transfer) => {
-        console.log("TRANSFER HOTOVY, NACITAM TRANSFERY ZNOVU:", transfer);
-
-        // Po vložení transferu znovu načteme transfery z backendu.
-        // To odpovídá variantě A: backend je zdroj pravdy.
         await loadTransfers();
-
-        // Poté se informace předá výš rodičovské komponentě.
-        onTransferInserted?.(transfer);
+        await onTransferInserted?.(transfer);
     };
 
-    // Pokud item není dostupný, zobrazí se jednoduchá hláška.
-    if (!item) return <>Položka nenalezena</>;
+    if (!item) {
+        return <>Položka nenalezena</>;
+    }
 
     return (
         <>
-            {/* Sunburst graf dostává už přepočítaný item */}
             <FinanceTransferSunburst
                 item={patchedItem}
                 header="Graf finančních přesunů"
                 onTransferInserted={handleTransferInserted}
             />
 
-            {/* Vektorové atributy se také vykreslují z přepočítaného itemu */}
-            <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
+            <MediumCardVectors
+                key="MediumCardVectors"
+                item={patchedItem}
+            />
         </>
     );
 };
 
-// =======================================================
-// Komponenta PageItemInnerStructure
-// =======================================================
 
-// Tato komponenta skládá vnitřní strukturu stránky.
-// Bere item z GraphQL kontextu, případně ho přepočítá,
-// a potom ho předá do layoutu a subpage komponenty.
+/**
+ * Composes the internal layout of a finance entity page.
+ *
+ * The component reads the current entity from GraphQL context, applies any
+ * transfers embedded in the entity, renders optional navigation and wraps
+ * the selected subpage with additional components.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ComponentType<Object>|null} [props.PageNavbar=null]
+ * Optional page navigation component.
+ *
+ * @param {Array<React.ComponentType>} [props.ItemLayout=LargeCard]
+ * Layout component used to wrap the entity content.
+ *
+ * @param {React.ComponentType<Object>|null} [props.SubPage=GeneratedContentBase]
+ * Component rendering the main page content.
+ *
+ * @param {Array<React.ComponentType>} [props.OtherComponents=[]]
+ * Components that wrap `children` from right to left.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional nested page content.
+ *
+ * @returns {JSX.Element}
+ * Composed finance entity page.
+ */
 const PageItemInnerStructure = ({
     PageNavbar = null,
     ItemLayout = LargeCard,
@@ -516,67 +636,45 @@ const PageItemInnerStructure = ({
     OtherComponents = [],
     children
 }) => {
-    // Získá aktuálně načtenou entitu z GraphQL provideru.
     const { item } = useGQLEntityContext();
 
-    console.log("PAGEITEMINNERSTRUCTURE RENDER", item);
-
-    // Handler pro případ, kdy SubPage oznámí úspěšné vložení transferu.
-    const handleTransferInserted = (transfer) => {
-        console.log("PAGEITEMINNER DOSTAL TRANSFER:", transfer);
-    };
-
-    // Vytvoří přepočítanou kopii itemu podle transferů,
-    // které jsou případně zanořené přímo ve struktuře itemu.
     const patchedItem = useMemo(() => {
-        if (!item) return item;
+        if (!item) {
+            return item;
+        }
 
-        // Debug výpisy pro kontrolu, jaká data item skutečně obsahuje.
-        console.log("GENERATEDCONTENTBASE ITEM:", item);
-        console.log("GENERATEDCONTENTBASE ITEM KEYS:", Object.keys(item || {}).join("\n"));
-
-        // Vypíše klíče, které se názvem podobají transferům nebo zdrojům/cílům.
-        console.log("TRANSFER RELATED KEYS:", Object.keys(item || {}).filter(key =>
-            key.toLowerCase().includes("transfer") ||
-            key.toLowerCase().includes("source") ||
-            key.toLowerCase().includes("destination")
-        ));
-
-        // Posbírá transfery z aktuálního itemu.
-        const backendTransfers = collectTransfers(item);
-
-        console.log("BACKEND TRANSFERS:", backendTransfers);
-
-        // Vrátí item přepočítaný podle těchto transferů.
-        return patchFinanceItem(item, backendTransfers);
+        return patchFinanceItem(
+            item,
+            collectTransfers(item)
+        );
     }, [item]);
 
-    // Pokud item není načtený, zobrazí se hláška.
-    if (!item) return <>Položka nenalezena</>;
+    if (!item) {
+        return <>Položka nenalezena</>;
+    }
 
-    // OtherComponents umožňuje obalit obsah dalšími komponentami.
-    // reduceRight znamená, že se komponenty aplikují zprava doleva.
-    const content = (OtherComponents || []).reduceRight((acc, Component) => {
-        if (!Component) return acc;
+    const content = (OtherComponents || [])
+        .reduceRight((accumulator, Component) => {
+            if (!Component) {
+                return accumulator;
+            }
 
-        return <Component item={item}>{acc}</Component>;
-    }, children);
+            return (
+                <Component item={item}>
+                    {accumulator}
+                </Component>
+            );
+        }, children);
 
     return (
         <>
-            {/* Volitelná navigace stránky */}
-            {PageNavbar && <PageNavbar item={item} />}
+            {PageNavbar && (
+                <PageNavbar item={item} />
+            )}
 
-            {/* Hlavní layout stránky dostává přepočítaný item */}
             <ItemLayout item={patchedItem}>
                 {SubPage ? (
-                    <SubPage
-                        item={patchedItem}
-                        onTransferInserted={(transfer) => {
-                            console.log("SUBPAGE INLINE CALLBACK DOSTAL TRANSFER:", transfer);
-                            handleTransferInserted(transfer);
-                        }}
-                    >
+                    <SubPage item={patchedItem}>
                         {content}
                     </SubPage>
                 ) : (
@@ -587,11 +685,36 @@ const PageItemInnerStructure = ({
     );
 };
 
-// =======================================================
-// Komponenta PageItemBase
-// =======================================================
 
-// Tato komponenta připravuje základní provider pro načtení detailu entity podle ID z URL.
+/**
+ * Creates the provider and page structure for a finance entity detail.
+ *
+ * The entity identifier is read from the current route and passed to the
+ * configured asynchronous GraphQL action.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
+ * Async action used to load the entity.
+ *
+ * @param {React.ComponentType<Object>} [props.PageNavbar]
+ * Optional page navigation component.
+ *
+ * @param {React.ComponentType<Object>} [props.ItemLayout=LargeCard]
+ * Layout component used to display the entity.
+ *
+ * @param {React.ComponentType<Object>} [props.SubPage=GeneratedContentBase]
+ * Main content component.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional nested content.
+ *
+ * @returns {JSX.Element}
+ * GraphQL-backed finance entity page.
+ */
 export const PageItemBase = ({
     queryAsyncAction = ReadAsyncAction,
     PageNavbar = () => null,
@@ -599,14 +722,14 @@ export const PageItemBase = ({
     SubPage = GeneratedContentBase,
     children
 }) => {
-    // Z URL adresy vytáhne ID entity.
     const { id } = useParams();
-
-    // Vytvoří minimální item, který provider použije pro dotaz.
     const item = { id };
 
     return (
-        <AsyncActionProvider item={item} queryAsyncAction={queryAsyncAction}>
+        <AsyncActionProvider
+            item={item}
+            queryAsyncAction={queryAsyncAction}
+        >
             <PageItemInnerStructure
                 PageNavbar={PageNavbar}
                 ItemLayout={ItemLayout}
@@ -618,137 +741,168 @@ export const PageItemBase = ({
     );
 };
 
-// =======================================================
-// Komponenta PageContent
-// =======================================================
 
-// Tato komponenta řídí obsah detailu stránky podle action z URL.
-// Například:
-// /view zobrazí hlavní detail,
-// /__def zobrazí definice dotazů,
-// /subfinances zobrazí konkrétní vektorový atribut.
-export const PageContent = ({ queryById, queryVector, mutations = {}, children, params }) => {
-    // Získá GraphQL kontext z provideru.
+/**
+ * Renders finance page content according to the route action.
+ *
+ * Supported modes include the standard detail view, GraphQL definition
+ * display, vector attributes and scalar attributes.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} [props.queryById]
+ * GraphQL query used to load one entity.
+ *
+ * @param {string} [props.queryVector]
+ * GraphQL query used to load collections.
+ *
+ * @param {Object<string, string>} [props.mutations={}]
+ * Available GraphQL mutation definitions.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Default content used when no specific action replaces it.
+ *
+ * @param {Object} [props.params]
+ * Route or query parameters displayed in the diagnostic section.
+ *
+ * @returns {JSX.Element}
+ * Content of the selected finance page mode.
+ */
+export const PageContent = ({
+    queryById,
+    queryVector,
+    mutations = {},
+    children,
+    params
+}) => {
     const gqlContext = useGQLEntityContext();
-
-    // Z URL načte action. Pokud chybí, výchozí je view.
     const { action = "view" } = useParams();
-
-    // Z kontextu vytáhne aktuální item.
     const { item } = gqlContext || {};
 
-    // Přepočítá item podle transferů, které jsou případně obsažené přímo v itemu.
     const patchedItem = useMemo(() => {
-        const backendTransfers = collectTransfers(item);
-
-        console.log("BACKEND TRANSFERS:", backendTransfers);
-
-        return patchFinanceItem(item, backendTransfers);
+        return patchFinanceItem(
+            item,
+            collectTransfers(item)
+        );
     }, [item]);
 
-    // Handler po úspěšném vložení transferu.
-    const handleTransferInserted = async (transfer) => {
-        console.log("TRANSFER HOTOVY, NACITAM DATA ZNOVU:", transfer);
-
-        // Reload je zatím vypnutý kvůli debugování.
-        // Původní varianta mohla být:
-        // window.location.reload()
-        console.log("RELOAD DOCASNE VYPNUTY KVULI DEBUGU");
-    };
-
-    // Pokud item není dostupný, zobrazí se hláška a debug výpis kontextu.
     if (!item) {
         return (
             <div>
                 Položka nenalezena
-                <pre>{JSON.stringify(gqlContext, null, 2)}</pre>
+                <pre>
+                    {JSON.stringify(gqlContext, null, 2)}
+                </pre>
             </div>
         );
     }
 
-    // Výchozí obsah stránky jsou children.
     let content = children;
-
-    // Podle action se zkusí získat konkrétní atribut z itemu.
     const attributeValue = patchedItem?.[action];
 
-    console.log("FINANCE ITEM:", item);
-    console.log("PATCHED ITEM:", patchedItem);
-    console.log("COLLECTED TRANSFERS:", collectTransfers(item));
-
-    // Režim __def slouží pro výpis GraphQL dotazů a mutací.
     if (action === "__def") {
         content = (
             <Row>
-                {/* Výpis queryById */}
                 <Col>
                     <CardCapsule header="queryById">
                         <SimpleCardCapsuleRightCorner>
-                            <CopyButton className="btn btn-sm border-0" text={queryById} />
+                            <CopyButton
+                                className="btn btn-sm border-0"
+                                text={queryById}
+                            />
                         </SimpleCardCapsuleRightCorner>
 
-                        <pre>{queryById?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                        <pre>
+                            {queryById
+                                ?.replaceAll(", ", ", \n\t")
+                                .replaceAll("(", "(\n\t")}
+                        </pre>
                     </CardCapsule>
                 </Col>
 
-                {/* Výpis queryVector */}
                 <Col>
                     <CardCapsule header="queryVector">
                         <SimpleCardCapsuleRightCorner>
-                            <CopyButton className="btn btn-sm border-0" text={queryVector} />
+                            <CopyButton
+                                className="btn btn-sm border-0"
+                                text={queryVector}
+                            />
                         </SimpleCardCapsuleRightCorner>
 
-                        <pre>{queryVector?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                        <pre>
+                            {queryVector
+                                ?.replaceAll(", ", ", \n\t")
+                                .replaceAll("(", "(\n\t")}
+                        </pre>
                     </CardCapsule>
                 </Col>
 
-                {/* Výpis všech mutací */}
-                {Object.entries(mutations).map(([name, value]) => {
-                    return (
+                {Object.entries(mutations).map(
+                    ([name, value]) => (
                         <Col key={name}>
                             <CardCapsule header={name}>
                                 <SimpleCardCapsuleRightCorner>
-                                    <CopyButton className="btn btn-sm border-0" text={value} />
+                                    <CopyButton
+                                        className="btn btn-sm border-0"
+                                        text={value}
+                                    />
                                 </SimpleCardCapsuleRightCorner>
 
-                                <pre>{value?.replaceAll(", ", ", \n\t").replaceAll("(", "(\n\t")}</pre>
+                                <pre>
+                                    {value
+                                        ?.replaceAll(", ", ", \n\t")
+                                        .replaceAll("(", "(\n\t")}
+                                </pre>
                             </CardCapsule>
                         </Col>
-                    );
-                })}
+                    )
+                )}
             </Row>
         );
     } else if (action === "view") {
-        // Standardní zobrazení detailu finance.
         content = (
             <>
                 <FinanceTransferSunburst
                     item={patchedItem}
                     header="Graf finančních přesunů"
-                    onTransferInserted={handleTransferInserted}
                 />
 
-                <MediumCardScalars key="MediumCardScalars" item={patchedItem} />
+                <MediumCardScalars
+                    key="MediumCardScalars"
+                    item={patchedItem}
+                />
 
-                <MediumCardVectors key="MediumCardVectors" item={patchedItem} />
+                <MediumCardVectors
+                    key="MediumCardVectors"
+                    item={patchedItem}
+                />
             </>
         );
     } else if (Array.isArray(attributeValue)) {
-        // Pokud je action název atributu, který je pole, zobrazí se jako VectorAttribute.
-        content = <VectorAttribute attribute_name={action} item={patchedItem} />;
-    } else if (attributeValue) {
-        // Pokud je action název jednoduchého atributu, zobrazí se jako ScalarAttribute.
-        content = <ScalarAttribute attribute_name={action} item={patchedItem} />;
+        content = (
+            <VectorAttribute
+                attribute_name={action}
+                item={patchedItem}
+            />
+        );
+    } else if (attributeValue !== undefined) {
+        content = (
+            <ScalarAttribute
+                attribute_name={action}
+                item={patchedItem}
+            />
+        );
     }
 
     return (
         <>
-            {/* Hlavní obsah stránky */}
             <LargeCard item={patchedItem}>
                 {content}
             </LargeCard>
 
-            {/* Debug panely pod stránkou */}
             <Row>
                 <Col>
                     <CardCapsule header="QueryById">
@@ -758,13 +912,21 @@ export const PageContent = ({ queryById, queryVector, mutations = {}, children, 
 
                 <Col>
                     <CardCapsule header="Parametry">
-                        <pre>{JSON.stringify(params, null, 2)}</pre>
+                        <pre>
+                            {JSON.stringify(params, null, 2)}
+                        </pre>
                     </CardCapsule>
                 </Col>
 
                 <Col>
                     <CardCapsule header="Response">
-                        <pre>{JSON.stringify(patchedItem, null, 2)}</pre>
+                        <pre>
+                            {JSON.stringify(
+                                patchedItem,
+                                null,
+                                2
+                            )}
+                        </pre>
                     </CardCapsule>
                 </Col>
             </Row>
@@ -772,33 +934,47 @@ export const PageContent = ({ queryById, queryVector, mutations = {}, children, 
     );
 };
 
-// =======================================================
-// Hlavní komponenta Page
-// =======================================================
 
-// Tato komponenta je hlavním vstupem stránky.
-// Z URL zjistí typ entity a ID,
-// podle typu najde správný GraphQL dotaz,
-// a potom obalí PageContent do AsyncActionProvideru.
-export const Page = ({ children }) => {
-    // Z URL se načte id entity a typename GraphQL modelu.
+/**
+ * Root page component of the dynamic finance module.
+ *
+ * The component resolves the entity type and identifier from the route,
+ * obtains the appropriate GraphQL action and definitions, and initializes
+ * the provider used by `PageContent`.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional content forwarded to `PageContent`.
+ *
+ * @returns {JSX.Element}
+ * Dynamic GraphQL entity page or an unsupported-type message.
+ */
+export const Page = ({
+    children
+}) => {
     const { id, typename } = useParams();
-
-    // Provider potřebuje alespoň ID položky.
     const item = { id };
 
-    // Podle typename se dynamicky získá:
-    // - ByIdAsyncAction pro načtení detailu,
-    // - queryById pro výpis dotazu,
-    // - queryVector pro výpis vektorového dotazu,
-    // - mutations pro výpis dostupných mutací.
-    const { ByIdAsyncAction, queryById, queryVector, mutations } = useGQLType(typename || "RoleGQLModel");
+    const {
+        ByIdAsyncAction,
+        queryById,
+        queryVector,
+        mutations
+    } = useGQLType(
+        typename || "RoleGQLModel"
+    );
 
     return (
         <>
-            {/* Pokud se podařilo najít async akci pro daný typ, zobrazí se stránka */}
-            {ByIdAsyncAction && (
-                <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
+            {ByIdAsyncAction ? (
+                <AsyncActionProvider
+                    item={item}
+                    queryAsyncAction={ByIdAsyncAction}
+                >
                     <PageContent
                         queryById={queryById}
                         queryVector={queryVector}
@@ -808,11 +984,10 @@ export const Page = ({ children }) => {
                         {children}
                     </PageContent>
                 </AsyncActionProvider>
-            )}
-
-            {/* Pokud typ není podporovaný, zobrazí se jednoduchá chyba */}
-            {!ByIdAsyncAction && (
-                <div>No ByIdAsyncAction for type {typename}</div>
+            ) : (
+                <div>
+                    No ByIdAsyncAction for type {typename}
+                </div>
             )}
         </>
     );

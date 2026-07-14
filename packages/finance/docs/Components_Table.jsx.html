@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Components/Table.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Components/Table.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+    useMemo,
+    useState
+} from "react";
+
+import {
+    Table as BaseTable,
+    buildTableDef
+} from "../../../../_template/src/Base/Components/Table";
+
+
+/**
+ * Column configuration used by the finance table.
+ *
+ * Keys correspond to finance entity attributes and values define the
+ * localized labels displayed in the table header.
+ *
+ * @constant
+ * @type {Object&lt;string, string>}
+ */
+const WANTED_COLUMNS = {
+    __typename: "Typ",
+    id: "ID",
+    name: "Název",
+    lastchange: "Naposledy změněno",
+    created: "Vytvořeno",
+    nameEn: "EN název",
+    value: "Částka",
+    description: "Popis",
+    tools: "Nástroje"
+};
+
+
+/**
+ * Finance entity properties that support client-side sorting.
+ *
+ * @constant
+ * @type {string[]}
+ */
+const ALLOWED_SORT_KEYS = [
+    "id",
+    "name",
+    "value"
+];
+
+
+/**
+ * Formats a numeric value as Czech currency.
+ *
+ * Non-numeric values are converted to numbers. Invalid values are represented
+ * as zero.
+ *
+ * @param {number|string|null|undefined} value
+ * Financial value to format.
+ *
+ * @returns {string}
+ * Localized currency string expressed in Czech crowns.
+ *
+ * @example
+ * formatCurrency(250000);
+ *
+ * // Returns: "250 000 Kč"
+ */
+const formatCurrency = (value) => {
+    const numericValue =
+        typeof value === "number"
+            ? value
+            : Number(value) || 0;
+
+    return `${numericValue.toLocaleString("cs-CZ")} Kč`;
+};
+
+
+/**
+ * Formats a date value using the Czech locale.
+ *
+ * Invalid or missing date values are returned as a fallback representation.
+ *
+ * @param {string|null|undefined} dateString
+ * ISO date string or another value accepted by the JavaScript `Date`
+ * constructor.
+ *
+ * @returns {string}
+ * Localized date and time, a dash for missing values, or the original string
+ * for invalid dates.
+ *
+ * @example
+ * formatDate("2026-07-13T15:18:34.884Z");
+ *
+ * // Returns a localized Czech date and time.
+ */
+const formatDate = (dateString) => {
+    if (!dateString) {
+        return "-";
+    }
+
+    try {
+        const date = new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) {
+            return dateString;
+        }
+
+        const localizedDate =
+            date.toLocaleDateString("cs-CZ");
+
+        const localizedTime =
+            date.toLocaleTimeString(
+                "cs-CZ",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        return `${localizedDate} ${localizedTime}`;
+    } catch {
+        return dateString;
+    }
+};
+
+
+/**
+ * Extracts the final numeric segment from an identifier.
+ *
+ * The helper is used for natural sorting of UUID-like values or custom
+ * identifiers whose meaningful ordering value is stored in the last
+ * hyphen-separated segment.
+ *
+ * @param {string|number|null|undefined} idValue
+ * Identifier whose final numeric segment should be extracted.
+ *
+ * @returns {number}
+ * Parsed numeric suffix or zero when no numeric value is available.
+ *
+ * @example
+ * getLastNumberFromId(
+ *     "30000000-0000-0000-0000-000000000003"
+ * );
+ *
+ * // Returns: 3
+ */
+const getLastNumberFromId = (idValue) => {
+    if (!idValue) {
+        return 0;
+    }
+
+    const parts = String(idValue).split("-");
+    const lastPart = parts.at(-1);
+
+    return Number.parseInt(lastPart, 10) || 0;
+};
+
+
+/**
+ * Displays finance entities in a sortable table.
+ *
+ * The component extends the shared table implementation with:
+ *
+ * - a restricted set of finance-specific columns,
+ * - client-side sorting by identifier, name and amount,
+ * - localized Czech currency formatting,
+ * - localized date and time formatting,
+ * - visual sort direction indicators in column headers.
+ *
+ * Sorting is triggered by clicking a supported table header. Clicking buttons
+ * or contextual menus does not change the current sorting configuration.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object[]} props.data
+ * Finance entities rendered as table rows.
+ *
+ * @returns {JSX.Element|null}
+ * Sortable finance table, or `null` when no data is available.
+ *
+ * @example
+ * &lt;Table
+ *     data={[
+ *         {
+ *             id: "30000000-0000-0000-0000-000000000003",
+ *             name: "Rozpočet WP2",
+ *             value: 900000
+ *         }
+ *     ]}
+ * />
+ */
+export const Table = ({
+    data
+}) => {
+    if (!Array.isArray(data) || data.length === 0) {
+        return null;
+    }
+
+    const [sortConfig, setSortConfig] = useState({
+        key: "id",
+        direction: "asc"
+    });
+
+
+    /**
+     * Updates the active sort key and direction.
+     *
+     * Clicking the currently active ascending column changes the direction to
+     * descending. Selecting another supported column starts with ascending
+     * order.
+     *
+     * @param {string} key
+     * Finance property used for sorting.
+     *
+     * @returns {void}
+     */
+    const handleSort = (key) => {
+        if (!ALLOWED_SORT_KEYS.includes(key)) {
+            return;
+        }
+
+        const direction =
+            sortConfig.key === key &amp;&amp;
+            sortConfig.direction === "asc"
+                ? "desc"
+                : "asc";
+
+        setSortConfig({
+            key,
+            direction
+        });
+    };
+
+
+    const sortedData = useMemo(() => {
+        const sortableItems = [...data];
+
+        if (!sortConfig.key) {
+            return sortableItems;
+        }
+
+        sortableItems.sort((firstItem, secondItem) => {
+            let firstValue =
+                firstItem?.[sortConfig.key];
+
+            let secondValue =
+                secondItem?.[sortConfig.key];
+
+            if (sortConfig.key === "id") {
+                const firstNumber =
+                    getLastNumberFromId(firstValue);
+
+                const secondNumber =
+                    getLastNumberFromId(secondValue);
+
+                return sortConfig.direction === "asc"
+                    ? firstNumber - secondNumber
+                    : secondNumber - firstNumber;
+            }
+
+            if (sortConfig.key === "value") {
+                const firstNumber =
+                    Number(firstValue) || 0;
+
+                const secondNumber =
+                    Number(secondValue) || 0;
+
+                return sortConfig.direction === "asc"
+                    ? firstNumber - secondNumber
+                    : secondNumber - firstNumber;
+            }
+
+            firstValue =
+                String(firstValue ?? "")
+                    .toLocaleLowerCase("cs-CZ");
+
+            secondValue =
+                String(secondValue ?? "")
+                    .toLocaleLowerCase("cs-CZ");
+
+            const comparison =
+                firstValue.localeCompare(
+                    secondValue,
+                    "cs-CZ"
+                );
+
+            return sortConfig.direction === "asc"
+                ? comparison
+                : -comparison;
+        });
+
+        return sortableItems;
+    }, [
+        data,
+        sortConfig
+    ]);
+
+
+    const customTableDef = useMemo(() => {
+        const baseDefinition =
+            buildTableDef(sortedData);
+
+        const filteredDefinition = {};
+
+        Object.keys(WANTED_COLUMNS).forEach((key) => {
+            if (!baseDefinition[key]) {
+                return;
+            }
+
+            let label = WANTED_COLUMNS[key];
+
+            if (
+                sortConfig.key === key &amp;&amp;
+                ALLOWED_SORT_KEYS.includes(key)
+            ) {
+                label +=
+                    sortConfig.direction === "asc"
+                        ? " ▲"
+                        : " ▼";
+            }
+
+            filteredDefinition[key] = {
+                ...baseDefinition[key],
+                label
+            };
+
+            if (key === "value") {
+                filteredDefinition[key].component =
+                    ({ row }) => (
+                        &lt;td>
+                            {formatCurrency(row?.value)}
+                        &lt;/td>
+                    );
+            }
+
+            if (
+                key === "lastchange" ||
+                key === "created"
+            ) {
+                filteredDefinition[key].component =
+                    ({ row }) => (
+                        &lt;td>
+                            {formatDate(row?.[key])}
+                        &lt;/td>
+                    );
+            }
+        });
+
+        return filteredDefinition;
+    }, [
+        sortedData,
+        sortConfig
+    ]);
+
+
+    /**
+     * Handles delegated click events inside the table container.
+     *
+     * The handler detects sortable table headers while ignoring clicks on
+     * buttons and contextual menus.
+     *
+     * @param {React.MouseEvent&lt;HTMLDivElement>} event
+     * Click event originating from the table wrapper.
+     *
+     * @returns {void}
+     */
+    const handleTableClick = (event) => {
+        const clickedElement = event.target;
+
+        if (
+            clickedElement.closest("[role='menu']") ||
+            clickedElement.closest("button")
+        ) {
+            return;
+        }
+
+        const headerCell =
+            clickedElement.closest("th");
+
+        if (!headerCell) {
+            return;
+        }
+
+        const clickedLabel =
+            headerCell.innerText
+                .replace(" ▲", "")
+                .replace(" ▼", "")
+                .trim();
+
+        const columnKey =
+            Object.keys(WANTED_COLUMNS).find(
+                (key) =>
+                    WANTED_COLUMNS[key] ===
+                    clickedLabel
+            );
+
+        if (columnKey) {
+            handleSort(columnKey);
+        }
+    };
+
+
+    return (
+        &lt;div
+            className="table-responsive"
+            onClick={handleTableClick}
+        >
+            &lt;BaseTable
+                data={sortedData}
+                table_def={customTableDef}
+            />
+        &lt;/div>
+    );
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:35:09 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Pages/Page.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Pages/Page.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+    useCallback,
+    useEffect,
+    useMemo
+} from "react";
+
+import { useParams } from "react-router";
+import { useSelector } from "react-redux";
+
+import { selectFinanceTransfers } from "../Store/FinanceTransferSlice";
+import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
+import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType";
+
+import {
+    FinanceTransferPageAsyncAction
+} from "../Queries/FinanceTransferPageAsyncAction";
+import { ReadAsyncAction } from "../Queries";
+
+import {
+    FinanceTransferSunburst
+} from "../Components/FinanceTransferSunburst";
+
+import {
+    LargeCard
+} from "../../../../_template/src/Base/Components/LargeCard";
+import {
+    CardCapsule
+} from "../../../../_template/src/Base/Components/CardCapsule";
+import {
+    MediumCardScalars,
+    ScalarAttribute
+} from "../../../../_template/src/Base/Scalars/ScalarAttribute";
+import {
+    MediumCardVectors,
+    VectorAttribute
+} from "../../../../_template/src/Base/Vectors/VectorAttribute";
+import {
+    AsyncActionProvider,
+    useGQLEntityContext
+} from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
+import { Row } from "../../../../_template/src/Base/Components/Row";
+import { Col } from "../../../../_template/src/Base/Components/Col";
+import {
+    SimpleCardCapsuleRightCorner
+} from "@hrbolek/uoisfrontend-shared";
+import {
+    CopyButton
+} from "../../../../_template/src/Base/Components/CopyButton";
+
+
+/**
+ * Resolves the source finance identifier from a transfer object.
+ *
+ * Several accepted property names are checked because transfer data can be
+ * produced by different GraphQL queries, mutations or local transformations.
+ *
+ * @param {Object|null|undefined} transfer
+ * Finance transfer record.
+ *
+ * @returns {string|null}
+ * Source finance identifier, or `null` when it cannot be resolved.
+ */
+const getTransferSourceId = (transfer) => {
+    return (
+        transfer?.financeSourceId ??
+        transfer?.financeTransfer_financeSourceId ??
+        transfer?.sourceFinanceId ??
+        transfer?.sourceId ??
+        transfer?.financeSource?.id ??
+        transfer?.source?.id ??
+        null
+    );
+};
+
+
+/**
+ * Resolves the destination finance identifier from a transfer object.
+ *
+ * @param {Object|null|undefined} transfer
+ * Finance transfer record.
+ *
+ * @returns {string|null}
+ * Destination finance identifier, or `null` when it cannot be resolved.
+ */
+const getTransferDestinationId = (transfer) => {
+    return (
+        transfer?.financeDestinationId ??
+        transfer?.financeTransfer_financeDestinationId ??
+        transfer?.destinationFinanceId ??
+        transfer?.destinationId ??
+        transfer?.financeDestination?.id ??
+        transfer?.destination?.id ??
+        null
+    );
+};
+
+
+/**
+ * Converts a finance transfer into the normalized structure used by the page.
+ *
+ * A valid normalized transfer contains `financeSourceId`,
+ * `financeDestinationId` and a non-zero numeric `amount`.
+ *
+ * @param {Object|null|undefined} transfer
+ * Transfer in an arbitrary supported backend or local format.
+ *
+ * @returns {Object|null}
+ * Normalized transfer, or `null` when the input is invalid.
+ */
+const normalizeTransfer = (transfer) => {
+    if (!transfer || typeof transfer !== "object") {
+        return null;
+    }
+
+    const financeSourceId = getTransferSourceId(transfer);
+    const financeDestinationId = getTransferDestinationId(transfer);
+    const amount = Number(
+        transfer.amount ??
+        transfer.financeTransfer_amount ??
+        transfer.value ??
+        0
+    );
+
+    if (
+        !financeSourceId ||
+        !financeDestinationId ||
+        !Number.isFinite(amount) ||
+        amount === 0
+    ) {
+        return null;
+    }
+
+    return {
+        ...transfer,
+        financeSourceId,
+        financeDestinationId,
+        amount
+    };
+};
+
+
+/**
+ * Collects finance transfers recursively from a finance hierarchy.
+ *
+ * The function searches all supported transfer collections on every finance
+ * node, prevents cyclic traversal and removes duplicate records.
+ *
+ * @param {Object|null|undefined} item
+ * Root finance entity.
+ *
+ * @returns {Object[]}
+ * Unique normalized transfers found in the hierarchy.
+ */
+const collectTransfers = (item) => {
+    const transfers = [];
+    const visitedNodes = new Set();
+
+    const collect = (node) => {
+        if (!node || typeof node !== "object") {
+            return;
+        }
+
+        if (visitedNodes.has(node)) {
+            return;
+        }
+
+        visitedNodes.add(node);
+
+        const possibleTransferArrays = [
+            node.financeTransfers,
+            node.transfers,
+            node.incomingTransfers,
+            node.outgoingTransfers,
+            node.financeSourceTransfers,
+            node.financeDestinationTransfers
+        ];
+
+        possibleTransferArrays.forEach((array) => {
+            if (!Array.isArray(array)) {
+                return;
+            }
+
+            array.forEach((transfer) => {
+                const normalizedTransfer = normalizeTransfer(transfer);
+
+                if (normalizedTransfer) {
+                    transfers.push(normalizedTransfer);
+                }
+            });
+        });
+
+        if (Array.isArray(node.subfinances)) {
+            node.subfinances.forEach(collect);
+        }
+    };
+
+    collect(item);
+
+    const transferMap = new Map();
+
+    transfers.forEach((transfer, index) => {
+        const key =
+            transfer.id ??
+            `${transfer.financeSourceId}-` +
+            `${transfer.financeDestinationId}-` +
+            `${transfer.amount}-${index}`;
+
+        transferMap.set(key, transfer);
+    });
+
+    return [...transferMap.values()];
+};
+
+
+/**
+ * Applies transfers to a finance hierarchy and recalculates finance values.
+ *
+ * Each finance receives its original value minus outgoing transfers plus
+ * incoming transfers. Child finance collections are processed recursively.
+ * Input objects are not mutated.
+ *
+ * @param {Object[]} [finances=[]]
+ * Finance nodes to recalculate.
+ *
+ * @param {Object[]} [transfers=[]]
+ * Normalized finance transfers.
+ *
+ * @returns {Object[]}
+ * Recalculated finance hierarchy.
+ */
+const applyTransfersToFinanceTree = (
+    finances = [],
+    transfers = []
+) => {
+    return finances.map((finance) => {
+        const outgoing = transfers
+            .filter(
+                (transfer) =>
+                    transfer.financeSourceId === finance.id
+            )
+            .reduce(
+                (sum, transfer) =>
+                    sum + Number(transfer.amount || 0),
+                0
+            );
+
+        const incoming = transfers
+            .filter(
+                (transfer) =>
+                    transfer.financeDestinationId === finance.id
+            )
+            .reduce(
+                (sum, transfer) =>
+                    sum + Number(transfer.amount || 0),
+                0
+            );
+
+        return {
+            ...finance,
+            value:
+                Number(finance.value || 0) -
+                outgoing +
+                incoming,
+            subfinances: Array.isArray(finance.subfinances)
+                ? applyTransfersToFinanceTree(
+                    finance.subfinances,
+                    transfers
+                )
+                : finance.subfinances
+        };
+    });
+};
+
+
+/**
+ * Creates a finance item whose child values reflect the supplied transfers.
+ *
+ * @param {Object|null|undefined} item
+ * Root finance entity.
+ *
+ * @param {Object[]} [localTransfers=[]]
+ * Transfers to normalize and apply.
+ *
+ * @returns {Object|null|undefined}
+ * Patched finance entity, or the original invalid value.
+ */
+const patchFinanceItem = (
+    item,
+    localTransfers = []
+) => {
+    if (!item || typeof item !== "object") {
+        return item;
+    }
+
+    const normalizedLocalTransfers = localTransfers
+        .map(normalizeTransfer)
+        .filter(Boolean);
+
+    return {
+        ...item,
+        subfinances: applyTransfersToFinanceTree(
+            item.subfinances ?? [],
+            normalizedLocalTransfers
+        )
+    };
+};
+
+
+/**
+ * Collects all finance identifiers contained in a hierarchy.
+ *
+ * @param {Object|null|undefined} finance
+ * Root finance entity.
+ *
+ * @returns {Set&lt;string>}
+ * Set containing identifiers of the root and all descendant finances.
+ */
+const collectFinanceIds = (finance) => {
+    const ids = new Set();
+
+    const walk = (node) => {
+        if (!node || typeof node !== "object") {
+            return;
+        }
+
+        if (node.id) {
+            ids.add(node.id);
+        }
+
+        if (Array.isArray(node.subfinances)) {
+            node.subfinances.forEach(walk);
+        }
+    };
+
+    walk(finance);
+
+    return ids;
+};
+
+
+/**
+ * Builds a map describing parent-child relationships in a finance hierarchy.
+ *
+ * @param {Object|null|undefined} finance
+ * Root finance entity.
+ *
+ * @returns {Map&lt;string, string|null>}
+ * Map whose keys are finance IDs and values are parent finance IDs.
+ */
+const buildParentMap = (finance) => {
+    const parentById = new Map();
+
+    const walk = (node, parentId = null) => {
+        if (!node || typeof node !== "object") {
+            return;
+        }
+
+        if (node.id) {
+            parentById.set(node.id, parentId);
+        }
+
+        if (Array.isArray(node.subfinances)) {
+            node.subfinances.forEach((child) =>
+                walk(child, node.id)
+            );
+        }
+    };
+
+    walk(finance);
+
+    return parentById;
+};
+
+
+/**
+ * Determines whether one finance entity is an ancestor of another.
+ *
+ * @param {string} ancestorId
+ * Potential ancestor finance identifier.
+ *
+ * @param {string} childId
+ * Potential descendant finance identifier.
+ *
+ * @param {Map&lt;string, string|null>} parentById
+ * Parent relationship map.
+ *
+ * @returns {boolean}
+ * `true` when `ancestorId` is found in the parent chain of `childId`.
+ */
+const isAncestor = (
+    ancestorId,
+    childId,
+    parentById
+) => {
+    let currentId = parentById.get(childId);
+
+    while (currentId) {
+        if (currentId === ancestorId) {
+            return true;
+        }
+
+        currentId = parentById.get(currentId);
+    }
+
+    return false;
+};
+
+
+/**
+ * Filters transfers to those relevant for the current finance hierarchy.
+ *
+ * Transfers are retained only when both endpoints belong to the hierarchy.
+ * Parent-child transfers are excluded because they represent structural
+ * relationships rather than redistribution between peer finance entities.
+ * Duplicate transfers are removed.
+ *
+ * @param {Object[]} transfers
+ * Candidate finance transfers.
+ *
+ * @param {Object} item
+ * Root finance entity.
+ *
+ * @returns {Object[]}
+ * Relevant unique transfers.
+ */
+const filterRelevantTransfers = (
+    transfers,
+    item
+) => {
+    const financeIds = collectFinanceIds(item);
+    const parentById = buildParentMap(item);
+    const uniqueTransfers = new Map();
+
+    for (const transfer of transfers || []) {
+        const normalizedTransfer = normalizeTransfer(transfer);
+
+        if (!normalizedTransfer) {
+            continue;
+        }
+
+        const sourceId = normalizedTransfer.financeSourceId;
+        const destinationId =
+            normalizedTransfer.financeDestinationId;
+
+        if (
+            !financeIds.has(sourceId) ||
+            !financeIds.has(destinationId)
+        ) {
+            continue;
+        }
+
+        const isStructuralTransfer =
+            isAncestor(
+                sourceId,
+                destinationId,
+                parentById
+            ) ||
+            isAncestor(
+                destinationId,
+                sourceId,
+                parentById
+            );
+
+        if (isStructuralTransfer) {
+            continue;
+        }
+
+        const key =
+            normalizedTransfer.id ||
+            `${sourceId}-${destinationId}-` +
+            `${normalizedTransfer.amount}-` +
+            `${normalizedTransfer.name}`;
+
+        if (!uniqueTransfers.has(key)) {
+            uniqueTransfers.set(
+                key,
+                normalizedTransfer
+            );
+        }
+    }
+
+    return Array.from(uniqueTransfers.values());
+};
+
+
+/**
+ * Displays the finance visualization and vector attributes for an entity.
+ *
+ * The component loads finance transfers from the backend, selects transfers
+ * relevant to the current finance hierarchy, recalculates displayed values
+ * and renders both the interactive Sunburst diagram and vector attributes.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Root finance entity.
+ *
+ * @param {Function} [props.onTransferInserted]
+ * Callback invoked after a transfer is inserted and backend data is reloaded.
+ *
+ * @returns {JSX.Element}
+ * Finance visualization and vector attributes.
+ */
+export const GeneratedContentBase = ({
+    item,
+    onTransferInserted = () => {}
+}) => {
+    const backendTransfers = useSelector(
+        selectFinanceTransfers
+    );
+
+    const {
+        run: runFinanceTransferPage
+    } = useAsyncThunkAction(
+        FinanceTransferPageAsyncAction,
+        {},
+        {
+            deferred: true,
+            network: true
+        }
+    );
+
+    /**
+     * Loads finance transfers from the backend into the Redux store.
+     *
+     * @async
+     * @returns {Promise&lt;void>}
+     */
+    const loadTransfers = useCallback(async () => {
+        try {
+            await runFinanceTransferPage({
+                skip: 0,
+                limit: 1000,
+                orderby: "created"
+            });
+        } catch (error) {
+            console.error(
+                "Finance transfers could not be loaded:",
+                error
+            );
+        }
+    }, [runFinanceTransferPage]);
+
+    useEffect(() => {
+        loadTransfers();
+    }, [loadTransfers]);
+
+    const patchedItem = useMemo(() => {
+        if (!item) {
+            return item;
+        }
+
+        const relevantTransfers =
+            filterRelevantTransfers(
+                backendTransfers,
+                item
+            );
+
+        return patchFinanceItem(
+            item,
+            relevantTransfers
+        );
+    }, [item, backendTransfers]);
+
+    /**
+     * Reloads backend transfer data after a successful transfer insertion.
+     *
+     * @param {Object} transfer
+     * Newly created finance transfer.
+     *
+     * @returns {Promise&lt;void>}
+     */
+    const handleTransferInserted = async (transfer) => {
+        await loadTransfers();
+        await onTransferInserted?.(transfer);
+    };
+
+    if (!item) {
+        return &lt;>Položka nenalezena&lt;/>;
+    }
+
+    return (
+        &lt;>
+            &lt;FinanceTransferSunburst
+                item={patchedItem}
+                header="Graf finančních přesunů"
+                onTransferInserted={handleTransferInserted}
+            />
+
+            &lt;MediumCardVectors
+                key="MediumCardVectors"
+                item={patchedItem}
+            />
+        &lt;/>
+    );
+};
+
+
+/**
+ * Composes the internal layout of a finance entity page.
+ *
+ * The component reads the current entity from GraphQL context, applies any
+ * transfers embedded in the entity, renders optional navigation and wraps
+ * the selected subpage with additional components.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ComponentType&lt;Object>|null} [props.PageNavbar=null]
+ * Optional page navigation component.
+ *
+ * @param {Array&lt;React.ComponentType>} [props.ItemLayout=LargeCard]
+ * Layout component used to wrap the entity content.
+ *
+ * @param {React.ComponentType&lt;Object>|null} [props.SubPage=GeneratedContentBase]
+ * Component rendering the main page content.
+ *
+ * @param {Array&lt;React.ComponentType>} [props.OtherComponents=[]]
+ * Components that wrap `children` from right to left.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional nested page content.
+ *
+ * @returns {JSX.Element}
+ * Composed finance entity page.
+ */
+const PageItemInnerStructure = ({
+    PageNavbar = null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    OtherComponents = [],
+    children
+}) => {
+    const { item } = useGQLEntityContext();
+
+    const patchedItem = useMemo(() => {
+        if (!item) {
+            return item;
+        }
+
+        return patchFinanceItem(
+            item,
+            collectTransfers(item)
+        );
+    }, [item]);
+
+    if (!item) {
+        return &lt;>Položka nenalezena&lt;/>;
+    }
+
+    const content = (OtherComponents || [])
+        .reduceRight((accumulator, Component) => {
+            if (!Component) {
+                return accumulator;
+            }
+
+            return (
+                &lt;Component item={item}>
+                    {accumulator}
+                &lt;/Component>
+            );
+        }, children);
+
+    return (
+        &lt;>
+            {PageNavbar &amp;&amp; (
+                &lt;PageNavbar item={item} />
+            )}
+
+            &lt;ItemLayout item={patchedItem}>
+                {SubPage ? (
+                    &lt;SubPage item={patchedItem}>
+                        {content}
+                    &lt;/SubPage>
+                ) : (
+                    content
+                )}
+            &lt;/ItemLayout>
+        &lt;/>
+    );
+};
+
+
+/**
+ * Creates the provider and page structure for a finance entity detail.
+ *
+ * The entity identifier is read from the current route and passed to the
+ * configured asynchronous GraphQL action.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
+ * Async action used to load the entity.
+ *
+ * @param {React.ComponentType&lt;Object>} [props.PageNavbar]
+ * Optional page navigation component.
+ *
+ * @param {React.ComponentType&lt;Object>} [props.ItemLayout=LargeCard]
+ * Layout component used to display the entity.
+ *
+ * @param {React.ComponentType&lt;Object>} [props.SubPage=GeneratedContentBase]
+ * Main content component.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional nested content.
+ *
+ * @returns {JSX.Element}
+ * GraphQL-backed finance entity page.
+ */
+export const PageItemBase = ({
+    queryAsyncAction = ReadAsyncAction,
+    PageNavbar = () => null,
+    ItemLayout = LargeCard,
+    SubPage = GeneratedContentBase,
+    children
+}) => {
+    const { id } = useParams();
+    const item = { id };
+
+    return (
+        &lt;AsyncActionProvider
+            item={item}
+            queryAsyncAction={queryAsyncAction}
+        >
+            &lt;PageItemInnerStructure
+                PageNavbar={PageNavbar}
+                ItemLayout={ItemLayout}
+                SubPage={SubPage}
+            >
+                {children}
+            &lt;/PageItemInnerStructure>
+        &lt;/AsyncActionProvider>
+    );
+};
+
+
+/**
+ * Renders finance page content according to the route action.
+ *
+ * Supported modes include the standard detail view, GraphQL definition
+ * display, vector attributes and scalar attributes.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} [props.queryById]
+ * GraphQL query used to load one entity.
+ *
+ * @param {string} [props.queryVector]
+ * GraphQL query used to load collections.
+ *
+ * @param {Object&lt;string, string>} [props.mutations={}]
+ * Available GraphQL mutation definitions.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Default content used when no specific action replaces it.
+ *
+ * @param {Object} [props.params]
+ * Route or query parameters displayed in the diagnostic section.
+ *
+ * @returns {JSX.Element}
+ * Content of the selected finance page mode.
+ */
+export const PageContent = ({
+    queryById,
+    queryVector,
+    mutations = {},
+    children,
+    params
+}) => {
+    const gqlContext = useGQLEntityContext();
+    const { action = "view" } = useParams();
+    const { item } = gqlContext || {};
+
+    const patchedItem = useMemo(() => {
+        return patchFinanceItem(
+            item,
+            collectTransfers(item)
+        );
+    }, [item]);
+
+    if (!item) {
+        return (
+            &lt;div>
+                Položka nenalezena
+                &lt;pre>
+                    {JSON.stringify(gqlContext, null, 2)}
+                &lt;/pre>
+            &lt;/div>
+        );
+    }
+
+    let content = children;
+    const attributeValue = patchedItem?.[action];
+
+    if (action === "__def") {
+        content = (
+            &lt;Row>
+                &lt;Col>
+                    &lt;CardCapsule header="queryById">
+                        &lt;SimpleCardCapsuleRightCorner>
+                            &lt;CopyButton
+                                className="btn btn-sm border-0"
+                                text={queryById}
+                            />
+                        &lt;/SimpleCardCapsuleRightCorner>
+
+                        &lt;pre>
+                            {queryById
+                                ?.replaceAll(", ", ", \n\t")
+                                .replaceAll("(", "(\n\t")}
+                        &lt;/pre>
+                    &lt;/CardCapsule>
+                &lt;/Col>
+
+                &lt;Col>
+                    &lt;CardCapsule header="queryVector">
+                        &lt;SimpleCardCapsuleRightCorner>
+                            &lt;CopyButton
+                                className="btn btn-sm border-0"
+                                text={queryVector}
+                            />
+                        &lt;/SimpleCardCapsuleRightCorner>
+
+                        &lt;pre>
+                            {queryVector
+                                ?.replaceAll(", ", ", \n\t")
+                                .replaceAll("(", "(\n\t")}
+                        &lt;/pre>
+                    &lt;/CardCapsule>
+                &lt;/Col>
+
+                {Object.entries(mutations).map(
+                    ([name, value]) => (
+                        &lt;Col key={name}>
+                            &lt;CardCapsule header={name}>
+                                &lt;SimpleCardCapsuleRightCorner>
+                                    &lt;CopyButton
+                                        className="btn btn-sm border-0"
+                                        text={value}
+                                    />
+                                &lt;/SimpleCardCapsuleRightCorner>
+
+                                &lt;pre>
+                                    {value
+                                        ?.replaceAll(", ", ", \n\t")
+                                        .replaceAll("(", "(\n\t")}
+                                &lt;/pre>
+                            &lt;/CardCapsule>
+                        &lt;/Col>
+                    )
+                )}
+            &lt;/Row>
+        );
+    } else if (action === "view") {
+        content = (
+            &lt;>
+                &lt;FinanceTransferSunburst
+                    item={patchedItem}
+                    header="Graf finančních přesunů"
+                />
+
+                &lt;MediumCardScalars
+                    key="MediumCardScalars"
+                    item={patchedItem}
+                />
+
+                &lt;MediumCardVectors
+                    key="MediumCardVectors"
+                    item={patchedItem}
+                />
+            &lt;/>
+        );
+    } else if (Array.isArray(attributeValue)) {
+        content = (
+            &lt;VectorAttribute
+                attribute_name={action}
+                item={patchedItem}
+            />
+        );
+    } else if (attributeValue !== undefined) {
+        content = (
+            &lt;ScalarAttribute
+                attribute_name={action}
+                item={patchedItem}
+            />
+        );
+    }
+
+    return (
+        &lt;>
+            &lt;LargeCard item={patchedItem}>
+                {content}
+            &lt;/LargeCard>
+
+            &lt;Row>
+                &lt;Col>
+                    &lt;CardCapsule header="QueryById">
+                        &lt;pre>{queryById}&lt;/pre>
+                    &lt;/CardCapsule>
+                &lt;/Col>
+
+                &lt;Col>
+                    &lt;CardCapsule header="Parametry">
+                        &lt;pre>
+                            {JSON.stringify(params, null, 2)}
+                        &lt;/pre>
+                    &lt;/CardCapsule>
+                &lt;/Col>
+
+                &lt;Col>
+                    &lt;CardCapsule header="Response">
+                        &lt;pre>
+                            {JSON.stringify(
+                                patchedItem,
+                                null,
+                                2
+                            )}
+                        &lt;/pre>
+                    &lt;/CardCapsule>
+                &lt;/Col>
+            &lt;/Row>
+        &lt;/>
+    );
+};
+
+
+/**
+ * Root page component of the dynamic finance module.
+ *
+ * The component resolves the entity type and identifier from the route,
+ * obtains the appropriate GraphQL action and definitions, and initializes
+ * the provider used by `PageContent`.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Additional content forwarded to `PageContent`.
+ *
+ * @returns {JSX.Element}
+ * Dynamic GraphQL entity page or an unsupported-type message.
+ */
+export const Page = ({
+    children
+}) => {
+    const { id, typename } = useParams();
+    const item = { id };
+
+    const {
+        ByIdAsyncAction,
+        queryById,
+        queryVector,
+        mutations
+    } = useGQLType(
+        typename || "RoleGQLModel"
+    );
+
+    return (
+        &lt;>
+            {ByIdAsyncAction ? (
+                &lt;AsyncActionProvider
+                    item={item}
+                    queryAsyncAction={ByIdAsyncAction}
+                >
+                    &lt;PageContent
+                        queryById={queryById}
+                        queryVector={queryVector}
+                        mutations={mutations}
+                        params={item}
+                    >
+                        {children}
+                    &lt;/PageContent>
+                &lt;/AsyncActionProvider>
+            ) : (
+                &lt;div>
+                    No ByIdAsyncAction for type {typename}
+                &lt;/div>
+            )}
+        &lt;/>
+    );
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:35:09 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
