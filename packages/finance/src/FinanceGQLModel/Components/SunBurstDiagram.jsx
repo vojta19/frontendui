@@ -13,6 +13,9 @@ import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsu
 // Import funkce pro převod SVG diagramu na PNG obrázek.
 import { toPng } from "html-to-image";
 
+// Import knihovny ExcelJS pro vytvoření formátovaného XLSX reportu.
+import ExcelJS from "exceljs";
+
 
 /**
  * Color palette used cyclically for Sunburst sectors.
@@ -345,6 +348,283 @@ const getNodeChildren = (node) => {
 };
 
 
+
+/**
+ * Name of the worksheet created during finance hierarchy export.
+ *
+ * @constant
+ * @type {string}
+ */
+// Název listu zobrazeného v exportovaném Excel souboru.
+const EXCEL_SHEET_NAME = "Finance";
+
+
+/**
+ * Excel number format used for values expressed in Czech crowns.
+ *
+ * @constant
+ * @type {string}
+ */
+// Formát zobrazuje oddělovače tisíců, dvě desetinná místa a měnu Kč.
+const EXCEL_CURRENCY_FORMAT =
+    '#,##0.00" Kč"';
+
+
+/**
+ * Excel number format used for percentage values.
+ *
+ * @constant
+ * @type {string}
+ */
+// Formát procent zobrazuje hodnotu se dvěma desetinnými místy.
+const EXCEL_PERCENT_FORMAT = "0.00%";
+
+
+/**
+ * Maximum outline level supported by Microsoft Excel.
+ *
+ * @constant
+ * @type {number}
+ */
+// Excel podporuje nejvýše osm úrovní osnovy označených čísly 0 až 7.
+const MAX_EXCEL_OUTLINE_LEVEL = 7;
+
+
+/**
+ * Creates a file-system-safe name from a finance label.
+ *
+ * Diacritical marks and unsupported characters are removed so that the
+ * resulting value can be used safely as a downloaded file name.
+ *
+ * @param {string} value
+ * Original finance label.
+ *
+ * @param {string} [fallback="FinanceReport"]
+ * Fallback name used when the normalized value is empty.
+ *
+ * @returns {string}
+ * Safe file name without an extension.
+ */
+// Vytvoří bezpečný název souboru společný pro PNG i XLSX export.
+const createSafeFileName = (
+    value,
+    fallback = "FinanceReport"
+) => {
+    const safeName = String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9_-]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+
+    return safeName || fallback;
+};
+
+
+/**
+ * Converts a hierarchical finance structure into rows suitable for Excel.
+ *
+ * Every row includes the hierarchy level, finance name, amount, parent name,
+ * number of direct children, percentage of the parent and percentage of the
+ * exported root finance.
+ *
+ * @param {Object} root
+ * Root finance entity.
+ *
+ * @returns {Array<Object>}
+ * Flattened finance hierarchy in depth-first order.
+ */
+// Převede strom financí na řádky zachovávající pořadí a hloubku hierarchie.
+const buildExcelRows = (root) => {
+    const rows = [];
+    const rootValue = Number(root?.value) || 0;
+
+    // Rekurzivně projde finance a všechny jejich podřízené položky.
+    const walk = (
+        node,
+        level = 0,
+        parentNode = null
+    ) => {
+        if (!node || typeof node !== "object") {
+            return;
+        }
+
+        const children = getNodeChildren(node);
+        const value = Number(node?.value) || 0;
+        const parentValue = Number(parentNode?.value) || 0;
+
+        const parentPercentage =
+            parentNode === null
+                ? 1
+                : parentValue !== 0
+                    ? value / parentValue
+                    : 0;
+
+        const totalPercentage =
+            rootValue !== 0
+                ? value / rootValue
+                : 0;
+
+        rows.push({
+            node,
+            level,
+            name: getNodeLabel(node),
+            value,
+            parentName:
+                parentNode
+                    ? getNodeLabel(parentNode)
+                    : "",
+            childrenCount: children.length,
+            parentPercentage,
+            totalPercentage
+        });
+
+        children.forEach((child) => {
+            walk(child, level + 1, node);
+        });
+    };
+
+    walk(root);
+    return rows;
+};
+
+
+/**
+ * Applies visual formatting and outline levels to the exported worksheet.
+ *
+ * @param {Object} worksheet
+ * ExcelJS worksheet being formatted.
+ *
+ * @param {Array<Object>} rows
+ * Flattened finance rows previously added to the worksheet.
+ *
+ * @returns {void}
+ */
+// Nastaví styly, šířky sloupců, filtry, zamrznutí záhlaví a stromovou osnovu.
+const formatExcelWorksheet = (worksheet, rows) => {
+    worksheet.views = [
+        {
+            state: "frozen",
+            ySplit: 1
+        }
+    ];
+
+    worksheet.autoFilter = {
+        from: "A1",
+        to: "G1"
+    };
+
+    worksheet.columns = [
+        { key: "level", width: 10 },
+        { key: "name", width: 44 },
+        { key: "value", width: 20 },
+        { key: "parentName", width: 36 },
+        { key: "childrenCount", width: 18 },
+        { key: "parentPercentage", width: 18 },
+        { key: "totalPercentage", width: 18 }
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 24;
+    headerRow.font = {
+        bold: true,
+        color: { argb: "FFFFFFFF" }
+    };
+    headerRow.alignment = {
+        vertical: "middle",
+        horizontal: "center"
+    };
+    headerRow.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1F4E78" }
+    };
+
+    rows.forEach((financeRow, index) => {
+        const excelRow = worksheet.getRow(index + 2);
+        const outlineLevel = Math.min(
+            financeRow.level,
+            MAX_EXCEL_OUTLINE_LEVEL
+        );
+
+        excelRow.outlineLevel = outlineLevel;
+        excelRow.alignment = { vertical: "middle" };
+        excelRow.getCell(2).alignment = {
+            vertical: "middle",
+            horizontal: "left",
+            indent: outlineLevel
+        };
+        excelRow.getCell(3).numFmt = EXCEL_CURRENCY_FORMAT;
+        excelRow.getCell(6).numFmt = EXCEL_PERCENT_FORMAT;
+        excelRow.getCell(7).numFmt = EXCEL_PERCENT_FORMAT;
+
+        if (
+            financeRow.level === 0 ||
+            financeRow.childrenCount > 0
+        ) {
+            excelRow.font = { bold: true };
+        }
+
+        if (financeRow.level === 0) {
+            excelRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD9EAF7" }
+            };
+        }
+
+        if (
+            financeRow.level > 0 &&
+            index % 2 === 1
+        ) {
+            excelRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFF7F7F7" }
+            };
+        }
+    });
+
+    worksheet.properties.outlineProperties = {
+        summaryBelow: false,
+        summaryRight: false
+    };
+};
+
+
+/**
+ * Triggers a browser download of binary workbook data.
+ *
+ * @param {ArrayBuffer} buffer
+ * Generated XLSX workbook data.
+ *
+ * @param {string} fileName
+ * Name of the downloaded file.
+ *
+ * @returns {void}
+ */
+// Vytvoří Blob a dočasný odkaz, kterým prohlížeč stáhne XLSX soubor.
+const downloadExcelBuffer = (buffer, fileName) => {
+    const blob = new Blob(
+        [buffer],
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    const objectUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = objectUrl;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(objectUrl);
+};
+
+
 /**
  * Transforms a hierarchical finance structure into flat Sunburst sectors.
  *
@@ -652,11 +932,10 @@ export const SunburstDiagram = ({
             );
 
             // Bezpečné vytvoření názvu souboru z názvu aktuální finance.
-            const safeName = getNodeLabel(item)
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9_-]+/g, "_")
-                .replace(/^_+|_+$/g, "");
+            const safeName = createSafeFileName(
+                getNodeLabel(item),
+                "FinanceDiagram"
+            );
 
             // Vytvoření dočasného odkazu pro stažení vygenerovaného obrázku.
             const downloadLink =
@@ -679,6 +958,89 @@ export const SunburstDiagram = ({
             // Uživateli se zobrazí srozumitelné upozornění.
             window.alert(
                 "Diagram se nepodařilo exportovat do PNG."
+            );
+        }
+    };
+
+
+    /**
+     * Exports the current finance hierarchy into a formatted XLSX workbook.
+     *
+     * The generated report preserves the hierarchical order, adds Excel
+     * outline levels, formats amounts as Czech currency and includes
+     * percentages relative to the parent finance and exported root finance.
+     *
+     * @async
+     *
+     * @returns {Promise<void>}
+     * Promise resolved after the workbook has been generated and downloaded.
+     */
+    const exportDiagramToExcel = async () => {
+        // Bez kořenové finance není možné vytvořit obsah reportu.
+        if (!item) {
+            return;
+        }
+
+        try {
+            const excelRows = buildExcelRows(item);
+            const workbook = new ExcelJS.Workbook();
+
+            workbook.creator = "FinanceGQLModel";
+            workbook.lastModifiedBy = "FinanceGQLModel";
+            workbook.created = new Date();
+            workbook.modified = new Date();
+
+            const worksheet = workbook.addWorksheet(
+                EXCEL_SHEET_NAME,
+                {
+                    properties: {
+                        defaultRowHeight: 20
+                    }
+                }
+            );
+
+            worksheet.addRow([
+                "Úroveň",
+                "Název finance",
+                "Částka",
+                "Nadřazená finance",
+                "Počet subfinancí",
+                "% z nadřazené finance",
+                "% z celkové finance"
+            ]);
+
+            excelRows.forEach((financeRow) => {
+                worksheet.addRow([
+                    financeRow.level,
+                    financeRow.name,
+                    financeRow.value,
+                    financeRow.parentName || "-",
+                    financeRow.childrenCount,
+                    financeRow.parentPercentage,
+                    financeRow.totalPercentage
+                ]);
+            });
+
+            formatExcelWorksheet(worksheet, excelRows);
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const safeName = createSafeFileName(
+                getNodeLabel(item),
+                "FinanceReport"
+            );
+
+            downloadExcelBuffer(
+                buffer,
+                `${safeName}.xlsx`
+            );
+        } catch (error) {
+            console.error(
+                "Finance se nepodařilo exportovat do Excelu:",
+                error
+            );
+
+            window.alert(
+                "Finance se nepodařilo exportovat do Excelu."
             );
         }
     };
@@ -1071,14 +1433,29 @@ export const SunburstDiagram = ({
                 )}
             </div>
 
-            {/* Ovládací prvek pro export aktuální vizualizace do PNG. */}
-            <div className="d-flex justify-content-center mt-3">
+            {/* Ovládací prvky pro export vizualizace a stromového reportu. */}
+            <div
+                className={
+                    "d-flex justify-content-center " +
+                    "gap-2 flex-wrap mt-3"
+                }
+            >
+                {/* Exportuje právě vykreslený diagram jako obrázek PNG. */}
                 <button
                     type="button"
                     className="btn btn-outline-primary"
                     onClick={exportDiagramToPng}
                 >
                     Export diagramu do PNG
+                </button>
+
+                {/* Exportuje finanční hierarchii do formátovaného XLSX reportu. */}
+                <button
+                    type="button"
+                    className="btn btn-outline-success"
+                    onClick={exportDiagramToExcel}
+                >
+                    Export struktury do Excelu
                 </button>
             </div>
         </CardCapsule>

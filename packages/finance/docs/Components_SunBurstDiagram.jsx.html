@@ -41,6 +41,9 @@ import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsu
 // Import funkce pro převod SVG diagramu na PNG obrázek.
 import { toPng } from "html-to-image";
 
+// Import knihovny ExcelJS pro vytvoření formátovaného XLSX reportu.
+import ExcelJS from "exceljs";
+
 
 /**
  * Color palette used cyclically for Sunburst sectors.
@@ -373,6 +376,283 @@ const getNodeChildren = (node) => {
 };
 
 
+
+/**
+ * Name of the worksheet created during finance hierarchy export.
+ *
+ * @constant
+ * @type {string}
+ */
+// Název listu zobrazeného v exportovaném Excel souboru.
+const EXCEL_SHEET_NAME = "Finance";
+
+
+/**
+ * Excel number format used for values expressed in Czech crowns.
+ *
+ * @constant
+ * @type {string}
+ */
+// Formát zobrazuje oddělovače tisíců, dvě desetinná místa a měnu Kč.
+const EXCEL_CURRENCY_FORMAT =
+    '#,##0.00" Kč"';
+
+
+/**
+ * Excel number format used for percentage values.
+ *
+ * @constant
+ * @type {string}
+ */
+// Formát procent zobrazuje hodnotu se dvěma desetinnými místy.
+const EXCEL_PERCENT_FORMAT = "0.00%";
+
+
+/**
+ * Maximum outline level supported by Microsoft Excel.
+ *
+ * @constant
+ * @type {number}
+ */
+// Excel podporuje nejvýše osm úrovní osnovy označených čísly 0 až 7.
+const MAX_EXCEL_OUTLINE_LEVEL = 7;
+
+
+/**
+ * Creates a file-system-safe name from a finance label.
+ *
+ * Diacritical marks and unsupported characters are removed so that the
+ * resulting value can be used safely as a downloaded file name.
+ *
+ * @param {string} value
+ * Original finance label.
+ *
+ * @param {string} [fallback="FinanceReport"]
+ * Fallback name used when the normalized value is empty.
+ *
+ * @returns {string}
+ * Safe file name without an extension.
+ */
+// Vytvoří bezpečný název souboru společný pro PNG i XLSX export.
+const createSafeFileName = (
+    value,
+    fallback = "FinanceReport"
+) => {
+    const safeName = String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9_-]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+
+    return safeName || fallback;
+};
+
+
+/**
+ * Converts a hierarchical finance structure into rows suitable for Excel.
+ *
+ * Every row includes the hierarchy level, finance name, amount, parent name,
+ * number of direct children, percentage of the parent and percentage of the
+ * exported root finance.
+ *
+ * @param {Object} root
+ * Root finance entity.
+ *
+ * @returns {Array&lt;Object>}
+ * Flattened finance hierarchy in depth-first order.
+ */
+// Převede strom financí na řádky zachovávající pořadí a hloubku hierarchie.
+const buildExcelRows = (root) => {
+    const rows = [];
+    const rootValue = Number(root?.value) || 0;
+
+    // Rekurzivně projde finance a všechny jejich podřízené položky.
+    const walk = (
+        node,
+        level = 0,
+        parentNode = null
+    ) => {
+        if (!node || typeof node !== "object") {
+            return;
+        }
+
+        const children = getNodeChildren(node);
+        const value = Number(node?.value) || 0;
+        const parentValue = Number(parentNode?.value) || 0;
+
+        const parentPercentage =
+            parentNode === null
+                ? 1
+                : parentValue !== 0
+                    ? value / parentValue
+                    : 0;
+
+        const totalPercentage =
+            rootValue !== 0
+                ? value / rootValue
+                : 0;
+
+        rows.push({
+            node,
+            level,
+            name: getNodeLabel(node),
+            value,
+            parentName:
+                parentNode
+                    ? getNodeLabel(parentNode)
+                    : "",
+            childrenCount: children.length,
+            parentPercentage,
+            totalPercentage
+        });
+
+        children.forEach((child) => {
+            walk(child, level + 1, node);
+        });
+    };
+
+    walk(root);
+    return rows;
+};
+
+
+/**
+ * Applies visual formatting and outline levels to the exported worksheet.
+ *
+ * @param {Object} worksheet
+ * ExcelJS worksheet being formatted.
+ *
+ * @param {Array&lt;Object>} rows
+ * Flattened finance rows previously added to the worksheet.
+ *
+ * @returns {void}
+ */
+// Nastaví styly, šířky sloupců, filtry, zamrznutí záhlaví a stromovou osnovu.
+const formatExcelWorksheet = (worksheet, rows) => {
+    worksheet.views = [
+        {
+            state: "frozen",
+            ySplit: 1
+        }
+    ];
+
+    worksheet.autoFilter = {
+        from: "A1",
+        to: "G1"
+    };
+
+    worksheet.columns = [
+        { key: "level", width: 10 },
+        { key: "name", width: 44 },
+        { key: "value", width: 20 },
+        { key: "parentName", width: 36 },
+        { key: "childrenCount", width: 18 },
+        { key: "parentPercentage", width: 18 },
+        { key: "totalPercentage", width: 18 }
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 24;
+    headerRow.font = {
+        bold: true,
+        color: { argb: "FFFFFFFF" }
+    };
+    headerRow.alignment = {
+        vertical: "middle",
+        horizontal: "center"
+    };
+    headerRow.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1F4E78" }
+    };
+
+    rows.forEach((financeRow, index) => {
+        const excelRow = worksheet.getRow(index + 2);
+        const outlineLevel = Math.min(
+            financeRow.level,
+            MAX_EXCEL_OUTLINE_LEVEL
+        );
+
+        excelRow.outlineLevel = outlineLevel;
+        excelRow.alignment = { vertical: "middle" };
+        excelRow.getCell(2).alignment = {
+            vertical: "middle",
+            horizontal: "left",
+            indent: outlineLevel
+        };
+        excelRow.getCell(3).numFmt = EXCEL_CURRENCY_FORMAT;
+        excelRow.getCell(6).numFmt = EXCEL_PERCENT_FORMAT;
+        excelRow.getCell(7).numFmt = EXCEL_PERCENT_FORMAT;
+
+        if (
+            financeRow.level === 0 ||
+            financeRow.childrenCount > 0
+        ) {
+            excelRow.font = { bold: true };
+        }
+
+        if (financeRow.level === 0) {
+            excelRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD9EAF7" }
+            };
+        }
+
+        if (
+            financeRow.level > 0 &amp;&amp;
+            index % 2 === 1
+        ) {
+            excelRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFF7F7F7" }
+            };
+        }
+    });
+
+    worksheet.properties.outlineProperties = {
+        summaryBelow: false,
+        summaryRight: false
+    };
+};
+
+
+/**
+ * Triggers a browser download of binary workbook data.
+ *
+ * @param {ArrayBuffer} buffer
+ * Generated XLSX workbook data.
+ *
+ * @param {string} fileName
+ * Name of the downloaded file.
+ *
+ * @returns {void}
+ */
+// Vytvoří Blob a dočasný odkaz, kterým prohlížeč stáhne XLSX soubor.
+const downloadExcelBuffer = (buffer, fileName) => {
+    const blob = new Blob(
+        [buffer],
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    const objectUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = objectUrl;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+
+    URL.revokeObjectURL(objectUrl);
+};
+
+
 /**
  * Transforms a hierarchical finance structure into flat Sunburst sectors.
  *
@@ -680,11 +960,10 @@ export const SunburstDiagram = ({
             );
 
             // Bezpečné vytvoření názvu souboru z názvu aktuální finance.
-            const safeName = getNodeLabel(item)
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9_-]+/g, "_")
-                .replace(/^_+|_+$/g, "");
+            const safeName = createSafeFileName(
+                getNodeLabel(item),
+                "FinanceDiagram"
+            );
 
             // Vytvoření dočasného odkazu pro stažení vygenerovaného obrázku.
             const downloadLink =
@@ -707,6 +986,89 @@ export const SunburstDiagram = ({
             // Uživateli se zobrazí srozumitelné upozornění.
             window.alert(
                 "Diagram se nepodařilo exportovat do PNG."
+            );
+        }
+    };
+
+
+    /**
+     * Exports the current finance hierarchy into a formatted XLSX workbook.
+     *
+     * The generated report preserves the hierarchical order, adds Excel
+     * outline levels, formats amounts as Czech currency and includes
+     * percentages relative to the parent finance and exported root finance.
+     *
+     * @async
+     *
+     * @returns {Promise&lt;void>}
+     * Promise resolved after the workbook has been generated and downloaded.
+     */
+    const exportDiagramToExcel = async () => {
+        // Bez kořenové finance není možné vytvořit obsah reportu.
+        if (!item) {
+            return;
+        }
+
+        try {
+            const excelRows = buildExcelRows(item);
+            const workbook = new ExcelJS.Workbook();
+
+            workbook.creator = "FinanceGQLModel";
+            workbook.lastModifiedBy = "FinanceGQLModel";
+            workbook.created = new Date();
+            workbook.modified = new Date();
+
+            const worksheet = workbook.addWorksheet(
+                EXCEL_SHEET_NAME,
+                {
+                    properties: {
+                        defaultRowHeight: 20
+                    }
+                }
+            );
+
+            worksheet.addRow([
+                "Úroveň",
+                "Název finance",
+                "Částka",
+                "Nadřazená finance",
+                "Počet subfinancí",
+                "% z nadřazené finance",
+                "% z celkové finance"
+            ]);
+
+            excelRows.forEach((financeRow) => {
+                worksheet.addRow([
+                    financeRow.level,
+                    financeRow.name,
+                    financeRow.value,
+                    financeRow.parentName || "-",
+                    financeRow.childrenCount,
+                    financeRow.parentPercentage,
+                    financeRow.totalPercentage
+                ]);
+            });
+
+            formatExcelWorksheet(worksheet, excelRows);
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const safeName = createSafeFileName(
+                getNodeLabel(item),
+                "FinanceReport"
+            );
+
+            downloadExcelBuffer(
+                buffer,
+                `${safeName}.xlsx`
+            );
+        } catch (error) {
+            console.error(
+                "Finance se nepodařilo exportovat do Excelu:",
+                error
+            );
+
+            window.alert(
+                "Finance se nepodařilo exportovat do Excelu."
             );
         }
     };
@@ -1099,14 +1461,29 @@ export const SunburstDiagram = ({
                 )}
             &lt;/div>
 
-            {/* Ovládací prvek pro export aktuální vizualizace do PNG. */}
-            &lt;div className="d-flex justify-content-center mt-3">
+            {/* Ovládací prvky pro export vizualizace a stromového reportu. */}
+            &lt;div
+                className={
+                    "d-flex justify-content-center " +
+                    "gap-2 flex-wrap mt-3"
+                }
+            >
+                {/* Exportuje právě vykreslený diagram jako obrázek PNG. */}
                 &lt;button
                     type="button"
                     className="btn btn-outline-primary"
                     onClick={exportDiagramToPng}
                 >
                     Export diagramu do PNG
+                &lt;/button>
+
+                {/* Exportuje finanční hierarchii do formátovaného XLSX reportu. */}
+                &lt;button
+                    type="button"
+                    className="btn btn-outline-success"
+                    onClick={exportDiagramToExcel}
+                >
+                    Export struktury do Excelu
                 &lt;/button>
             &lt;/div>
         &lt;/CardCapsule>
@@ -1126,13 +1503,13 @@ void getNodeUrl;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#EXCEL_CURRENCY_FORMAT">EXCEL_CURRENCY_FORMAT</a></li><li><a href="global.html#EXCEL_PERCENT_FORMAT">EXCEL_PERCENT_FORMAT</a></li><li><a href="global.html#EXCEL_SHEET_NAME">EXCEL_SHEET_NAME</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MAX_EXCEL_OUTLINE_LEVEL">MAX_EXCEL_OUTLINE_LEVEL</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildExcelRows">buildExcelRows</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#createSafeFileName">createSafeFileName</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#downloadExcelBuffer">downloadExcelBuffer</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatExcelWorksheet">formatExcelWorksheet</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 14:27:02 GMT+0200 (středoevropský letní čas)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 20:14:24 GMT+0200 (středoevropský letní čas)
 </footer>
 
 <script> prettyPrint(); </script>

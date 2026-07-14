@@ -1,5 +1,30 @@
 # Deníček změn
 
+## 14.7.2026
+**Co bylo změněno**
+- Finalizována dokumentace projektu pomocí JSDoc v celém modulu `finance`, doplněny chybějící komentáře a sjednocen styl dokumentace.
+- Doplněny průběžné komentáře (`//`) do zdrojových souborů pro lepší orientaci v implementaci.
+- Rozšířena komponenta `SunburstDiagram` o export hierarchie financí do formátu PNG.
+- Implementován export hierarchie financí do formátu XLSX včetně zachování stromové struktury, částek, úrovní zanoření a procentuálního zastoupení.
+- Upraveno automatické propojení financí přes soubory `MediumContent.jsx` a `Fragments.jx` s projekty na základě struktury pracovních balíčků (WP).
+- Vylepšeny tooltipy v grafických komponentech pro přehlednější zobrazení informací.
+- Dokončeny úpravy oprávnění (RBAC) napříč komponentami pro vytváření, editaci a mazání financí zejména v souboru `Table.jsx`.
+- Provedeny průběžné refaktoringy komponent, sjednocení názvů proměnných, úpravy importů a zpřehlednění zdrojového kódu.
+
+**Co jsme objevili**
+- Automatické párování financí s projekty bylo nutné řešit podle struktury pracovních balíčků (WP), protože vazba nebyla vždy dostupná přímo z backendu.
+- Export stromové struktury do Excelu vyžadoval rekurzivní průchod celou hierarchií financí a vlastní generování tabulky.
+- Při tvorbě dokumentace bylo potřeba sjednotit styl komentářů a doplnit dokumentaci i do menších pomocných komponent.
+
+**Problém**
+- Backend neposkytuje některé vazby a operace přímo, proto bylo nutné část logiky implementovat na straně frontendu.
+- Export stromové struktury nebyl součástí původní implementace a bylo potřeba navrhnout vlastní řešení zachovávající hierarchii dat.
+
+**Řešení**
+- Byla doplněna klientská logika pro automatické dohledávání propojených projektů a zpracování hierarchie financí.
+- Implementovány exporty do formátů PNG a XLSX včetně formátování výstupních dat.
+- Dokončena dokumentace projektu, sjednoceny komentáře a finalizována struktura zdrojového kódu před odevzdáním
+
 ## 13.7.2026
 **Co bylo změněno**
 - Sjednocena dokumentace hlavních komponent pomocí JSDoc.
@@ -237,6 +262,7 @@
 ## Časová osa commitů
 | Datum | Hlavní změna | Stručný popis |
 |---|---|---|
+| 14.7.2026 | Finalizace modulu Finance | Dokončení dokumentace, exportů, propojení projektů a uživatelských úprav. |
 | 13.7.2026 | JSDoc dokumentace | Tvorba kompletní HTML dokumentace `docs` pro klíčové komponenty. |
 | 28.6.2026 | Vytvoření store | Úprava komentářů a vylepšení samotné logiky přesunů pomocí `Store.js`. | 
 | 26.6.2026 | Formátování a komentáře | Editace všech souborů v rámci našeho FinaceGQL Modelu. |
