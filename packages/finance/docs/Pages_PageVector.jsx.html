@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Pages/PageVector.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Pages/PageVector.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Importuje výchozí asynchronní síťovou akci (thunk) pro načítání stránek dat ze souboru Queries
+import { ReadPageAsyncAction } from "../Queries";
+
+// Importuje vlastní hook useInfiniteScroll z dynamického úložiště pro správu nekonečného načítání dat
+import { useInfiniteScroll } from "../../../../dynamic/src/Hooks/useInfiniteScroll";
+
+// Importuje základní komponentu stránky (PageBase) pro sjednocení vzhledu layoutu
+import { PageBase } from "./PageBase";
+
+// Importuje lokální komponentu tabulky (Table) pro klientské zobrazení načtených řádků
+import { Table } from "../Components/Table";
+
+// Importuje lokální kontejnerovou komponentu filtru (Filter) zastřešující formulářová pole
+import { Filter } from "../Components/Filter";
+
+// Importuje systémová tlačítka pro aplikaci a resetování filtrů ze sdílené šablony formulářových prvků
+import { FilterButton, ResetFilterButton } from "../../../../_template/src/Base/FormControls/Filter";
+
+// Importuje hook useSearchParams z react-router pro reaktivní čtení a zápis query parametrů v URL
+import { useSearchParams } from "react-router";
+
+// Importuje hook useEffect z knihovny React pro zachytávání změn filtrů a synchronizaci s API
+import { useEffect } from "react";
+
+// Importuje hook useMemo z knihovny React pro optimalizaci parsování filtrů z URL
+import { useMemo } from "react";
+
+// Importuje pomocnou vizuální komponentu AsyncStateIndicator pro zobrazení stavů nahrávání a chyb
+import { AsyncStateIndicator } from "../../../../_template/src/Base/Helpers/AsyncStateIndicator";
+
+// Importuje komponentu Collapsible zajišťující sbalování a rozbalování obsahu (např. editačního filtru)
+import { Collapsible } from "../../../../_template/src/Base/FormControls/Collapsible";
+
+/**
+ * Safely parses a JSON filter object stored in URL search parameters.
+ *
+ * The function reads the specified query parameter, attempts to parse it
+ * as JSON and returns the resulting object. Invalid, missing or malformed
+ * values result in `null` instead of throwing an exception.
+ *
+ * @param {URLSearchParams} sp
+ * URL search parameters.
+ *
+ * @param {string} [paramName="where"]
+ * Name of the query parameter containing the serialized filter.
+ *
+ * @returns {Object|null}
+ * Parsed filter object or `null` when no valid filter is available.
+ */
+// Pomocná funkce pro bezpečné vytažení a naparsování JSON objektu filtru (where) z URL adresy
+function safeParseWhere(sp, paramName = "where") {
+    
+    // Načte surový textový řetězec z URL parametru podle zadaného názvu klíče
+    const raw = sp.get(paramName);
+    
+    // Pokud parametr v URL neexistuje, vrátí rovnou null
+    if (!raw) return null;
+    
+    // Blok try-catch bezpečně ošetřuje situaci, kdy by v URL byl nevalidní JSON řetězec
+    try {
+        
+        // Pokusí se převést surový text na JavaScriptový objekt
+        const obj = JSON.parse(raw);
+        
+        // Ověří, zda je výsledek validní non-null objekt, a vrátí ho, jinak předá null
+        return obj &amp;&amp; typeof obj === "object" ? obj : null;
+        
+    } catch {
+        
+        // V případě selhání syntaktické analýzy JSONu potlačí chybu a vrátí null
+        return null;
+    } // Konec bloku try-catch
+} // Konec definice funkce safeParseWhere
+
+/**
+ * Name of the URL search parameter used for storing the serialized filter.
+ *
+ * @constant
+ * @type {string}
+ */
+// Definuje fixní název query parametru v URL, pod kterým bude struktura filtru uložena (např. ?gr_where={...})
+const filterParameterName = "gr_where";
+
+/**
+ * Displays a paginated list of finance entities with filtering support.
+ *
+ * The component combines the finance filter, infinite scrolling,
+ * asynchronous data loading and table rendering into a single page.
+ * Filter values are synchronized with the URL, allowing the current
+ * search state to be shared and restored.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional additional content rendered by the page.
+ *
+ * @param {Function} [props.queryAsyncAction=ReadPageAsyncAction]
+ * Asynchronous GraphQL action used to load pages of finance entities.
+ *
+ * @returns {JSX.Element}
+ * Finance list page with filtering and infinite scrolling.
+ *
+ * @example
+ * &lt;PageVector />
+ */
+// Definuje a exportuje komponentu PageVector, která reprezentuje celostránkový přehled kolekce dat
+export const PageVector = ({ children, queryAsyncAction = ReadPageAsyncAction }) => {
+    
+    // Získává objekt aktuálních vyhledávacích parametrů z URL adresy prohlížeče
+    const [sp] = useSearchParams();
+
+    // Memoizuje naparsovaný objekt filtru z URL; přepočítá se pouze tehdy, pokud se změní textový řetězec celého URL search parametru
+    const whereFromUrl = useMemo(() => safeParseWhere(sp, filterParameterName), [sp.toString()]);
+
+    // Inicializuje hook nekonečného scrollování, předává mu síťovou akci a výchozí meze s aplikovaným filtrem
+    const { items, loading, error, hasMore, sentinelRef, loadMore, restart } = useInfiniteScroll(
+        {
+            asyncAction: queryAsyncAction, // Thunk akce pro načtení konkrétní stránky
+            actionParams: { skip: 0, limit: 25, where: whereFromUrl }, // Výchozí parametry pro iniciální dotaz
+            // reset: whereFromUrl // Zakomentovaný parametr pro automatický reset hooku
+        }
+    ); // Konec inicializace useInfiniteScroll
+
+    // Sleduje změny filtru v URL; jakmile uživatel filtr změní, vymaže stávající data a restartuje načítání od nultého prvku
+    useEffect(() => {
+        
+        // Sestaví nový čistý objekt parametrů s vynulovaným offsetem stránkování (skip)
+        const params = { skip: 0, limit: 25, where: whereFromUrl };
+        
+        // Vyvolá restartovací metodu z useInfiniteScroll pro spuštění nového čistého dotazu na API
+        restart(params);
+        
+    }, [whereFromUrl]); // Závislostí efektu je změna naparsovaného objektu filtru
+
+    // Vrací JSX strukturu přehledové stránky
+    return (
+        &lt;PageBase>
+            {/* Sbalitelný kontejner filtru s nastavením tlačítek pro rozbalení/skrytí a Bootstrap třídami */}
+            &lt;Collapsible 
+                className="form-control btn btn-outline-primary" // CSS styl tlačítka skládání
+                buttonLabelCollapsed="Zobrazit filtr" // Text tlačítka v zavřeném stavu
+                buttonLabelExpanded="Skrýt filtr" // Text tlačítka v otevřeném stavu
+            >
+                {/* Vnitřní kontejner filtru shromažďující formulářové ovládací prvky */}
+                &lt;Filter>
+                    {/* Tlačítko, které po stisku vezme data z filtrů a uloží je jako JSON do URL parametru */}
+                    &lt;FilterButton 
+                        className="form-control btn btn-outline-success" // Zelený Bootstrap vzhled
+                        paramName={filterParameterName} // Propojení na definovaný název URL parametru
+                    >
+                        Filtrovat
+                    &lt;/FilterButton>
+                    
+                    {/* Tlačítko, které kompletně vymaže zadaný JSON filtr z URL adresy prohlížeče */}
+                    &lt;ResetFilterButton 
+                        className="form-control btn btn-warning" // Žlutý Bootstrap vzhled
+                        paramName={filterParameterName} // Propojení na definovaný název URL parametru
+                    >
+                        Vymazat filtr
+                    &lt;/ResetFilterButton>
+                &lt;/Filter>
+            &lt;/Collapsible>
+
+            {/* Vykresluje tabulku a předává jí pole aktuálně nastřádaných položek (items) z infinite scrollu */}
+            &lt;Table data={items} />
+
+            {/* Indikátor asynchronního stavu: stará se o zobrazení spinneru, chyb nebo textu "Nahrávám další..." při dotazu na pozadí */}
+            &lt;AsyncStateIndicator error={error} loading={loading} text="Nahrávám další..." />
+
+            {/* Hlídací element (sentinel): pokud je viditelný na obrazovce a existují další data, IntersectionObserver v hooku automaticky spustí loadMore */}
+            {hasMore &amp;&amp; &lt;div ref={sentinelRef} style={{ height: 80, backgroundColor: "lightgray" }} />}
+            
+            {/* Záložní manuální tlačítko: pokud automatické načtení přes sentinel selže nebo uživatel nechce čekat, vyvolá loadMore ručně */}
+            {hasMore &amp;&amp; &lt;button className="btn btn-success form-control" onClick={() => loadMore()}>Více&lt;/button>}
+        &lt;/PageBase>
+    ); // Konec návratové hodnoty JSX struktury
+}; // Konec definice komponenty PageVector</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 14:27:02 GMT+0200 (středoevropský letní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

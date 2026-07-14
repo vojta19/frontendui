@@ -1,31 +1,49 @@
+// Importuje React hooks pro práci se stavem, efekty a memoizací.
 import {
     useCallback,
     useEffect,
     useMemo
 } from "react";
 
+// Importuje hook pro čtení parametrů z routeru.
 import { useParams } from "react-router";
+
+// Importuje hook pro přístup k Redux stavu.
 import { useSelector } from "react-redux";
 
+// Importuje selektor pro přístup k seznamu finančních převodů.
 import { selectFinanceTransfers } from "../Store/FinanceTransferSlice";
+
+// Importuje hook pro spuštění asynchronních thunk akcí.
 import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
+
+// Importuje hook pro získání GraphQL typu a jeho definic.
 import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType";
 
+// Importuje asynchronní akci pro načtení stránky finančních převodů.
 import {
     FinanceTransferPageAsyncAction
 } from "../Queries/FinanceTransferPageAsyncAction";
+
+// Importuje základní asynchronní akci pro čtení entity.
 import { ReadAsyncAction } from "../Queries";
 
+// Importuje komponentu pro zobrazení Sunburst grafu převodů.
 import {
     FinanceTransferSunburst
 } from "../Components/FinanceTransferSunburst";
 
+// Importuje základní kartu pro zobrazení entity.
 import {
     LargeCard
 } from "../../../../_template/src/Base/Components/LargeCard";
+
+// Importuje komponentu pro kapsulu s kartou.
 import {
     CardCapsule
 } from "../../../../_template/src/Base/Components/CardCapsule";
+
+// Importuje komponenty pro zobrazení skalárních a vektorových atributů.
 import {
     MediumCardScalars,
     ScalarAttribute
@@ -34,15 +52,23 @@ import {
     MediumCardVectors,
     VectorAttribute
 } from "../../../../_template/src/Base/Vectors/VectorAttribute";
+
+// Importuje provider a hook pro práci s GraphQL kontextem entity.
 import {
     AsyncActionProvider,
     useGQLEntityContext
 } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
+
+// Importuje layoutové komponenty pro řádky a sloupce.
 import { Row } from "../../../../_template/src/Base/Components/Row";
 import { Col } from "../../../../_template/src/Base/Components/Col";
+
+// Importuje helper pro pravý roh karty z shared balíčku.
 import {
     SimpleCardCapsuleRightCorner
 } from "@hrbolek/uoisfrontend-shared";
+
+// Importuje tlačítko pro kopírování textu.
 import {
     CopyButton
 } from "../../../../_template/src/Base/Components/CopyButton";
@@ -60,6 +86,7 @@ import {
  * @returns {string|null}
  * Source finance identifier, or `null` when it cannot be resolved.
  */
+// Vybere identifikátor zdrojové finance z různých možných formátů dat.
 const getTransferSourceId = (transfer) => {
     return (
         transfer?.financeSourceId ??
@@ -82,6 +109,7 @@ const getTransferSourceId = (transfer) => {
  * @returns {string|null}
  * Destination finance identifier, or `null` when it cannot be resolved.
  */
+// Vybere identifikátor cílové finance z různých možných formátů dat.
 const getTransferDestinationId = (transfer) => {
     return (
         transfer?.financeDestinationId ??
@@ -107,6 +135,7 @@ const getTransferDestinationId = (transfer) => {
  * @returns {Object|null}
  * Normalized transfer, or `null` when the input is invalid.
  */
+// Zajistí jednotný formát převodu pro další zpracování.
 const normalizeTransfer = (transfer) => {
     if (!transfer || typeof transfer !== "object") {
         return null;
@@ -151,6 +180,7 @@ const normalizeTransfer = (transfer) => {
  * @returns {Object[]}
  * Unique normalized transfers found in the hierarchy.
  */
+// Projde celou hierarchii a sesbírá všechny převody.
 const collectTransfers = (item) => {
     const transfers = [];
     const visitedNodes = new Set();
@@ -213,21 +243,22 @@ const collectTransfers = (item) => {
 
 
 /**
- * Applies transfers to a finance hierarchy and recalculates finance values.
+ * Recursively recalculates finance values according to transfer records.
  *
- * Each finance receives its original value minus outgoing transfers plus
- * incoming transfers. Child finance collections are processed recursively.
- * Input objects are not mutated.
+ * Every finance entity is adjusted by subtracting all outgoing transfers
+ * and adding all incoming transfers. Child finance entities are processed
+ * recursively and the original input objects remain unchanged.
  *
  * @param {Object[]} [finances=[]]
- * Finance nodes to recalculate.
+ * Finance entities to recalculate.
  *
  * @param {Object[]} [transfers=[]]
- * Normalized finance transfers.
+ * Collection of normalized finance transfers.
  *
  * @returns {Object[]}
- * Recalculated finance hierarchy.
+ * New finance hierarchy with recalculated values.
  */
+// Aplikuje převody na strom financí a vrátí novou strukturu.
 const applyTransfersToFinanceTree = (
     finances = [],
     transfers = []
@@ -273,17 +304,21 @@ const applyTransfersToFinanceTree = (
 
 
 /**
- * Creates a finance item whose child values reflect the supplied transfers.
+ * Creates a patched finance entity with recalculated child finance values.
+ *
+ * The supplied finance transfers are normalized and applied to the finance
+ * hierarchy. The original finance entity is not modified.
  *
  * @param {Object|null|undefined} item
  * Root finance entity.
  *
  * @param {Object[]} [localTransfers=[]]
- * Transfers to normalize and apply.
+ * Finance transfers applied to the hierarchy.
  *
  * @returns {Object|null|undefined}
- * Patched finance entity, or the original invalid value.
+ * Patched finance entity or the original value when no entity is supplied.
  */
+// Vytvoří kopii financí s přepočítanými hodnotami podřízených položek.
 const patchFinanceItem = (
     item,
     localTransfers = []
@@ -315,6 +350,7 @@ const patchFinanceItem = (
  * @returns {Set<string>}
  * Set containing identifiers of the root and all descendant finances.
  */
+// Projde hierarchii a sesbírá všechny identifikátory financí.
 const collectFinanceIds = (finance) => {
     const ids = new Set();
 
@@ -347,6 +383,7 @@ const collectFinanceIds = (finance) => {
  * @returns {Map<string, string|null>}
  * Map whose keys are finance IDs and values are parent finance IDs.
  */
+// Sestaví mapu rodičovských vztahů pro kontrolu struktury hierarchie.
 const buildParentMap = (finance) => {
     const parentById = new Map();
 
@@ -387,6 +424,7 @@ const buildParentMap = (finance) => {
  * @returns {boolean}
  * `true` when `ancestorId` is found in the parent chain of `childId`.
  */
+// Zkontroluje, zda je jedna finance předkem jiné v hierarchii.
 const isAncestor = (
     ancestorId,
     childId,
@@ -423,6 +461,7 @@ const isAncestor = (
  * @returns {Object[]}
  * Relevant unique transfers.
  */
+// Odfiltruje převody, které nepatří do aktuální hierarchie.
 const filterRelevantTransfers = (
     transfers,
     item
@@ -504,9 +543,10 @@ const filterRelevantTransfers = (
  * @returns {JSX.Element}
  * Finance visualization and vector attributes.
  */
+// Hlavní komponenta pro zobrazení financí s převody.
 export const GeneratedContentBase = ({
     item,
-    onTransferInserted = () => {}
+    onTransferInserted = () => { }
 }) => {
     const backendTransfers = useSelector(
         selectFinanceTransfers
@@ -529,6 +569,7 @@ export const GeneratedContentBase = ({
      * @async
      * @returns {Promise<void>}
      */
+    // Načte seznam převodů z backendu.
     const loadTransfers = useCallback(async () => {
         try {
             await runFinanceTransferPage({
@@ -544,6 +585,7 @@ export const GeneratedContentBase = ({
         }
     }, [runFinanceTransferPage]);
 
+    // Načte převody při prvním renderu komponenty.
     useEffect(() => {
         loadTransfers();
     }, [loadTransfers]);
@@ -566,13 +608,18 @@ export const GeneratedContentBase = ({
     }, [item, backendTransfers]);
 
     /**
-     * Reloads backend transfer data after a successful transfer insertion.
-     *
-     * @param {Object} transfer
-     * Newly created finance transfer.
-     *
-     * @returns {Promise<void>}
-     */
+ * Handles successful finance transfer insertion.
+ *
+ * After a transfer is created, the backend data are reloaded and the
+ * optional callback supplied by the parent component is invoked.
+ *
+ * @async
+ *
+ * @param {Object} transfer
+ * Newly created finance transfer.
+ *
+ * @returns {Promise<void>}
+ */
     const handleTransferInserted = async (transfer) => {
         await loadTransfers();
         await onTransferInserted?.(transfer);
@@ -629,6 +676,7 @@ export const GeneratedContentBase = ({
  * @returns {JSX.Element}
  * Composed finance entity page.
  */
+// Komponenta pro sestavení vnitřní struktury stránky entity.
 const PageItemInnerStructure = ({
     PageNavbar = null,
     ItemLayout = LargeCard,
@@ -715,6 +763,7 @@ const PageItemInnerStructure = ({
  * @returns {JSX.Element}
  * GraphQL-backed finance entity page.
  */
+// Komponenta pro vytvoření provideru a struktury detailu entity.
 export const PageItemBase = ({
     queryAsyncAction = ReadAsyncAction,
     PageNavbar = () => null,
@@ -771,6 +820,7 @@ export const PageItemBase = ({
  * @returns {JSX.Element}
  * Content of the selected finance page mode.
  */
+// Komponenta pro vykreslení obsahu stránky podle akce v trase.
 export const PageContent = ({
     queryById,
     queryVector,
@@ -953,6 +1003,7 @@ export const PageContent = ({
  * @returns {JSX.Element}
  * Dynamic GraphQL entity page or an unsupported-type message.
  */
+// Komponenta pro zobrazení kořenové stránky financí.
 export const Page = ({
     children
 }) => {

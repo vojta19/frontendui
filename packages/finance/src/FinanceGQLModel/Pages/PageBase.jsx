@@ -1,68 +1,137 @@
-// Importuje výchozí asynchronní síťovou akci (thunk) pro načítání dat záznamu ze souboru Queries
+// Importuje výchozí asynchronní akci pro načtení detailu entity.
 import { ReadAsyncAction } from "../Queries";
 
-// Importuje základní komponentu stránky ze šablony a dává jí alias PageItemBase_ kvůli zamezení kolizí jmen
+// Importuje základní komponentu detailní stránky ze sdílené šablony
+// a přejmenovává ji na PageItemBase_, aby nedošlo ke kolizi názvů.
 import { PageItemBase as PageItemBase_ } from "../../../../_template/src/Base/Pages/Page";
 
-// Importuje vizuální komponentu velké karty (LargeCard) z lokálního adresáře Components
+// Importuje výchozí rozložení detailní stránky finance.
 import { LargeCard } from "../Components";
 
+
 /**
- * Base wrapper pro stránky pracující s jedním entity itemem podle `:id` z routy.
+ * Základní obalová komponenta pro detailní stránky jedné finanční entity.
  *
- * Komponenta:
- * - načte `id` z URL přes `useParams()`
- * - sestaví minimální `item` objekt `{ id }`
- * - poskytne jej přes `AsyncActionProvider`, který zajistí načtení entity pomocí `queryAsyncAction`
- * - vloží do stránky navbar přes `PlaceChild Component={PageNavbar}`
- * - vyrenderuje `children` uvnitř provideru (tj. až v kontextu načtené entity)
+ * Komponenta rozšiřuje sdílenou implementaci `PageItemBase` a nastavuje
+ * výchozí konfiguraci používanou v modulu Finance:
  *
- * Typické použití je jako obálka routy typu `/.../:id`, kde vnořené komponenty
- * (detail, editace, akce) používají kontext z `AsyncActionProvider`.
+ * - `ReadAsyncAction` pro načtení entity,
+ * - `LargeCard` jako hlavní rozložení stránky,
+ * - prázdnou navigační komponentu,
+ * - volitelnou podstránku.
+ *
+ * Načtení parametru `id`, vytvoření výchozího objektu entity a práce
+ * s `AsyncActionProvider` jsou řešeny uvnitř sdílené komponenty
+ * `PageItemBase_`.
  *
  * @component
- * @param {object} props
- * @param {import("react").ReactNode} props.children
- * Obsah stránky, který se má vyrenderovat uvnitř `AsyncActionProvider`.
- * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
- * Async action (např. thunk) použitá pro načtení entity z GraphQL endpointu.
- * Dostane `item` s `id` (a případně další parametry podle implementace provideru).
  *
- * @returns {import("react").JSX.Element}
- * Provider s navigací (`PageNavbar`) a obsahem stránky (`children`).
+ * @param {Object} props
+ * Vlastnosti komponenty.
+ *
+ * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
+ * Asynchronní akce použitá pro načtení detailu entity.
+ *
+ * @param {React.ComponentType} [props.PageNavbar]
+ * Volitelná komponenta navigační lišty stránky.
+ *
+ * @param {React.ComponentType} [props.ItemLayout=LargeCard]
+ * Komponenta určující hlavní rozložení detailu entity.
+ *
+ * @param {React.ComponentType|null} [props.SubPage=null]
+ * Volitelná komponenta podstránky vykreslená uvnitř hlavního rozložení.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Dodatečný obsah předaný do základní komponenty stránky.
+ *
+ * @returns {JSX.Element}
+ * Detailní stránka finanční entity s nakonfigurovaným načítáním a layoutem.
+ *
+ * @example
+ * <PageItemBase>
+ *     <FinanceTransferSunburst />
+ * </PageItemBase>
  */
-// Definuje a exportuje komponentu PageItemBase s destrukturalizovanými props a jejich výchozími hodnotami ze šablony
-export const PageItemBase = ({ 
-    queryAsyncAction = ReadAsyncAction, // Výchozí thunk akce pro stažení dat položky
-    PageNavbar = () => null, // Výchozí anonymní funkce vracející null jako prázdný navbar
-    ItemLayout = LargeCard, // Výchozí layout karta obalující vnitřní komponenty
-    SubPage = null, // Výchozí podstránka (přiřazeno null)
-    ...props // Zachycuje všechny ostatní props (např. vnořené children) pro přeposlání
-}) => {
-    
-    // Vrací základní obalovou stránku ze šablony nakonfigurovanou podle předaných layoutů a thunků
-    return (
-        <PageItemBase_ 
-            queryAsyncAction={queryAsyncAction} // Předává thunk pro načtení dat
-            PageNavbar={PageNavbar} // Registruje komponentu navigační lišty
-            ItemLayout={ItemLayout} // Určuje obalový styl (velkou kartu)
-            SubPage={SubPage} // Předává podstránku
-            {...props} // Rozbaluje zbylé props (např. children) přímo na komponentu
-        />  
-    ); // Konec návratové hodnoty komponenty PageItemBase
-}; // Konec definice komponenty PageItemBase
+export const PageItemBase = ({
+    // Výchozí async akce pro načtení detailu finance.
+    queryAsyncAction = ReadAsyncAction,
 
-// Definuje a exportuje statickou komponentu PageBase pro jednoduché stránky bez asynchronního načítání na základě ID
-export const PageBase = ({ children, PageNavbar = () => null }) => {
-    
-    // Vrací JSX fragment skládající navigační lištu a samotný vnořený klientský obsah (children)
+    // Výchozí navigace nic nevykresluje.
+    PageNavbar = () => null,
+
+    // Výchozí layout detailní stránky.
+    ItemLayout = LargeCard,
+
+    // Výchozí podstránka není nastavena.
+    SubPage = null,
+
+    // Zachytí ostatní vlastnosti, například children.
+    ...props
+}) => {
+
+    // Vrací sdílenou detailní stránku nakonfigurovanou pro modul Finance.
+    return (
+        <PageItemBase_
+            // Async akce použitá pro načtení entity.
+            queryAsyncAction={queryAsyncAction}
+
+            // Navigační komponenta stránky.
+            PageNavbar={PageNavbar}
+
+            // Komponenta hlavního rozložení.
+            ItemLayout={ItemLayout}
+
+            // Volitelná podstránka.
+            SubPage={SubPage}
+
+            // Přeposlání ostatních vlastností.
+            {...props}
+        />
+    );
+};
+
+
+/**
+ * Jednoduchý statický obal stránky bez automatického načítání entity.
+ *
+ * Komponenta vykreslí volitelnou navigační lištu a následně obsah předaný
+ * prostřednictvím `children`.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Vlastnosti komponenty.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Obsah vykreslený pod navigační lištou.
+ *
+ * @param {React.ComponentType} [props.PageNavbar]
+ * Volitelná komponenta navigační lišty.
+ *
+ * @returns {JSX.Element}
+ * Statická stránka složená z navigace a vloženého obsahu.
+ *
+ * @example
+ * <PageBase>
+ *     <p>Obsah stránky</p>
+ * </PageBase>
+ */
+export const PageBase = ({
+    // Obsah stránky.
+    children,
+
+    // Výchozí navigační komponenta nic nevykresluje.
+    PageNavbar = () => null
+}) => {
+
+    // Vykreslení navigace a následně obsahu stránky.
     return (
         <>
-            {/* Vykresluje komponentu navigační lišty předanou v props */}
+            {/* Volitelná navigační lišta */}
             <PageNavbar />
-            
-            {/* Vykresluje jakýkoliv vnořený klientský obsah pod navigační lištou */}
+
+            {/* Obsah předaný z nadřazené komponenty */}
             {children}
         </>
-    ); // Konec návratové hodnoty fragmentu
-}; // Konec definice komponenty PageBase
+    );
+};

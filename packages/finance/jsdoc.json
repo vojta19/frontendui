@@ -3,8 +3,10 @@
     "include": [
       "./src/FinanceGQLModel/Components",
       "./src/FinanceGQLModel/Mutations",
-      "./src/FinanceGQLModel/Pages/Page.jsx",
-      "./src/FinanceGQLModel/Queries"
+      "./src/FinanceGQLModel/Queries",
+      "./src/FinanceGQLModel/Pages",
+      "./src/FinanceGQLModel/Scalars",
+      "./src/FinanceGQLModel/Vectors"
     ],
     "includePattern": ".+\\.(js|jsx)$",
     "excludePattern": "(^|\\/|\\\\)(node_modules|dist|docs)(\\/|\\\\)"

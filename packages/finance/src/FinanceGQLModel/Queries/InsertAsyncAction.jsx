@@ -1,19 +1,24 @@
+// Importuje helper pro vytvoření lazily vyhodnocovaného GraphQL dotazu.
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 
+// Importuje fragment s rozšířenými daty vracené entity.
 import { LargeFragment } from "./Fragments";
 
+// Importuje helper pro vytvoření asynchronní GraphQL akce.
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
 
 /**
- * GraphQL mutation used for inserting a new entity.
+ * GraphQL mutation used for creating a new entity.
  *
- * The mutation returns either an insertion error or the complete created
- * entity represented by the `Large` GraphQL fragment.
+ * The mutation inserts a new entity into the backend and returns either
+ * an insertion error or the complete created entity represented by the
+ * `Large` GraphQL fragment.
  *
  * @constant
  * @type {string}
  */
+// Definuje text GraphQL mutace pro vytvoření role.
 const InsertMutationStr = `
 mutation roleTypeInsert(
   $mastertypeId: UUID,
@@ -54,11 +59,13 @@ fragment InsertError on InsertError {
 /**
  * Lazily generated GraphQL mutation.
  *
- * The mutation automatically includes all dependencies required by the
- * `Large` fragment.
+ * The mutation string is converted into an executable GraphQL query object.
+ * All fragment dependencies required by the `Large` fragment are included
+ * automatically.
  *
  * @constant
  */
+// Vytvoří GraphQL dotaz z textu mutace a přidá potřebné fragmenty.
 const InsertMutation = createQueryStrLazy(
     InsertMutationStr,
     LargeFragment
@@ -68,14 +75,22 @@ const InsertMutation = createQueryStrLazy(
 /**
  * Asynchronous GraphQL action responsible for creating a new entity.
  *
- * The action executes the insert mutation and stores the result inside the
- * application state through the shared asynchronous action framework.
+ * The action executes the prepared GraphQL mutation and stores the returned
+ * result in the application state using the shared asynchronous action
+ * framework.
  *
  * @constant
  *
  * @example
- * dispatch(InsertAsyncAction(newEntity));
+ * dispatch(
+ *     InsertAsyncAction({
+ *         id: "...",
+ *         name: "Example",
+ *         nameEn: "Example EN"
+ *     })
+ * );
  */
+// Vytvoří exportovanou asynchronní akci pro spuštění mutace.
 export const InsertAsyncAction =
     createAsyncGraphQLAction2(
         InsertMutation

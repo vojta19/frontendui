@@ -782,7 +782,15 @@ export const SunburstDiagram = ({
                         const isTarget =
                             node?.id === selectedTargetId;
 
-                        // Handler kliknutí na konkrétní sektor.
+                            /**
+                            * Handles selection of a finance node.
+                            *
+                            * @param {React.MouseEvent<SVGGElement>} event
+                            * Click event originating from the SVG group.
+                            *
+                            * @returns {void}
+                            */
+                            // Handler kliknutí na konkrétní sektor.
                         const handleClick = (event) => {
                             // Zabrání probublání události do rodičovských SVG prvků.
                             event.stopPropagation();

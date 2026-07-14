@@ -5,24 +5,32 @@ import { createAsyncGraphQLAction, useAsyncAction } from "@hrbolek/uoisfrontend-
 import { ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
 
 /**
- * A component for displaying the `scalar` attribute of an template entity.
+ * Displays the scalar attribute of a template entity.
  *
- * This component checks if the `scalar` attribute exists on the `template` object. If `scalar` is undefined,
- * the component returns `null` and renders nothing. Otherwise, it displays a placeholder message
- * and a JSON representation of the `scalar` attribute.
+ * The component checks whether the supplied template entity contains
+ * the `scalar` property. If the property is not available, nothing is
+ * rendered. Otherwise, a simple preview of the scalar object is displayed.
+ *
+ * The current implementation renders the scalar data as formatted JSON
+ * and serves primarily as a placeholder until a dedicated scalar
+ * presentation component is implemented.
  *
  * @component
- * @param {Object} props - The props for the TemplateScalarAttribute component.
- * @param {Object} props.template - The object representing the template entity.
- * @param {*} [props.template.scalar] - The scalar attribute of the template entity to be displayed, if defined.
  *
- * @returns {JSX.Element|null} A JSX element displaying the `scalar` attribute or `null` if the attribute is undefined.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.template
+ * Template entity containing the scalar attribute.
+ *
+ * @param {*} [props.template.scalar]
+ * Scalar attribute associated with the template entity.
+ *
+ * @returns {JSX.Element|null}
+ * Preview of the scalar attribute or `null` when no scalar is available.
  *
  * @example
- * // Example usage:
- * const templateEntity = { scalar: { id: 1, name: "Sample Scalar" } };
- *
- * <TemplateScalarAttribute template={templateEntity} />
+ * <TemplateScalarAttribute template={template} />
  */
 // Definuje a exportuje komponentu TemplateScalarAttribute pro statické zobrazení detailu skalární relace
 export const TemplateScalarAttribute = ({ template }) => {
@@ -48,6 +56,15 @@ export const TemplateScalarAttribute = ({ template }) => {
     ); // Konec návratové hodnoty JSX fragmentu
 }; // Konec definice komponenty TemplateScalarAttribute
 
+/**
+ * GraphQL query used for loading the scalar attribute of a template entity.
+ *
+ * The query retrieves the template together with its associated scalar
+ * object identified by the supplied template identifier.
+ *
+ * @constant
+ * @type {string}
+ */
 // Definuje řetězec čistého GraphQL dotazu (Query) pro stažení skalárního objektu podle ID mateřské entity
 const TemplateScalarAttributeQuery = `
 query TemplateQueryRead($id: UUID!) {
@@ -62,35 +79,45 @@ query TemplateQueryRead($id: UUID!) {
 }
 `; // Konec definice GraphQL dotazu
 
+/**
+ * Asynchronous GraphQL action used for loading the scalar attribute.
+ *
+ * The action executes the prepared GraphQL query and stores the returned
+ * template entity together with its scalar attribute.
+ *
+ * @constant
+ */
 // Vytváří a přiřazuje asynchronní síťovou akci (thunk) pro provádění GraphQL operace na základě definovaného dotazu
 const TemplateScalarAttributeAsyncAction = createAsyncGraphQLAction(
     TemplateScalarAttributeQuery
 ); // Konec inicializace akce
 
 /**
- * A lazy-loading component for displaying filtered `scalar` from a `template` entity.
+ * Displays the scalar attribute using lazy loading.
  *
- * This component uses the `TemplateScalarAttributeAsyncAction` to asynchronously fetch
- * the `template.scalar` data. It shows a loading spinner while fetching, handles errors,
- * and filters the resulting list using a custom `filter` function (defaults to `Boolean` to remove falsy values).
+ * The component automatically loads the required data from the backend
+ * using the provided template identifier. While the request is running,
+ * a loading indicator is displayed. If the request fails, an error
+ * message is rendered instead.
  *
- * Each vector item is rendered as a `<div>` with its `id` as both the `key` and the `id` attribute,
- * and displays a formatted JSON preview using `<pre>`.
+ * After successful loading, the received entity is forwarded to
+ * `TemplateScalarAttribute` for rendering.
  *
  * @component
- * @param {Object} props - The properties object.
- * @param {Object} props.template - The template entity or identifying query variables used to fetch it.
- * @param {Function} [props.filter=Boolean] - A filtering function applied to the `scalar` array before rendering.
  *
- * @returns {JSX.Element} A rendered list of filtered scalar or a loading/error placeholder.
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.template
+ * Template entity or object containing the identifier used to load
+ * the scalar attribute.
+ *
+ * @returns {JSX.Element}
+ * Lazy-loaded scalar attribute component.
  *
  * @example
- * <TemplateScalarAttributeLazy template={{ id: "abc123" }} />
- *
- * * @example
  * <TemplateScalarAttributeLazy
- * template={{ id: "abc123" }}
- * filter={(v) => v.status === "active"}
+ *     template={{ id: "123" }}
  * />
  */
 // Definuje a exportuje komponentu TemplateScalarAttributeLazy, která automaticky spouští a řídí síťový dotaz při svém mountu

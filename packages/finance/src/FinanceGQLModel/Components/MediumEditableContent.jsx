@@ -1,4 +1,4 @@
-import { Input } from "../../../../_template/src/Base/FormControls/Input";
+import { Input } from "../../../../_template/src/Base/FormControls/Input"; // Importuje univerzální formulářovou komponentu pro zadávání textových hodnot.
 
 /**
  * Renders an editable form for a finance entity.
@@ -9,7 +9,7 @@ import { Input } from "../../../../_template/src/Base/FormControls/Input";
  *
  * The edited values are propagated through the supplied event handlers.
  * Additional controls (such as Save or Cancel buttons) can be injected
- * through the `children` property.
+ * through the children property.
  *
  * @component
  *
@@ -53,42 +53,46 @@ import { Input } from "../../../../_template/src/Base/FormControls/Input";
  */
 export const MediumEditableContent = ({
     item,
-    onChange = () => null,
-    onBlur = () => null,
-    children
+    onChange = () => null, // Nastavuje výchozí obsluhu změny hodnoty vstupního pole.
+    onBlur = () => null, // Nastavuje výchozí obsluhu události po opuštění vstupního pole.
+    children // Přijímá volitelný obsah, který se vykreslí pod formulářem.
 }) => {
     return (
         <>
+            {/* Pole pro zadání českého názvu finanční položky. */}
             <Input
                 id="name"
                 label="Jméno"
                 className="form-control"
-                value={item?.name ?? ""}
+                value={item?.name ?? ""} // Zobrazuje aktuální název nebo prázdný řetězec.
                 placeholder="Název"
                 onChange={onChange}
                 onBlur={onBlur}
             />
 
+            {/* Pole pro zadání anglického názvu finanční položky. */}
             <Input
                 id="nameEn"
                 label="EN název"
                 className="form-control"
-                value={item?.nameEn ?? ""}
+                value={item?.nameEn ?? ""} // Zobrazuje anglický název nebo prázdný řetězec.
                 placeholder="English name"
                 onChange={onChange}
                 onBlur={onBlur}
             />
 
+            {/* Pole pro zadání popisu finanční položky. */}
             <Input
                 id="description"
                 label="Popis"
                 className="form-control"
-                value={item?.description ?? ""}
+                value={item?.description ?? ""} // Zobrazuje popis nebo prázdný řetězec.
                 placeholder="Popis"
                 onChange={onChange}
                 onBlur={onBlur}
             />
 
+            {/* Vykreslí dodatečné ovládací prvky (např. tlačítka Uložit nebo Zrušit). */}
             {children}
         </>
     );

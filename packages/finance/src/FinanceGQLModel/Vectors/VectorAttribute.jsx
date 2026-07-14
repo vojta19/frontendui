@@ -10,6 +10,18 @@ import { Col } from "../../../../_template/src/Base/Components/Col";
 // Importuje layout komponentu Row pro definici řádků mřížky ze sdílené šablony prvků
 import { Row } from "../../../../_template/src/Base/Components/Row";
 
+/**
+ * Creates a component that displays a vector attribute of an entity.
+ *
+ * The generated component renders the selected array attribute inside a
+ * table wrapped by a card and arranged using the shared row/column layout.
+ *
+ * @param {string} attribute_name
+ * Name of the vector attribute to display.
+ *
+ * @returns {React.ComponentType}
+ * Component rendering the selected vector attribute.
+ */
 // Exportuje funkci vyššího řádu (Factory), která dynamicky generuje React komponentu pro zobrazení mřížkového řádku s polem
 export const VectorAttributeFactory = (attribute_name) => ({ item }) => {
     
@@ -32,6 +44,26 @@ export const VectorAttributeFactory = (attribute_name) => ({ item }) => {
     ); // Konec návratové hodnoty generované komponenty
 }; // Konec definice tovární funkce VectorAttributeFactory
 
+/**
+ * Displays a vector attribute using the row-based layout.
+ *
+ * The attribute name is displayed in the left column while the vector
+ * contents are rendered as a table inside a card in the right column.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} props.attribute_name
+ * Name of the vector attribute.
+ *
+ * @param {Object} props.item
+ * Entity containing the vector attribute.
+ *
+ * @returns {JSX.Element}
+ * Row-based presentation of the vector attribute.
+ */
 // Exportuje alternativní standardní komponentu VectorAttribute_ pro řádkové zobrazení mřížky s popiskem na boku
 export const VectorAttribute_ = ({ attribute_name, item }) => {
     
@@ -54,6 +86,26 @@ export const VectorAttribute_ = ({ attribute_name, item }) => {
     ); // Konec návratové hodnoty komponenty VectorAttribute_
 }; // Konec definice komponenty VectorAttribute_
 
+/**
+ * Displays a vector attribute inside a standalone card.
+ *
+ * The card title contains the attribute name and the vector contents are
+ * rendered using the shared table component.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} props.attribute_name
+ * Name of the vector attribute.
+ *
+ * @param {Object} props.item
+ * Entity containing the vector attribute.
+ *
+ * @returns {JSX.Element}
+ * Card displaying the selected vector attribute.
+ */
 // Exportuje komponentu VectorAttribute, která vykresluje pole samostatně jako ucelenou kartu s označením pole v titulku
 export const VectorAttribute = ({ attribute_name, item }) => {
     
@@ -69,6 +121,23 @@ export const VectorAttribute = ({ attribute_name, item }) => {
     ); // Konec návratové hodnoty komponenty VectorAttribute
 }; // Konec definice komponenty VectorAttribute
 
+/**
+ * Displays all vector attributes of an entity.
+ *
+ * The component scans all properties of the supplied entity and renders
+ * every array-valued property as a separate vector card.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Entity whose vector attributes should be displayed.
+ *
+ * @returns {JSX.Element}
+ * Card containing all detected vector attributes.
+ */
 // Exportuje sumární komponentu MediumCardVectors, která automaticky projde celý objekt a vykreslí z něj všechna nalezená pole
 export const MediumCardVectors = ({ item }) => {
     
