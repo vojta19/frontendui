@@ -8,6 +8,10 @@ import {
     buildTableDef
 } from "../../../../_template/src/Base/Components/Table";
 
+import { UpdateLink } from "../Mutations/Update";
+import { DeleteButton } from "../Mutations/Delete";
+import { KebabMenu } from "../../../../_template/src/Base/Components/Table";
+
 
 /**
  * Column configuration used by the finance table.
@@ -220,7 +224,7 @@ export const Table = ({
 
         const direction =
             sortConfig.key === key &&
-            sortConfig.direction === "asc"
+                sortConfig.direction === "asc"
                 ? "desc"
                 : "asc";
 
@@ -302,6 +306,41 @@ export const Table = ({
         const filteredDefinition = {};
 
         Object.keys(WANTED_COLUMNS).forEach((key) => {
+            if (key === "tools") {
+                filteredDefinition[key] = {
+                    label: WANTED_COLUMNS[key],
+                    component: ({ row }) => (
+                        <td>
+                            <KebabMenu actions={[
+                                {
+                                    children: (
+                                        <UpdateLink
+                                            className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                                            item={row}
+                                            rbacitem={row?.rbacobject}
+                                        >
+                                            Editovat
+                                        </UpdateLink>
+                                    )
+                                },
+                                {
+                                    children: (
+                                        <DeleteButton
+                                            className="btn btn-sm btn-outline-danger border-0 text-start w-100"
+                                            item={row}
+                                            rbacitem={row?.rbacobject}
+                                        >
+                                            Smazat
+                                        </DeleteButton>
+                                    )
+                                }
+                            ]} />
+                        </td>
+                    )
+                }
+                return
+            }
+
             if (!baseDefinition[key]) {
                 return;
             }
