@@ -29,6 +29,7 @@ fragment Link on FinanceGQLModel {
   value
   description
   financeTypeId
+  masterfinanceId
   masterfinance 
   {
     __typename
