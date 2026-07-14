@@ -36,12 +36,16 @@ import {
     buildTableDef
 } from "../../../../_template/src/Base/Components/Table";
 
+import { UpdateLink } from "../Mutations/Update";
+import { DeleteButton } from "../Mutations/Delete";
+import { KebabMenu } from "../../../../_template/src/Base/Components/Table";
+
 
 /**
- * Column configuration used by the finance table.
+ * Column definitions displayed in the finance table.
  *
- * Keys correspond to finance entity attributes and values define the
- * localized labels displayed in the table header.
+ * Object keys correspond to finance entity properties and values
+ * represent localized column headers.
  *
  * @constant
  * @type {Object&lt;string, string>}
@@ -90,13 +94,11 @@ const ALLOWED_SORT_KEYS = [
  * // Returns: "250 000 Kč"
  */
 const formatCurrency = (value) => {
-    // Ověří, zda je hodnota číslo, pokud ne, převede ji na číslo, případně použije 0 jako fallback
     const numericValue =
         typeof value === "number"
             ? value
             : Number(value) || 0;
 
-    // Vrátí zformátované číslo podle české lokalizace s připojenou měnou "Kč"
     return `${numericValue.toLocaleString("cs-CZ")} Kč`;
 };
 
@@ -120,25 +122,20 @@ const formatCurrency = (value) => {
  * // Returns a localized Czech date and time.
  */
 const formatDate = (dateString) => {
-    // Pokud datum není definováno, vrátí pomlčku
     if (!dateString) {
         return "-";
     }
 
     try {
-        // Vytvoří novou instanci Date z předaného řetězce
         const date = new Date(dateString);
 
-        // Pokud je vytvořené datum neplatné, vrátí původní řetězec
         if (Number.isNaN(date.getTime())) {
             return dateString;
         }
 
-        // Převede datum na český formát zápisu (DD. MM. YYYY)
         const localizedDate =
             date.toLocaleDateString("cs-CZ");
 
-        // Převede čas na český formát se specifikací dvouciferných hodin a minut
         const localizedTime =
             date.toLocaleTimeString(
                 "cs-CZ",
@@ -148,10 +145,8 @@ const formatDate = (dateString) => {
                 }
             );
 
-        // Spojí zformátované datum a čas mezerou do jednoho řetězce
         return `${localizedDate} ${localizedTime}`;
     } catch {
-        // V případě neočekávané chyby při parsování vrátí původní řetězec
         return dateString;
     }
 };
@@ -178,17 +173,13 @@ const formatDate = (dateString) => {
  * // Returns: 3
  */
 const getLastNumberFromId = (idValue) => {
-    // Pokud ID neexistuje, vrátí výchozí hodnotu 0
     if (!idValue) {
         return 0;
     }
 
-    // Rozdělí řetězec identifikátoru na části podle pomlček
     const parts = String(idValue).split("-");
-    // Získá poslední prvek z rozděleného pole
     const lastPart = parts.at(-1);
 
-    // Převede poslední část na celé číslo v desítkové soustavě, v případě neúspěchu vrátí 0
     return Number.parseInt(lastPart, 10) || 0;
 };
 
@@ -212,7 +203,7 @@ const getLastNumberFromId = (idValue) => {
  * @param {Object} props
  * Component properties.
  *
- * @param {Object[]} props.data
+ * @param {Array&lt;Object>} props.data
  * Finance entities rendered as table rows.
  *
  * @returns {JSX.Element|null}
@@ -232,12 +223,10 @@ const getLastNumberFromId = (idValue) => {
 export const Table = ({
     data
 }) => {
-    // Pokud předaná data nejsou pole nebo je pole prázdné, komponenta nevykreslí nic
     if (!Array.isArray(data) || data.length === 0) {
         return null;
     }
 
-    // Stav pro uložení aktuálního klíče řazení a směru (výchozí je vzestupně podle "id")
     const [sortConfig, setSortConfig] = useState({
         key: "id",
         direction: "asc"
@@ -257,19 +246,16 @@ export const Table = ({
      * @returns {void}
      */
     const handleSort = (key) => {
-        // Ignoruje řazení, pokud vybraný sloupec není v seznamu povolených klíčů pro řazení
         if (!ALLOWED_SORT_KEYS.includes(key)) {
             return;
         }
 
-        // Určí nový směr řazení: pokud se kliklo na již aktivní klíč s 'asc', změní ho na 'desc', jinak nastaví 'asc'
         const direction =
             sortConfig.key === key &amp;&amp;
-            sortConfig.direction === "asc"
+                sortConfig.direction === "asc"
                 ? "desc"
                 : "asc";
 
-        // Aktualizuje stav s novým klíčem a směrem řazení
         setSortConfig({
             key,
             direction
@@ -277,82 +263,67 @@ export const Table = ({
     };
 
 
-    // Memoizované seřazení dat, které se přepočítá pouze při změně dat nebo konfigurace řazení
+    /**
+    * Memoized collection of finance entities sorted according to
+    * the currently selected column and direction.
+    */
     const sortedData = useMemo(() => {
-        // Vytvoří mělkou kopii dat, aby se neupravovalo původní pole (immutable přístup)
         const sortableItems = [...data];
 
-        // Pokud není nastaven klíč pro řazení, vrátí neupravenou kopii dat
         if (!sortConfig.key) {
             return sortableItems;
         }
 
-        // Seřadí položky v poli na základě aktuální konfigurace
         sortableItems.sort((firstItem, secondItem) => {
-            // Získá hodnotu pro řazení z prvního porovnávaného objektu podle nastaveného klíče
             let firstValue =
                 firstItem?.[sortConfig.key];
 
-            // Získá hodnotu pro řazení z druhého porovnávaného objektu podle nastaveného klíče
             let secondValue =
                 secondItem?.[sortConfig.key];
 
-            // Specifické řazení pro sloupec "id" (např. UUID, kde porovnáváme koncové číslo)
             if (sortConfig.key === "id") {
-                // Vytáhne koncové číslo z prvního ID
                 const firstNumber =
                     getLastNumberFromId(firstValue);
 
-                // Vytáhne koncové číslo z druhého ID
                 const secondNumber =
                     getLastNumberFromId(secondValue);
 
-                // Porovná čísla podle směru řazení (vzestupně / sestupně)
                 return sortConfig.direction === "asc"
                     ? firstNumber - secondNumber
                     : secondNumber - firstNumber;
             }
 
-            // Specifické řazení pro číselný sloupec "value" (částka)
             if (sortConfig.key === "value") {
-                // Převede hodnotu prvního prvku na číslo s fallbackem na nulu
                 const firstNumber =
                     Number(firstValue) || 0;
 
-                // Převede hodnotu druhého prvku na číslo s fallbackem na nulu
                 const secondNumber =
                     Number(secondValue) || 0;
 
-                // Porovná číselné hodnoty podle nastaveného směru řazení
                 return sortConfig.direction === "asc"
                     ? firstNumber - secondNumber
                     : secondNumber - firstNumber;
             }
 
-            // Výchozí textové řazení pro ostatní sloupce (např. "name") převedené na malá písmena
             firstValue =
                 String(firstValue ?? "")
                     .toLocaleLowerCase("cs-CZ");
 
-            // Převod hodnoty druhého textu na malá písmena s českým nastavením
             secondValue =
                 String(secondValue ?? "")
                     .toLocaleLowerCase("cs-CZ");
 
-            // Porovná řetězce s respektováním českých pravidel řazení (např. správné řazení "Ch")
             const comparison =
                 firstValue.localeCompare(
                     secondValue,
                     "cs-CZ"
                 );
 
-            // Vrátí výsledek porovnání textů s ohledem na směr řazení (při sestupném invertuje znaménko)
             return sortConfig.direction === "asc"
                 ? comparison
                 : -comparison;
         });
 
-        // Vrátí nově seřazené pole
         return sortableItems;
     }, [
         data,
@@ -360,44 +331,74 @@ export const Table = ({
     ]);
 
 
-    // Memoizované sestavení definice tabulky (sloupců, labelů a komponent pro buňky)
+    /**
+    * Memoized table definition extending the shared table
+    * configuration with finance-specific formatting,
+    * localized labels and action buttons.
+    */
     const customTableDef = useMemo(() => {
-        // Vygeneruje základní definici tabulky z připravených seřazených dat
         const baseDefinition =
             buildTableDef(sortedData);
 
-        // Objekt pro uložení výsledné upravené a vyfiltrované definice sloupců
         const filteredDefinition = {};
 
-        // Projde všechny klíče definované v požadovaných sloupcích (WANTED_COLUMNS)
         Object.keys(WANTED_COLUMNS).forEach((key) => {
-            // Pokud požadovaný sloupec v základní definici tabulky neexistuje, přeskočí se
+            if (key === "tools") {
+                filteredDefinition[key] = {
+                    label: WANTED_COLUMNS[key],
+                    component: ({ row }) => (
+                        &lt;td>
+                            &lt;KebabMenu actions={[
+                                {
+                                    children: (
+                                        &lt;UpdateLink
+                                            className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                                            item={row}
+                                            rbacitem={row?.rbacobject}
+                                        >
+                                            Editovat
+                                        &lt;/UpdateLink>
+                                    )
+                                },
+                                {
+                                    children: (
+                                        &lt;DeleteButton
+                                            className="btn btn-sm btn-outline-danger border-0 text-start w-100"
+                                            item={row}
+                                            rbacitem={row?.rbacobject}
+                                        >
+                                            Smazat
+                                        &lt;/DeleteButton>
+                                    )
+                                }
+                            ]} />
+                        &lt;/td>
+                    )
+                }
+                return
+            }
+
             if (!baseDefinition[key]) {
                 return;
             }
 
-            // Načte výchozí český překlad záhlaví sloupce
             let label = WANTED_COLUMNS[key];
 
-            // Pokud je sloupec aktuálně aktivní pro řazení a řazení v něm je povoleno
             if (
                 sortConfig.key === key &amp;&amp;
                 ALLOWED_SORT_KEYS.includes(key)
             ) {
-                // Připojí k názvu sloupce šipku nahoru pro vzestupný směr, nebo šipku dolů pro sestupný
                 label +=
                     sortConfig.direction === "asc"
                         ? " ▲"
                         : " ▼";
             }
 
-            // Vytvoří novou definici sloupce, zkopíruje původní a přepíše její popisek (label)
             filteredDefinition[key] = {
                 ...baseDefinition[key],
                 label
             };
 
-            // Pokud jde o sloupec finanční hodnoty, nastaví vlastní komponentu pro formátování měny
             if (key === "value") {
                 filteredDefinition[key].component =
                     ({ row }) => (
@@ -407,7 +408,6 @@ export const Table = ({
                     );
             }
 
-            // Pokud jde o sloupce s datem změny nebo vytvoření, nastaví komponentu s formátováním data
             if (
                 key === "lastchange" ||
                 key === "created"
@@ -421,7 +421,6 @@ export const Table = ({
             }
         });
 
-        // Vrátí finální definici tabulky obsahující pouze vybrané a upravené sloupce
         return filteredDefinition;
     }, [
         sortedData,
@@ -430,21 +429,19 @@ export const Table = ({
 
 
     /**
-     * Handles delegated click events inside the table container.
-     *
-     * The handler detects sortable table headers while ignoring clicks on
-     * buttons and contextual menus.
-     *
-     * @param {React.MouseEvent&lt;HTMLDivElement>} event
-     * Click event originating from the table wrapper.
-     *
-     * @returns {void}
-     */
+    * Handles delegated click events inside the table container.
+    *
+    * The handler detects sortable table headers while ignoring clicks
+    * on action buttons and contextual menus.
+    *
+    * @param {Object} event
+    * Click event originating from the table wrapper.
+    *
+    * @returns {void}
+    */
     const handleTableClick = (event) => {
-        // Získá element, na který uživatel skutečně kliknul
         const clickedElement = event.target;
 
-        // Pokud kliknutí proběhlo uvnitř kontextového menu nebo na tlačítko, řazení se ignoruje
         if (
             clickedElement.closest("[role='menu']") ||
             clickedElement.closest("button")
@@ -452,23 +449,19 @@ export const Table = ({
             return;
         }
 
-        // Najde nejbližší nadřazený element hlavičky tabulky (th) od místa kliknutí
         const headerCell =
             clickedElement.closest("th");
 
-        // Pokud se nekliklo uvnitř žádné hlavičky sloupce, funkce končí
         if (!headerCell) {
             return;
         }
 
-        // Získá text z hlavičky, odstraní z něj případné indikační šipky řazení a ořízne bílé znaky
         const clickedLabel =
             headerCell.innerText
                 .replace(" ▲", "")
                 .replace(" ▼", "")
                 .trim();
 
-        // Najde odpovídající datový klíč sloupce, jehož překlad odpovídá textu kliknutého záhlaví
         const columnKey =
             Object.keys(WANTED_COLUMNS).find(
                 (key) =>
@@ -476,14 +469,12 @@ export const Table = ({
                     clickedLabel
             );
 
-        // Pokud byl klíč sloupce úspěšně nalezen, spustí na něm logiku řazení
         if (columnKey) {
             handleSort(columnKey);
         }
     };
 
 
-    // Vykreslí responzivní obal tabulky s delegovaným onClick eventem a samotnou základní tabulku
     return (
         &lt;div
             className="table-responsive"
@@ -505,13 +496,13 @@ export const Table = ({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 09:09:35 GMT+0200 (středoevropský letní čas)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 14:27:02 GMT+0200 (středoevropský letní čas)
 </footer>
 
 <script> prettyPrint(); </script>

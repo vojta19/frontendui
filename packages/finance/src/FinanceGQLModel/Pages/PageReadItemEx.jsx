@@ -13,36 +13,48 @@ import { PageReadItem } from "./PageReadItem";
 // Vytváří a exportuje novou konstantu RolesOnURI nahrazením klíčového slova "view" za "roleson" v základním URI vzoru
 export const RolesOnURI = ReadItemURI.replace("view", "roleson");
 
+
 /**
- * Základní obálka pro „read“ stránku entity podle `:id` z routy.
+ * Displays the page showing role assignments related to a finance entity.
  *
- * Využívá `PageItemBase`, který zajistí:
- * - získání `id` z URL (`useParams`)
- * - načtení entity přes `AsyncActionProvider` pomocí `queryAsyncAction`
- * - vložení navigace (`PageNavbar`)
+ * The component is a specialized wrapper around `PageReadItem`.
+ * It configures the default asynchronous read action together with
+ * the shared page content implementation used for displaying the entity.
  *
- * Uvnitř provideru vykreslí `ReadWithComponent`, který si vezme načtený `item`
- * z `useGQLEntityContext()` a zobrazí ho v zadané komponentě (defaultně `LargeCard`).
+ * All remaining properties are forwarded directly to `PageReadItem`.
  *
  * @component
- * @param {object} props
+ *
+ * @param {Object} props
+ * Component properties.
+ *
  * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
- * Async action (např. thunk) pro načtení entity z backendu/GraphQL dle `id`.
- * @param {Object<string, any>} [props]
- * Další props předané do `ReadWithComponent` (např. `Component`, layout props).
+ * Asynchronous action used to load the finance entity.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional child components forwarded to the underlying page.
  *
  * @returns {JSX.Element}
+ * Page displaying role-related information for the selected finance entity.
+ *
+ * @example
+ * <PageReadItemRolesOn />
+ *
+ * @example
+ * <PageReadItemRolesOn
+ *     queryAsyncAction={ReadAsyncAction}
+ * />
  */
 // Definuje a exportuje komponentu PageReadItemRolesOn, která slouží jako dedikovaná stránka pro zobrazení rolí na entitě
-export const PageReadItemRolesOn = ({ 
+export const PageReadItemRolesOn = ({
     queryAsyncAction = ReadAsyncAction, // Nastavuje výchozí thunk pro asynchronní stažení dat entity podle ID
     children, // Zachytává případné vnořené klientské elementy
     ...props // Shromažďuje všechny ostatní konfigurační parametry (např. navbary, layouty) pro přeposlání
 }) => {
-    
+
     // Vrací komponentu PageReadItem nakonfigurovanou s příslušnou thunk akcí a základním tělem podstránky ze šablony
     return (
-        <PageReadItem 
+        <PageReadItem
             queryAsyncAction={queryAsyncAction} // Předává definovanou síťovou akci pro načtení
             SubPage={GeneratedContentBase} // Dosazuje výchozí podstránku ze sdílené šablony
             {...props} // Rozbaluje všechny ostatní přebírané vlastnosti přímo na komponentu

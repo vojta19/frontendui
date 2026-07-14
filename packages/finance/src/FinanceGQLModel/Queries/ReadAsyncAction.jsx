@@ -7,6 +7,15 @@ import { LargeFragment } from "./Fragments";
 // Importuje pokročilého tvůrce asynchronních akcí createAsyncGraphQLAction2 z dynamického jádra aplikace
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
+/**
+ * GraphQL query used for loading a finance entity by its identifier.
+ *
+ * The query returns a complete finance entity represented by the
+ * `Large` GraphQL fragment.
+ *
+ * @constant
+ * @type {string}
+ */
 // Definuje řetězec GraphQL dotazu pro bezpečné vyhledání a načtení jedné konkrétní finance na základě jejího UUID
 const ReadQueryStr = `
 query financeById($id: UUID!) {
@@ -16,38 +25,46 @@ query financeById($id: UUID!) {
 }
 `; // Konec definice řetězce GraphQL dotazu
 
+/**
+ * Lazily generated GraphQL query used for reading finance entities.
+ *
+ * The query automatically includes all fragment dependencies required
+ * by the `Large` GraphQL fragment.
+ *
+ * @constant
+ */
 // Sestavuje finální GraphQL dotaz spojením textu vyhledání podle ID a definice LargeFragmentu pomocí lazy generátoru
 const ReadQuery = createQueryStrLazy(`${ReadQueryStr}`, LargeFragment);
 
 /**
- * An async action for executing a GraphQL query to read  entities.
+ * Asynchronous GraphQL action used for loading a finance entity.
  *
- * This action is created using `createAsyncGraphQLAction` with a predefined `QueryRead` query.
- * It can be dispatched with query variables to fetch data related to  entities from the GraphQL API.
+ * The action executes the prepared GraphQL query, retrieves a finance
+ * entity identified by its unique identifier and stores the received
+ * data in the application state.
+ *
+ * The returned entity contains all information defined by the
+ * `LargeFragment`, including related entities and child finances.
  *
  * @constant
  * @type {Function}
  *
- * @param {Object} query_variables - The variables for the GraphQL query.
- * @param {string|number} query_variables.id - The unique identifier for the  entity to fetch.
+ * @param {Object} queryVariables
+ * Variables supplied to the GraphQL query.
  *
- * @returns {Function} A dispatchable async action that performs the GraphQL query, applies middleware, and dispatches the result.
+ * @param {string} queryVariables.id
+ * Unique identifier of the finance entity to load.
  *
- * @throws {Error} If `query_variables` is not a valid JSON object.
+ * @returns {Function}
+ * Dispatchable asynchronous GraphQL action.
  *
  * @example
- * // Example usage:
- * const queryVariables = { id: "12345" };
- *
- * dispatch(ReadAsyncAction(queryVariables))
- * .then((result) => {
- * console.log("Fetched data:", result);
- * })
- * .catch((error) => {
- * console.error("Error fetching data:", error);
- * });
+ * dispatch(
+ *     ReadAsyncAction({
+ *         id: "30000000-0000-0000-0000-000000000001"
+ *     })
+ * );
  */
-// PŮVODNÍ ZAKOMENTOVANÝ EXPORT: export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery, reduceToFirstEntity("result"))
 
 // Vytváří a exportuje asynchronní akci (thunk) spojením připraveného dotazu ReadQuery a generátoru akcí
 export const ReadAsyncAction = createAsyncGraphQLAction2(ReadQuery);

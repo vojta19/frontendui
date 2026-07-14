@@ -18,7 +18,7 @@ import {
  * Returns a human-readable name for a finance entity.
  *
  * The function prefers the Czech name stored in `name`. If the Czech
- * name is unavailable, it uses the English name, the entity identifier,
+ * name is unavailable, it uses the English name, the entity identifier
  * or a fallback label.
  *
  * @param {Object|null|undefined} finance
@@ -41,8 +41,6 @@ import {
  *     id: "30000000-0000-0000-0000-000000000003",
  *     name: "Rozpočet WP2"
  * });
- *
- * // Returns: "Rozpočet WP2"
  */
 const getFinanceName = (finance) => {
     // Vrací první dostupnou hodnotu podle zadané priority:
@@ -57,17 +55,15 @@ const getFinanceName = (finance) => {
 
 
 /**
- * Determines whether a financial transfer between two finance entities
- * is allowed.
+ * Determines whether a transfer between two finance entities is allowed.
  *
  * A transfer is rejected when:
- *
  * - the source or destination is missing,
  * - both entities have the same identifier,
  * - both entities belong to different parent finances.
  *
- * If one of the entities does not provide `masterfinanceId`, the transfer
- * is currently allowed.
+ * If one of the entities does not provide `masterfinanceId`,
+ * the transfer is currently allowed.
  *
  * @param {Object|null|undefined} source
  * Source finance entity.
@@ -76,7 +72,7 @@ const getFinanceName = (finance) => {
  * Unique identifier of the source finance.
  *
  * @param {string} [source.masterfinanceId]
- * Identifier of the parent finance of the source entity.
+ * Identifier of the parent finance.
  *
  * @param {Object|null|undefined} destination
  * Destination finance entity.
@@ -85,24 +81,10 @@ const getFinanceName = (finance) => {
  * Unique identifier of the destination finance.
  *
  * @param {string} [destination.masterfinanceId]
- * Identifier of the parent finance of the destination entity.
+ * Identifier of the parent finance.
  *
  * @returns {boolean}
- * `true` when the transfer is allowed; otherwise `false`.
- *
- * @example
- * canTransferBetween(
- *     {
- *         id: "source-id",
- *         masterfinanceId: "parent-id"
- *     },
- *     {
- *         id: "destination-id",
- *         masterfinanceId: "parent-id"
- *     }
- * );
- *
- * // Returns: true
+ * Returns `true` when the transfer is allowed.
  */
 const canTransferBetween = (source, destination) => {
     // Přesun nelze provést, pokud chybí zdroj nebo cíl.
@@ -134,22 +116,15 @@ const canTransferBetween = (source, destination) => {
 
 
 /**
- * Interactive component for displaying a finance hierarchy and creating
- * transfers between finance entities.
+ * Displays an interactive Sunburst diagram for finance transfers.
  *
- * The component renders a Sunburst diagram and allows the user to:
- *
+ * The component allows the user to:
  * - select a source finance,
  * - select a destination finance,
- * - enter a transfer amount,
- * - validate whether the transfer is allowed,
+ * - enter the transfer amount,
+ * - validate the transfer,
  * - execute the GraphQL transfer mutation,
  * - notify the parent component after a successful transfer.
- *
- * The first selected diagram node becomes the source. The second selected
- * node becomes the destination. Transfers are allowed only between different
- * finance entities and, when both parent identifiers are available, within
- * the same parent finance.
  *
  * @component
  *
@@ -157,37 +132,33 @@ const canTransferBetween = (source, destination) => {
  * Component properties.
  *
  * @param {Object} props.item
- * Root finance entity containing the hierarchy displayed by the Sunburst
- * diagram.
+ * Root finance entity displayed in the diagram.
  *
  * @param {string} props.item.id
  * Unique identifier of the root finance.
  *
  * @param {string} [props.item.name]
- * Name of the root finance.
+ * Display name of the root finance.
  *
  * @param {number} [props.item.value]
- * Current value of the root finance.
+ * Current finance value.
  *
  * @param {Array<Object>} [props.item.subfinances]
  * Child finance entities displayed in the diagram.
  *
  * @param {string} [props.header="Finance – přesun financí"]
- * Heading displayed above the Sunburst diagram.
+ * Diagram heading.
  *
  * @param {Function} [props.onTransferInserted]
- * Callback invoked after a finance transfer has been inserted successfully.
+ * Callback invoked after a successful transfer.
  *
  * @returns {JSX.Element}
- * Interactive finance transfer interface with a Sunburst diagram.
+ * Interactive finance transfer interface.
  *
  * @example
  * <FinanceTransferSunburst
  *     item={finance}
- *     header="Graf finančních přesunů"
- *     onTransferInserted={(transfer) => {
- *         console.log("Inserted transfer:", transfer);
- *     }}
+ *     onTransferInserted={handleTransfer}
  * />
  */
 export const FinanceTransferSunburst = ({
@@ -242,19 +213,19 @@ export const FinanceTransferSunburst = ({
 
 
     /**
-     * Handles selection of a finance node in the Sunburst diagram.
-     *
-     * The first valid node becomes the transfer source. After a source
-     * has been selected, the next valid node becomes the destination.
-     *
-     * @param {Object|null|undefined} node
-     * Finance node selected in the diagram.
-     *
-     * @param {string} [node.id]
-     * Unique identifier of the selected finance node.
-     *
-     * @returns {void}
-     */
+    * Handles selection of a finance node in the Sunburst diagram.
+    *
+    * The first selected node becomes the transfer source.
+    * The second selected node becomes the destination.
+    *
+    * @param {Object|null|undefined} node
+    * Selected finance node.
+    *
+    * @param {string} [node.id]
+    * Unique identifier of the selected finance.
+    *
+    * @returns {void}
+    */
     const handleSelect = (node) => {
         // Při zahájení nového výběru se odstraní předchozí potvrzovací zpráva.
         setSuccessMessage("");
@@ -306,23 +277,20 @@ export const FinanceTransferSunburst = ({
 
 
     /**
-     * Validates and executes the selected finance transfer.
-     *
-     * The function verifies that:
-     *
-     * - both source and destination are selected,
-     * - the transfer amount is a valid positive number,
-     * - the source contains sufficient funds.
-     *
-     * After validation, the function executes the GraphQL mutation. On
-     * success, it invokes `onTransferInserted` and resets the component
-     * selection state.
-     *
-     * @async
-     *
-     * @returns {Promise<void>}
-     * Promise resolved after the transfer has been processed.
-     */
+    * Validates and executes the selected finance transfer.
+    *
+    * The function verifies that:
+    * - both source and destination are selected,
+    * - the amount is a valid positive number,
+    * - the source contains sufficient funds.
+    *
+    * After successful validation, the GraphQL mutation is executed.
+    *
+    * @async
+    *
+    * @returns {Promise<void>}
+    * Promise resolved after the transfer has been processed.
+    */
     const handleTransferConfirm = async () => {
         // Přesun nelze spustit, dokud není vybrán zdroj i cíl.
         if (!source || !destination) {
@@ -475,10 +443,13 @@ export const FinanceTransferSunburst = ({
 
 
     /**
-     * Clears the currently selected source, destination and transfer amount.
-     *
-     * @returns {void}
-     */
+    * Clears the currently selected transfer.
+    *
+    * The source, destination, highlighted node and entered amount
+    * are reset to their initial values.
+    *
+    * @returns {void}
+    */
     const handleCancel = () => {
         // Zrušení vybraného zdroje.
         setSource(null);

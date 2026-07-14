@@ -13,6 +13,15 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 // která uloží načtené transfery do Redux store.
 import { FinanceTransferActions } from "../Store/FinanceTransferSlice";
 
+/**
+ * GraphQL query used for loading a paginated collection of finance transfers.
+ *
+ * The query supports pagination and sorting through the supplied GraphQL
+ * variables and returns the basic information about each finance transfer.
+ *
+ * @constant
+ * @type {string}
+ */
 // GraphQL dotaz pro načtení stránky finančních transferů.
 // Dotaz přijímá volitelné parametry:
 // - skip: kolik záznamů přeskočit,
@@ -40,12 +49,33 @@ query financeTransferPage(
 }
 `;
 
+/**
+ * Lazily generated GraphQL query used for loading finance transfers.
+ *
+ * The query string is converted into an executable GraphQL request that
+ * can be dispatched by the asynchronous action framework.
+ *
+ * @constant
+ */
 // Z textového GraphQL dotazu vytvoří lazy query.
 // Výsledkem je objekt/funkce, kterou umí použít createAsyncGraphQLAction2.
 const FinanceTransferPageQuery = createQueryStrLazy(
   `${FinanceTransferPageQueryStr}`
 );
 
+/**
+ * Middleware that stores loaded finance transfers in the Redux store.
+ *
+ * The middleware extracts the collection of finance transfers from the
+ * GraphQL response, dispatches an action that stores the transfers in the
+ * Redux state and forwards the original result to the next middleware.
+ *
+ * @param {Object} result
+ * GraphQL response returned by the backend.
+ *
+ * @returns {Function}
+ * Redux thunk middleware handling the GraphQL result.
+ */
 // Middleware / callback funkce, která zpracuje výsledek GraphQL dotazu.
 // Jejím úkolem je vytáhnout z odpovědi seznam transferů
 // a uložit ho do Redux store.
@@ -78,6 +108,24 @@ const saveFinanceTransfersToStore = (result) => async (
   return next(result);
 };
 
+/**
+ * Asynchronous GraphQL action used for loading finance transfers.
+ *
+ * The action executes the prepared GraphQL query, stores the retrieved
+ * finance transfers in the Redux store and returns the original GraphQL
+ * response for further processing.
+ *
+ * @constant
+ *
+ * @example
+ * dispatch(
+ *     FinanceTransferPageAsyncAction({
+ *         skip: 0,
+ *         limit: 50,
+ *         orderby: "created_desc"
+ *     })
+ * );
+ */
 // Vytvoření finální asynchronní akce pro načítání finančních transferů.
 //
 // Tato akce:

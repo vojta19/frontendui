@@ -1,30 +1,24 @@
-// Import vlastní finance varianty komponenty CardCapsule.
-// Alias DefaultCardCapsule jasně označuje, že jde o výchozí komponentu,
-// kterou lze případně nahradit přes props.
+// Importuje výchozí komponentu obalové karty pro zobrazení finance.
 import {
     CardCapsule as DefaultCardCapsule
 } from "./CardCapsule";
 
-// Import výchozí komponenty pro zobrazení detailních údajů finance.
-// Alias DefaultMediumContent opět rozlišuje výchozí implementaci
-// od případné komponenty předané z nadřazené části aplikace.
+// Importuje výchozí komponentu zobrazující detailní informace o finance.
 import {
     MediumContent as DefaultMediumContent
 } from "./MediumContent";
 
-// Import panelu s dostupnými akcemi nad aktuální finanční položkou,
-// například editací, vytvořením nebo odstraněním.
+// Importuje panel s interaktivními akcemi (vytvoření, editace, mazání).
 import {
     InteractiveMutations
 } from "../Mutations/InteractiveMutations";
 
-// Import řádkové layoutové komponenty ze sdílené šablony.
+// Importuje komponentu řádku Bootstrap-like mřížky.
 import {
     Row
 } from "../../../../_template/src/Base/Components/Row";
 
-// Import předpřipravených sloupců pro levý detailní panel
-// a hlavní střední obsah stránky.
+// Importuje levý a prostřední sloupec rozvržení stránky.
 import {
     LeftColumn,
     MiddleColumn
@@ -34,13 +28,12 @@ import {
 /**
  * Displays the main two-column detail layout of a finance entity.
  *
- * The left column contains the finance details and available mutation
- * controls. The middle column is reserved for additional content such as
- * visualizations, scalar attributes or vector attributes.
+ * The left column contains the finance details together with the available
+ * mutation controls. The middle column is intended for additional content
+ * such as visualizations, scalar attributes or vector attributes.
  *
  * The default card and detail components can be replaced through component
- * properties, which allows the layout to be reused with custom rendering
- * implementations.
+ * properties, allowing the layout to be reused with custom implementations.
  *
  * @component
  *
@@ -56,13 +49,13 @@ import {
  * @param {string} [props.item.name]
  * Display name of the finance entity.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Additional content rendered in the middle column.
  *
- * @param {React.ComponentType<Object>} [props.CardCapsule=DefaultCardCapsule]
- * Card component used to render the outer container and detail section.
+ * @param {Function} [props.CardCapsule=DefaultCardCapsule]
+ * Component used to render the outer card and detail section.
  *
- * @param {React.ComponentType<Object>} [props.MediumContent=DefaultMediumContent]
+ * @param {Function} [props.MediumContent=DefaultMediumContent]
  * Component used to render the finance detail attributes.
  *
  * @returns {JSX.Element}
@@ -74,49 +67,46 @@ import {
  * </LargeCard>
  */
 export const LargeCard = ({
-    // Aktuální finanční entita zobrazovaná na detailní stránce.
+    // Finance entita zobrazovaná na stránce.
     item,
 
-    // Libovolný doplňkový obsah, který se vykreslí ve středním sloupci.
+    // Volitelný obsah vykreslený v pravém sloupci.
     children,
 
-    // Výchozí obalová karta může být přepsána vlastní komponentou.
+    // Komponenta použitá jako obalová karta.
     CardCapsule = DefaultCardCapsule,
 
-    // Výchozí detailní obsah může být rovněž nahrazen jinou implementací.
+    // Komponenta zobrazující detail finance.
     MediumContent = DefaultMediumContent
 }) => {
-    // Vrací hlavní dvousloupcový layout detailu finance.
+    // Vykreslí dvousloupcové rozvržení detailu finance.
     return (
-        // Vnější karta obaluje celý obsah stránky a pracuje s aktuálním itemem.
         <CardCapsule item={item}>
-
-            {/* Row vytvoří vodorovné rozložení jednotlivých sloupců. */}
+            {/* Hlavní řádek rozvržení stránky. */}
             <Row>
 
-                {/* Levý sloupec je určen pro základní informace a ovládací prvky. */}
+                {/* Levý sloupec s detailem a nástroji. */}
                 <LeftColumn>
 
-                    {/* Vnitřní karta s nadpisem Detail odděluje přehled atributů finance. */}
+                    {/* Karta obsahující základní informace o finance. */}
                     <CardCapsule
                         item={item}
                         title="Detail"
                     >
-                        {/* Vykreslení detailních údajů aktuální finanční položky. */}
+                        {/* Zobrazí detailní atributy finance. */}
                         <MediumContent item={item} />
                     </CardCapsule>
 
-                    {/* Panel s interaktivními akcemi nad aktuální financí. */}
+                    {/* Vykreslí panel s dostupnými akcemi nad financí. */}
                     <InteractiveMutations item={item} />
                 </LeftColumn>
 
-                {/* Střední sloupec slouží pro hlavní obsah,
-                    například Sunburst diagram nebo tabulky. */}
+                {/* Prostřední sloupec pro rozšiřující obsah. */}
                 <MiddleColumn>
-
-                    {/* Vykreslení obsahu předaného z rodičovské komponenty. */}
+                    {/* Vykreslí obsah předaný rodičovskou komponentou. */}
                     {children}
                 </MiddleColumn>
+
             </Row>
         </CardCapsule>
     );

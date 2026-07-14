@@ -26,24 +26,15 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>// Import hooku useCallback pro vytvoření memoizovaných funkcí,
-// které se zbytečně nevytvářejí při každém překreslení komponenty.
-import { useCallback } from "react";
+            <pre class="prettyprint source linenums"><code>import { useCallback } from "react";
 
-// Import GraphQL mutace sloužící k uložení změn finanční entity.
 import { UpdateAsyncAction } from "../Queries";
-
-// Import formuláře obsahujícího editovatelná pole finance.
 import { MediumEditableContent } from "./MediumEditableContent";
 
-// Import vlastního hooku, který zajišťuje kompletní logiku editace
-// (pracovní kopii dat, ukládání, zrušení změn apod.).
 import {
     useEditAction
 } from "../../../../dynamic/src/Hooks/useEditAction";
 
-// Import GraphQL kontextu aktuálně otevřené entity.
-// Díky němu lze po uložení synchronizovat změny i do ostatních komponent.
 import {
     useGQLEntityContext
 } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
@@ -57,9 +48,9 @@ import {
  * explicitly confirm or cancel the modifications using the provided action
  * buttons.
  *
- * After a successful update, the returned entity is propagated to the
- * surrounding GraphQL entity context so that other components can use the
- * current data.
+ * After a successful update, the returned finance entity is propagated to
+ * the surrounding GraphQL entity context so that other components can use
+ * the current data.
  *
  * @component
  *
@@ -81,7 +72,7 @@ import {
  * @param {string} [props.item.description]
  * Description of the finance entity.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Optional additional form fields or content rendered below the standard
  * editable finance fields.
  *
@@ -94,22 +85,13 @@ import {
  * &lt;/ConfirmEdit>
  */
 export const ConfirmEdit = ({
-    // Editovaná finanční položka.
     item,
-
-    // Volitelný dodatečný obsah vložený do formuláře.
     children
 }) => {
-
-    // Z GraphQL kontextu získává pouze funkci onChange,
-    // která slouží k aktualizaci sdílené entity po úspěšném uložení.
     const {
         onChange: contextOnChange
     } = useGQLEntityContext();
 
-    // Inicializace vlastního hooku pro editaci.
-    // Hook vytváří pracovní kopii dat (draft), sleduje změny
-    // a poskytuje funkce pro jejich potvrzení nebo zrušení.
     const {
         draft,
         dirty,
@@ -122,33 +104,24 @@ export const ConfirmEdit = ({
         UpdateAsyncAction,
         item,
         {
-            // Režim "confirm" znamená, že se změny odešlou
-            // až po stisku tlačítka "Uložit změny".
             mode: "confirm"
         }
     );
 
 
     /**
-     * Persists the current finance draft and synchronizes the returned entity
-     * with the surrounding GraphQL context.
-     *
-     * @async
-     *
-     * @returns {Promise&lt;Object|undefined>}
-     * Updated finance entity returned by the mutation, or `undefined` when
-     * the update was not completed.
-     */
-    // Funkce volaná po stisku tlačítka "Uložit změny".
-    // Nejprve odešle mutaci na server a následně synchronizuje
-    // vrácenou entitu se sdíleným GraphQL kontextem.
+    * Persists the current finance draft and synchronizes the returned entity
+    * with the surrounding GraphQL context.
+    *
+    * @async
+    *
+    * @returns {Promise&lt;Object|undefined>}
+    * Updated finance entity returned by the mutation, or `undefined` when
+    * the update was not completed.
+    */
     const handleConfirm = useCallback(async () => {
-
-        // Odešle změny na backend.
         const result = await onConfirm();
 
-        // Pokud bylo uložení úspěšné a existuje callback kontextu,
-        // aktualizuje data i v ostatních komponentách aplikace.
         if (
             result &amp;&amp;
             typeof contextOnChange === "function"
@@ -160,44 +133,27 @@ export const ConfirmEdit = ({
             });
         }
 
-        // Vrací aktualizovanou entitu volající komponentě.
         return result;
-
     }, [
         contextOnChange,
         onConfirm
     ]);
 
 
-    // Vykreslení editačního formuláře.
     return (
         &lt;MediumEditableContent
-
-            // Pokud existuje pracovní kopie (draft),
-            // zobrazí se právě ta. Jinak původní objekt.
             item={draft ?? item}
-
-            // Handler reagující na změnu hodnot formuláře.
             onChange={onChange}
-
-            // Handler reagující na opuštění vstupního pole.
             onBlur={onBlur}
         >
-            {/* Dodatečný obsah předaný rodičovskou komponentou */}
             {children}
 
-            {/* Vizuální oddělení formuláře od akčních tlačítek */}
             &lt;hr />
 
             &lt;button
                 type="button"
                 className="btn btn-warning form-control"
-
-                // Obnoví původní hodnoty a zahodí všechny neuložené změny.
                 onClick={onCancel}
-
-                // Tlačítko je aktivní pouze pokud existují změny
-                // a zároveň právě neprobíhá ukládání.
                 disabled={!dirty || saving}
             >
                 Zrušit změny
@@ -206,21 +162,13 @@ export const ConfirmEdit = ({
             &lt;button
                 type="button"
                 className="btn btn-primary form-control"
-
-                // Spustí uložení změn na server.
                 onClick={handleConfirm}
-
-                // Po dobu ukládání nebo pokud nejsou žádné změny
-                // není možné tlačítko použít.
                 disabled={!dirty || saving}
             >
-                {/* Během ukládání se změní text tlačítka,
-                    aby měl uživatel zpětnou vazbu o probíhající operaci. */}
                 {saving
                     ? "Ukládám změny..."
                     : "Uložit změny"}
             &lt;/button>
-
         &lt;/MediumEditableContent>
     );
 };</code></pre>
@@ -233,13 +181,13 @@ export const ConfirmEdit = ({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 09:09:35 GMT+0200 (středoevropský letní čas)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 14:27:02 GMT+0200 (středoevropský letní čas)
 </footer>
 
 <script> prettyPrint(); </script>

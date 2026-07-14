@@ -26,20 +26,14 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>// Import lokální komponenty Link přejmenované na ItemLink,
-// která vytváří odkazy na detail finanční položky.
-import { Link as ItemLink } from "./Link";
+            <pre class="prettyprint source linenums"><code>import { Link as ItemLink } from "./Link";
 
-// Import sdílených komponent pro vykreslení atributů,
-// formátování data a generování odkazů na systémové entity.
 import {
     Attribute,
     formatDateTime,
     Link
 } from "../../../../_template/src/Base/Components";
 
-// Import komponenty ProxyLink přejmenované na ProjectLink,
-// která slouží pro navigaci na detail projektu.
 import {
     ProxyLink as ProjectLink
 } from "../../../../_template/src/Base/Components/ProxyLink";
@@ -48,12 +42,15 @@ import {
 /**
  * Displays detailed information about a finance entity.
  *
- * The component presents the main scalar and relational attributes of a
- * finance record, including its names, identifier, parent finance, amount,
- * description, audit information and associated project.
+ * The component presents the main scalar, relational and audit attributes
+ * of a finance record, including its names, identifier, parent finance,
+ * amount, description, timestamps, users and associated project.
  *
- * Links are provided for the current finance, its parent finance, related
- * users and associated project where the required relation data is available.
+ * If the finance entity does not contain a direct project relation, the
+ * component attempts to determine the corresponding project from the
+ * subprojects of the parent finance. The matching is based on the work
+ * package code contained in the finance and project names, for example
+ * `WP1`, `WP2` or `WP3`.
  *
  * @component
  *
@@ -63,171 +60,215 @@ import {
  * @param {Object} props.item
  * Finance entity to display.
  *
- * ...
+ * @param {string} props.item.id
+ * Unique identifier of the finance entity.
+ *
+ * @param {string} [props.item.name]
+ * Czech name of the finance entity.
+ *
+ * @param {string} [props.item.nameEn]
+ * English name of the finance entity.
+ *
+ * @param {string|number} [props.item.order]
+ * Optional order or alternative display identifier.
+ *
+ * @param {string} [props.item.description]
+ * Textual description of the finance entity.
+ *
+ * @param {number} [props.item.value]
+ * Current financial amount assigned to the entity.
+ *
+ * @param {string} [props.item.lastchange]
+ * Date and time of the most recent modification.
+ *
+ * @param {string} [props.item.created]
+ * Date and time when the finance entity was created.
+ *
+ * @param {string} [props.item.masterfinanceId]
+ * Identifier of the parent finance entity.
+ *
+ * @param {Object} [props.item.masterfinance]
+ * Parent finance entity.
+ *
+ * @param {string} [props.item.masterfinance.id]
+ * Identifier of the parent finance.
+ *
+ * @param {string} [props.item.masterfinance.name]
+ * Display name of the parent finance.
+ *
+ * @param {Object} [props.item.masterfinance.project]
+ * Project associated with the parent finance.
+ *
+ * @param {Array&lt;Object>} [props.item.masterfinance.project.subprojects]
+ * Subprojects used for fallback project matching.
+ *
+ * @param {Object} [props.item.createdby]
+ * User who created the finance record.
+ *
+ * @param {string} [props.item.createdby.id]
+ * Identifier of the creating user.
+ *
+ * @param {string} [props.item.createdby.fullname]
+ * Full name of the creating user.
+ *
+ * @param {Object} [props.item.changedby]
+ * User who last modified the finance record.
+ *
+ * @param {string} [props.item.changedby.id]
+ * Identifier of the modifying user.
+ *
+ * @param {string} [props.item.changedby.fullname]
+ * Full name of the modifying user.
+ *
+ * @param {Object} [props.item.project]
+ * Project directly associated with the finance entity.
+ *
+ * @param {string} [props.item.project.id]
+ * Unique identifier of the associated project.
+ *
+ * @param {string} [props.item.project.name]
+ * Display name of the associated project.
+ *
+ * @param {*} [props.children]
+ * Optional additional content rendered after the finance attributes.
+ *
+ * @returns {JSX.Element}
+ * Structured presentation of the finance entity.
+ *
+ * @example
+ * &lt;MediumContent item={finance} />
  */
 export const MediumContent = ({
-    // Aktuální finanční položka zobrazená na stránce.
     item,
-
-    // Volitelný obsah připojený za standardní výpis atributů.
     children
 }) => {
+    /**
+    * Extracts a normalized work package code from a name.
+    *
+    * The helper searches for values such as `WP1`, `WP 2` or `wp3`
+    * and returns the normalized uppercase form without spaces.
+    *
+    * @param {string} [name=""]
+    * Finance or project name.
+    *
+    * @returns {string|undefined}
+    * Normalized work package code or `undefined` when no code is found.
+    */
+    const getWpCode = (name = "") => {
+        return name
+            .match(/\bWP\s*\d+\b/i)?.[0]
+            ?.replace(/\s+/g, "")
+            .toUpperCase();
+    };
+
+    const financeWpCode = getWpCode(item?.name);
+
+    const matchedProject = item?.masterfinance?.project?.subprojects?.find(
+        (project) => getWpCode(project?.name) === financeWpCode
+    );
+
+    const displayedProject = item?.project ?? matchedProject;
+
+    
     return (
         &lt;>
-            {/* Český název finanční položky s odkazem na její detail. */}
             &lt;Attribute label="Název">
                 &lt;ItemLink item={item} />
             &lt;/Attribute>
 
-            {/* Anglický název finance.
-                Pokud není vyplněn, zobrazí se pomlčka. */}
             &lt;Attribute label="EN název">
                 &lt;ItemLink item={item}>
                     {item?.nameEn || "-"}
                 &lt;/ItemLink>
             &lt;/Attribute>
 
-            {/* Primární identifikátor finance.
-                Pokud existuje pořadové číslo (order), zobrazí se přednostně. */}
             &lt;Attribute label="ID">
                 &lt;ItemLink item={item}>
                     {item?.order || item?.id || "Data Error"}
                 &lt;/ItemLink>
             &lt;/Attribute>
 
-            {/* Informace o nadřazené finanční položce. */}
             &lt;Attribute label="Nadřazená finance">
                 {item?.masterfinanceId ? (
-                    // Pokud nadřazená finance existuje,
-                    // zobrazí se jako klikací odkaz.
                     &lt;ItemLink item={item?.masterfinance}>
-
-                        {/* Název nadřazené finance,
-                            případně pouze její ID. */}
                         {item?.masterfinance?.name ||
                             item?.masterfinanceId}
-
                         {" "}
-
-                        {/* V závorce se vždy vypíše ID nadřazené finance. */}
                         ({item?.masterfinanceId})
                     &lt;/ItemLink>
                 ) : (
-                    // Pokud finance nemá rodiče, zobrazí se pomlčka.
                     "-"
                 )}
             &lt;/Attribute>
 
-            {/* Oddělení základních identifikačních údajů
-                od auditních a doplňkových informací. */}
             &lt;hr />
 
-            {/* Datum poslední změny a uživatel,
-                který změnu provedl. */}
             &lt;Attribute label="Poslední změna">
-                {
-                    item?.lastchange
-                        ? formatDateTime(item.lastchange)
-                        : "-"
-                }
-
-                {
-                    item?.changedby?.fullname
-                        ? ` – ${item.changedby.fullname}`
-                        : ""
-                }
+                {item?.lastchange
+                    ? formatDateTime(item.lastchange)
+                    : "-"}
             &lt;/Attribute>
 
-            {/* Datum vytvoření finanční položky. */}
             &lt;Attribute label="Vytvořeno">
-                {
-                    item?.created
-                        ? formatDateTime(item.created)
-                        : "-"
-                }
+                {item?.created
+                    ? formatDateTime(item.created)
+                    : "-"}
             &lt;/Attribute>
 
-            {/* Textový popis finanční položky. */}
             &lt;Attribute label="Popis">
                 {item?.description || "-"}
             &lt;/Attribute>
 
-            {/* Finanční částka.
-                Číselná hodnota se naformátuje podle české lokalizace
-                a doplní měnovou jednotkou Kč. */}
             &lt;Attribute label="Částka">
-                {
-                    typeof item?.value === "number"
-                        ? `${item.value.toLocaleString("cs-CZ")} Kč`
-                        : item?.value ?? "-"
-                }
+                {typeof item?.value === "number"
+                    ? `${item.value.toLocaleString("cs-CZ")} Kč`
+                    : item?.value ?? "-"}
             &lt;/Attribute>
 
-            {/* Uživatel, který finanční položku vytvořil. */}
             &lt;Attribute label="Vytvořil">
-                {
-                    item?.createdby ? (
-                        &lt;Link item={item.createdby}>
-                            {item?.createdby?.fullname}
-                        &lt;/Link>
-                    ) : (
-                        "-"
-                    )
-                }
+                {item?.createdby ? (
+                    &lt;Link item={item.createdby}>
+                        {item?.createdby?.fullname}
+                    &lt;/Link>
+                ) : (
+                    "-"
+                )}
             &lt;/Attribute>
 
-            {/* Uživatel, který provedl poslední změnu,
-                společně s časem změny. */}
             &lt;Attribute label="Změnil">
-                {
-                    item?.changedby ? (
-                        &lt;>
-                            {/* Klikací odkaz na uživatele,
-                                který finance naposledy upravil. */}
-                            &lt;Link item={item.changedby}>
-                                {item?.changedby?.fullname}
-                            &lt;/Link>
+                {item?.changedby ? (
+                    &lt;>
+                        &lt;Link item={item.changedby}>
+                            {item?.changedby?.fullname}
+                        &lt;/Link>
 
-                            {/* Pokud existuje datum změny,
-                                vypíše se za lomítkem. */}
-                            {item?.lastchange &amp;&amp; (
-                                &lt;>
-                                    {" / "}
-                                    {formatDateTime(item.lastchange)}
-                                &lt;/>
-                            )}
-                        &lt;/>
-                    ) : (
-                        "-"
-                    )
-                }
+                        {item?.lastchange &amp;&amp; (
+                            &lt;>
+                                {" / "}
+                                {formatDateTime(item.lastchange)}
+                            &lt;/>
+                        )}
+                    &lt;/>
+                ) : (
+                    "-"
+                )}
             &lt;/Attribute>
 
-            {/* Navázaný projekt,
-                pokud je finanční položka přiřazena k projektu. */}
             &lt;Attribute label="Projekt">
-                {
-                    item?.project?.id &amp;&amp;
-                    item?.project?.name ? (
-                        &lt;ProjectLink
-                            // Dynamicky sestavená cesta
-                            // na detail konkrétního projektu.
-                            to={
-                                `/projekt/ProjectGQLModel/view/` +
-                                `${item.project.id}`
-                            }
-                        >
-                            {/* Název propojeného projektu. */}
-                            {item.project.name}
-                        &lt;/ProjectLink>
-                    ) : (
-                        "-"
-                    )
-                }
+                {displayedProject?.id &amp;&amp; displayedProject?.name ? (
+                    &lt;ProjectLink
+                        to={
+                            `/projekt/ProjectGQLModel/view/` +
+                            `${displayedProject.id}`
+                        }
+                    >
+                        {displayedProject.name}
+                    &lt;/ProjectLink>
+                ) : (
+                    "-"
+                )}
             &lt;/Attribute>
 
-            {/* Doplňkový obsah předaný z nadřazené komponenty,
-                například další atributy nebo vlastní sekce. */}
             {children}
         &lt;/>
     );
@@ -241,13 +282,13 @@ export const MediumContent = ({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteAsyncAction">DeleteAsyncAction</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#DeleteMutation">DeleteMutation</a></li><li><a href="global.html#DeleteMutationStr">DeleteMutationStr</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceCorrectionInsertAsyncAction">FinanceCorrectionInsertAsyncAction</a></li><li><a href="global.html#FinanceCorrectionInsertMutation">FinanceCorrectionInsertMutation</a></li><li><a href="global.html#FinanceCorrectionInsertMutationStr">FinanceCorrectionInsertMutationStr</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferPageAsyncAction">FinanceTransferPageAsyncAction</a></li><li><a href="global.html#FinanceTransferPageQuery">FinanceTransferPageQuery</a></li><li><a href="global.html#FinanceTransferPageQueryStr">FinanceTransferPageQueryStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#FinanceValueUpdateAsyncAction">FinanceValueUpdateAsyncAction</a></li><li><a href="global.html#FinanceValueUpdateMutation">FinanceValueUpdateMutation</a></li><li><a href="global.html#FinanceValueUpdateMutationStr">FinanceValueUpdateMutationStr</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumCardScalars">MediumCardScalars</a></li><li><a href="global.html#MediumCardVectors">MediumCardVectors</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageBase">PageBase</a></li><li><a href="global.html#PageBody">PageBody</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageCreateItem">PageCreateItem</a></li><li><a href="global.html#PageDeleteItem">PageDeleteItem</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#PageVector">PageVector</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#ReadPageAsyncAction">ReadPageAsyncAction</a></li><li><a href="global.html#ReadPageQuery">ReadPageQuery</a></li><li><a href="global.html#ReadPageQueryStr">ReadPageQueryStr</a></li><li><a href="global.html#ReadQuery">ReadQuery</a></li><li><a href="global.html#ReadQueryStr">ReadQueryStr</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#ScalarAttributeBase">ScalarAttributeBase</a></li><li><a href="global.html#ScalarAttributeBind">ScalarAttributeBind</a></li><li><a href="global.html#ScalarAttributeCapsule">ScalarAttributeCapsule</a></li><li><a href="global.html#SearchAsyncAction">SearchAsyncAction</a></li><li><a href="global.html#SearchAsyncActionQuery">SearchAsyncActionQuery</a></li><li><a href="global.html#SearchQueryStr">SearchQueryStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeAsyncAction">TemplateScalarAttributeAsyncAction</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateScalarAttributeQuery">TemplateScalarAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeAsyncAction">TemplateVectorsAttributeAsyncAction</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttributeQuery">TemplateVectorsAttributeQuery</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#TrivialVisualiserDiv">TrivialVisualiserDiv</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateAsyncAction">UpdateAsyncAction</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#UpdateMutation">UpdateMutation</a></li><li><a href="global.html#UpdateMutationStr">UpdateMutationStr</a></li><li><a href="global.html#VectorAttribute">VectorAttribute</a></li><li><a href="global.html#VectorAttributeFactory">VectorAttributeFactory</a></li><li><a href="global.html#VectorAttribute_">VectorAttribute_</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterParameterName">filterParameterName</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li><li><a href="global.html#safeParseWhere">safeParseWhere</a></li><li><a href="global.html#saveFinanceTransfersToStore">saveFinanceTransfersToStore</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 09:09:35 GMT+0200 (středoevropský letní čas)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 14:27:02 GMT+0200 (středoevropský letní čas)
 </footer>
 
 <script> prettyPrint(); </script>

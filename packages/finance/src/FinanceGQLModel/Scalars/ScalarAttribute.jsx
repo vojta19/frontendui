@@ -21,6 +21,29 @@ import { selectItemById } from "../../../../dynamic/src/Store";
 // Importuje hook 'useMemo' z knihovny React pro memoizaci výpočetně náročných operací (filtrace klíčů)
 import { useMemo } from "react";
 
+/**
+ * Layout wrapper used for displaying a scalar attribute.
+ *
+ * The component arranges the attribute label and its content into a
+ * two-column row using the shared layout components.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} props.attribute_name
+ * Name of the scalar attribute.
+ *
+ * @param {Object} [props.item]
+ * Entity owning the scalar attribute.
+ *
+ * @param {React.ReactNode} props.children
+ * Content rendered for the scalar attribute.
+ *
+ * @returns {JSX.Element}
+ * Two-column layout for a scalar attribute.
+ */
 // Exportuje pomocnou layout komponentu ScalarAttributeCapsule, která definuje řádkovou strukturu popisku a obsahu
 export const ScalarAttributeCapsule = ({ attribute_name, item, children }) => {
     
@@ -38,6 +61,26 @@ export const ScalarAttributeCapsule = ({ attribute_name, item, children }) => {
     ); // Konec návratové hodnoty komponenty ScalarAttributeCapsule
 }; // Konec definice komponenty ScalarAttributeCapsule
 
+/**
+ * Displays a scalar attribute using the standard medium entity card.
+ *
+ * The component wraps the supplied entity inside a
+ * `ScalarAttributeCapsule` and renders its details using `MediumCard`.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} props.attribute_name
+ * Name of the scalar attribute.
+ *
+ * @param {Object} props.item
+ * Referenced entity displayed inside the card.
+ *
+ * @returns {JSX.Element}
+ * Rendered scalar attribute.
+ */
 // Exportuje základní prezentační komponentu ScalarAttributeBase, která vkládá MediumCard do obalové kapsle řádku
 export const ScalarAttributeBase = ({ attribute_name, item }) => {
     
@@ -49,6 +92,27 @@ export const ScalarAttributeBase = ({ attribute_name, item }) => {
     ); // Konec návratové hodnoty komponenty ScalarAttributeBase
 }; // Konec definice komponenty ScalarAttributeBase
 
+/**
+ * Connects a scalar attribute to the Redux store.
+ *
+ * The component retrieves the referenced entity from the application
+ * store using its identifier and renders it using
+ * `ScalarAttributeBase`.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} props.attribute_name
+ * Name of the scalar attribute.
+ *
+ * @param {Object} props.item
+ * Entity containing the scalar reference.
+ *
+ * @returns {JSX.Element}
+ * Store-connected scalar attribute.
+ */
 // Exportuje komponentu ScalarAttributeBind, která reaktivně propojuje lokální atribut s daty z globálního Redux storu
 export const ScalarAttributeBind = ({ attribute_name, item }) => {
     
@@ -67,6 +131,24 @@ export const ScalarAttributeBind = ({ attribute_name, item }) => {
     ); // Konec návratové hodnoty komponenty ScalarAttributeBind
 }; // Konec definice komponenty ScalarAttributeBind
 
+/**
+ * Displays all scalar attributes of an entity.
+ *
+ * The component scans all properties of the supplied entity and renders
+ * every referenced object (excluding arrays) as a separate scalar
+ * attribute using the shared medium card layout.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.item
+ * Entity whose scalar attributes should be displayed.
+ *
+ * @returns {JSX.Element}
+ * Card containing all detected scalar attributes.
+ */
 // Exportuje sumární komponentu MediumCardScalars, která automaticky projde objekt a pro všechny nalezené pod-objekty vytvoří vazbu
 export const MediumCardScalars = ({ item }) => {
     

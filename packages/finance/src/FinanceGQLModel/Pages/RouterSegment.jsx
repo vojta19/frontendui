@@ -19,33 +19,38 @@ import { DeleteItemURI, UpdateItemURI } from "../Components";
 // Importuje konstanty URI cest pro operace vytvoření, zobrazení a výpisu seznamu z lokálního adresáře Components
 import { CreateURI, ReadItemURI, VectorItemsURI } from "../Components";
 
+
 /**
- * Definice segmentů rout pro Template stránky.
+ * Route configuration for the Finance module.
  *
- * Každý objekt v tomto poli popisuje jednu trasu (route) v aplikaci:
- * - `path`: Stringová URL s parametrem `:id`, která identifikuje konkrétní instanci template entity.
- * - `element`: React komponenta, která se má renderovat při shodě s cestou.
+ * The exported array defines all application routes related to finance
+ * entities. Each route maps a URL pattern to the React component responsible
+ * for rendering the corresponding page.
  *
- * Pokud komponenta stránky podporuje children jako render funkci,
- * všechny children předané přes router budou dostávat objekt:
- * - `template` — načtená entita podle `:id`
- * - `onChange` — callback pro změnu hodnoty pole
- * - `onBlur` — callback pro blur event (například při opuštění pole)
+ * The configuration includes routes for:
+ *
+ * - listing finance entities,
+ * - displaying finance details,
+ * - creating a new finance entity,
+ * - updating an existing finance entity,
+ * - deleting a finance entity,
+ * - handling alternative dynamic URL patterns.
+ *
+ * Each route object contains:
+ *
+ * - `path` – URL pattern registered in React Router,
+ * - `element` – React component rendered for the matching route.
  *
  * @constant
- * @type {Array<{ path: string, element: JSX.Element }>}
+ * @type {Array<{path: string, element: JSX.Element}>}
  *
  * @example
- * // Tato route reaguje na URL jako "/template/123"
- * {
- * path: "/template/:id",
- * element: <TemplatePage />
- * }
+ * FinanceGQLModelRouterSegments
  *
- * // Editační route: "/template/edit/123"
+ * @example
  * {
- * path: "/template/edit/:id",
- * element: <TemplateEditPage />
+ *     path: "/finance/FinanceGQLModel/view/:id",
+ *     element: <PageReadItem />
  * }
  */
 // Exportuje konfigurační pole objektů definující aplikační cesty (routes) pro celý finanční subsystém
@@ -73,13 +78,13 @@ export const FinanceGQLModelRouterSegments = [
         path: UpdateItemURI,
         // Přiřazená komponenta zajišťující sběr dat a odeslání mutace úpravy
         element: (<PageUpdateItem />),
-    },   
+    },
     {
         // Route cesta pro zobrazení celostránkového potvrzení ke smazání položky podle ID
         path: DeleteItemURI,
         // Přiřazená komponenta se systémem odstranění záznamu
         element: (<PageDeleteItem />),
-    },   
+    },
     // PŮVODNÍ ZAKOMENTOVANÁ ROUTE PRO ROLÍCH NA ENTITĚ:
     // {
     // path: "sad",
@@ -96,5 +101,5 @@ export const FinanceGQLModelRouterSegments = [
         path: ReadItemURI.replace("view", ":any"),
         // Zachytává alternativní nebo doplňková URL schémata detailu a směruje je na standardní PageReadItem
         element: (<PageReadItem />),
-    }    
-]; // Konec definice pole FinanceGQLModelRouterSegments
+    }
+];

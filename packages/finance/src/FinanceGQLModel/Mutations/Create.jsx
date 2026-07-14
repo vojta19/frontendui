@@ -1,16 +1,14 @@
-// Import URI adres a formulářové komponenty používané při vytváření nové finance.
+// Importuje komponenty pro tvorbu entity, editovatelný obsah a URI pro zobrazení vytvořené položky.
 import {
     CreateURI,
     MediumEditableContent,
     ReadItemURI
 } from "../Components";
 
-// Import GraphQL async akce, která odesílá požadavek na vytvoření nové finance.
+// Importuje asynchronní akci pro vložení nové finance entity.
 import { InsertAsyncAction } from "../Queries";
 
-// Import základních create komponent ze sdílené šablony.
-// Jednotlivé komponenty jsou přejmenovány pomocí aliasu Base,
-// aby bylo zřejmé, že v tomto souboru vznikají jejich finance varianty.
+// Importuje základní komponenty pro vytváření entity z templatu.
 import {
     CreateBody as BaseCreateBody,
     CreateButton as BaseCreateButton,
@@ -22,27 +20,30 @@ import {
 /**
  * Default editable content used by all finance creation workflows.
  *
+ * The component forwards all received properties to
+ * `MediumEditableContent`.
+ *
+ * @component
+ *
  * @param {Object} props
  * Properties forwarded to `MediumEditableContent`.
  *
  * @returns {JSX.Element}
  * Editable finance form.
  */
-// Výchozí obsah formuláře pro vytvoření finance.
-// Všechny přijaté props se bez změny předají komponentě MediumEditableContent.
+// Definuje výchozí obsah pro vytváření financí.
 const DefaultContent = (props) => (
     <MediumEditableContent {...props} />
 );
 
 
 /**
- * Default GraphQL mutation used to create finance entities.
+ * Default asynchronous GraphQL action used to create finance entities.
  *
  * @constant
  * @type {Function}
  */
-// Lokální konstanta odkazuje na výchozí async akci pro vložení nové finance.
-// Díky tomu ji lze jednotně používat ve všech create komponentách.
+// Uchovává výchozí mutační akci pro vytvoření finance entity.
 const MutationAsyncAction = InsertAsyncAction;
 
 
@@ -55,26 +56,21 @@ const MutationAsyncAction = InsertAsyncAction;
  * @constant
  * @type {{oneOfRoles: string[], mode: string}}
  */
-// Společná konfigurace oprávnění pro všechny akce vytváření finance.
+// Definuje pravidla oprávnění pro tvorbu financí.
 const permissions = {
-    // Operaci může provést pouze uživatel s rolí administrátor.
     oneOfRoles: ["administrátor"],
-
-    // Režim absolute znamená, že se oprávnění kontroluje globálně,
-    // nikoli vůči konkrétní entitě.
     mode: "absolute"
 };
 
 
 /**
- * Default draft used when creating a new finance entity.
+ * Default finance entity draft used during creation.
  *
  * @constant
  * @type {{name: string}}
  */
-// Výchozí pracovní objekt použitý při otevření formuláře nové finance.
+// Definuje počáteční data nově vytvářené finance entity.
 const defaultitem = {
-    // Nová finance dostane dočasný výchozí název.
     name: "Nový"
 };
 
@@ -83,7 +79,7 @@ const defaultitem = {
  * Renders a navigation link to the finance creation page.
  *
  * The component wraps `BaseCreateLink`, applies the default create URI
- * and enforces role permissions.
+ * and enforces the configured role permissions.
  *
  * @component
  *
@@ -91,42 +87,34 @@ const defaultitem = {
  * Component properties.
  *
  * @param {string} [props.uriPattern=CreateURI]
- * URI pattern used for navigation to the finance creation page.
+ * URI pattern used for navigation to the creation page.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Content rendered inside the link.
  *
  * @returns {JSX.Element}
- * Permission-aware navigation link.
+ * Permission-aware navigation link to the finance creation page.
  *
  * @example
  * <CreateLink className="btn btn-success">
  *     Vytvořit nový
  * </CreateLink>
  */
+// Exportuje komponentu pro odkaz na stránku tvorby financí.
 export const CreateLink = ({
-    // URI cílové stránky pro vytvoření nové finance.
     uriPattern = CreateURI,
-
-    // Ostatní vlastnosti odkazu, například className nebo children.
     ...props
 }) => (
-    // Finance wrapper nad základní create link komponentou.
     <BaseCreateLink
-        // Přeposlání všech ostatních vlastností.
         {...props}
-
-        // Nastavení cílové URI pro vytvoření nové položky.
         uriPattern={uriPattern}
-
-        // Aplikace společné kontroly oprávnění.
         {...permissions}
     />
 );
 
 
 /**
- * Displays a modal dialog used for creating a finance entity.
+ * Displays a modal dialog for creating a finance entity.
  *
  * The component wraps `BaseCreateDialog`, injects the finance-specific
  * editable form and initializes the dialog with the default finance draft.
@@ -139,17 +127,17 @@ export const CreateLink = ({
  * @param {string} [props.title="Nov(ý/é)"]
  * Dialog title.
  *
- * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
- * Component rendering editable finance fields.
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
  *
  * @param {string} [props.readItemURI=ReadItemURI]
  * URI used after successful creation.
  *
  * @param {Object} [props.item=defaultitem]
- * Initial draft of the finance entity.
+ * Initial finance entity draft.
  *
  * @param {Function} [props.onOk]
- * Callback executed after confirmation.
+ * Callback executed after successful confirmation.
  *
  * @param {Function} [props.onCancel]
  * Callback executed when the dialog is cancelled.
@@ -157,39 +145,20 @@ export const CreateLink = ({
  * @returns {JSX.Element}
  * Finance creation dialog.
  */
+// Exportuje komponentu pro dialog tvorby finance entity.
 export const CreateDialog = ({
-    // Nadpis zobrazený v modálním dialogu.
     title = "Nov(ý/é)",
-
-    // Komponenta formuláře použitá uvnitř dialogu.
-    // Alias defaultContent odlišuje prop od výchozí konstanty.
     DefaultContent: defaultContent = DefaultContent,
-
-    // URI použité po úspěšném vytvoření nové entity.
     readItemURI = ReadItemURI,
-
-    // Počáteční pracovní objekt nové finance.
     item = defaultitem,
-
-    // Ostatní vlastnosti dialogu, například onOk nebo onCancel.
     ...props
 }) => {
     return (
-        // Využití základního create dialogu ze sdílené šablony.
         <BaseCreateDialog
-            // Přeposlání ostatních parametrů.
             {...props}
-
-            // Nastavení nadpisu dialogu.
             title={title}
-
-            // Vložení finance formuláře do dialogu.
             DefaultContent={defaultContent}
-
-            // Cílová URI po úspěšném vytvoření.
             readItemURI={readItemURI}
-
-            // Počáteční data formuláře.
             item={item}
         />
     );
@@ -199,8 +168,8 @@ export const CreateDialog = ({
 /**
  * Renders a button that opens the finance creation dialog.
  *
- * The component wraps `BaseCreateButton`, supplies the default finance form,
- * creation dialog, GraphQL mutation and permission configuration.
+ * The component wraps `BaseCreateButton`, supplies the default finance
+ * form, creation dialog, GraphQL mutation and permission configuration.
  *
  * @component
  *
@@ -208,13 +177,13 @@ export const CreateDialog = ({
  * Component properties.
  *
  * @param {Function} [props.mutationAsyncAction=InsertAsyncAction]
- * GraphQL mutation executed when a new finance entity is created.
+ * Asynchronous action used to create a finance entity.
  *
- * @param {React.ComponentType<Object>} [props.CreateDialog=CreateDialog]
+ * @param {Function} [props.CreateDialog=CreateDialog]
  * Dialog component used to collect finance data.
  *
- * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
- * Component rendering editable finance fields.
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
  *
  * @param {string} [props.readItemURI=ReadItemURI]
  * URI used after successful creation.
@@ -223,9 +192,9 @@ export const CreateDialog = ({
  * RBAC context passed to permission checking.
  *
  * @param {Object} [props.item=defaultitem]
- * Initial finance draft.
+ * Initial finance entity draft.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Content rendered inside the button.
  *
  * @returns {JSX.Element}
@@ -236,54 +205,25 @@ export const CreateDialog = ({
  *     Vytvořit nový
  * </CreateButton>
  */
+// Exportuje komponentu pro tlačítko tvorby finance entity.
 export const CreateButton = ({
-    // Async akce spuštěná po potvrzení formuláře.
     mutationAsyncAction = MutationAsyncAction,
-
-    // Komponenta dialogu použitá tlačítkem.
-    // Alias CreateDialog_ zabraňuje kolizi s exportovanou komponentou stejného názvu.
     CreateDialog: CreateDialog_ = CreateDialog,
-
-    // Komponenta obsahující editovatelná pole.
     DefaultContent: defaultContent = DefaultContent,
-
-    // URI detailu nově vytvořené finance.
     readItemURI = ReadItemURI,
-
-    // RBAC objekt použitý při kontrole oprávnění.
     rbacitem,
-
-    // Počáteční data nové finance.
     item = defaultitem,
-
-    // Ostatní vlastnosti tlačítka, například text nebo CSS třídy.
     ...props
 }) => {
     return (
-        // Základní tlačítko zajišťuje otevření dialogu a odeslání mutace.
         <BaseCreateButton
-            // Přeposlání standardních vlastností tlačítka.
             {...props}
-
-            // Formulář zobrazený v dialogu.
             DefaultContent={defaultContent}
-
-            // Dialog otevřený po kliknutí na tlačítko.
             CreateDialog={CreateDialog_}
-
-            // Adresa použitá po vytvoření finance.
             readItemURI={readItemURI}
-
-            // RBAC kontext pro kontrolu přístupu.
             rbacitem={rbacitem}
-
-            // Počáteční pracovní objekt.
             item={item}
-
-            // GraphQL async akce pro vložení záznamu.
             mutationAsyncAction={mutationAsyncAction}
-
-            // Společná konfigurace oprávnění.
             {...permissions}
         />
     );
@@ -291,11 +231,11 @@ export const CreateButton = ({
 
 
 /**
- * Renders the full-page finance creation workflow.
+ * Renders the full-page workflow for creating a finance entity.
  *
- * The component wraps `BaseCreateBody`, injects the finance creation form,
- * configures the default GraphQL mutation and determines the destination
- * page after successful creation.
+ * The component wraps `BaseCreateBody`, injects the finance creation
+ * form, configures the default GraphQL mutation and determines the
+ * destination page after successful creation.
  *
  * @component
  *
@@ -303,10 +243,10 @@ export const CreateButton = ({
  * Component properties.
  *
  * @param {Function} [props.mutationAsyncAction=InsertAsyncAction]
- * GraphQL mutation executed during finance creation.
+ * Asynchronous action used to create a finance entity.
  *
- * @param {React.ComponentType<Object>} [props.DefaultContent=DefaultContent]
- * Component rendering editable finance fields.
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component used to render editable finance fields.
  *
  * @param {string} [props.readItemURI=ReadItemURI]
  * URI used after successful creation.
@@ -317,8 +257,8 @@ export const CreateButton = ({
  * @param {Function} [props.onCancel]
  * Callback executed when creation is cancelled.
  *
- * @param {React.ReactNode} [props.children]
- * Additional content rendered inside the workflow.
+ * @param {*} [props.children]
+ * Optional content rendered inside the creation workflow.
  *
  * @returns {JSX.Element}
  * Full-page finance creation interface.
@@ -326,32 +266,18 @@ export const CreateButton = ({
  * @example
  * <CreateBody />
  */
+// Exportuje komponentu pro celou stránku tvorby finance entity.
 export const CreateBody = ({
-    // Async akce použitá při odeslání celostránkového formuláře.
     mutationAsyncAction = MutationAsyncAction,
-
-    // Komponenta editovatelných polí.
     DefaultContent: defaultContent = DefaultContent,
-
-    // URI detailu nově vytvořené položky.
     readItemURI = ReadItemURI,
-
-    // Ostatní vlastnosti workflow, například callbacky a children.
     ...props
 }) => {
     return (
-        // BaseCreateBody zajišťuje kompletní celostránkový create proces.
         <BaseCreateBody
-            // Přeposlání ostatních vlastností.
             {...props}
-
-            // Vložení finance formuláře.
             DefaultContent={defaultContent}
-
-            // Cílová URI po úspěšném vytvoření.
             readItemURI={readItemURI}
-
-            // Async GraphQL akce použitá k uložení nové entity.
             mutationAsyncAction={mutationAsyncAction}
         />
     );

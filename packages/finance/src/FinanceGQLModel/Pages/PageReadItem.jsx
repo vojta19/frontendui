@@ -1,34 +1,45 @@
 // Importuje komponentu GeneratedContentBase ze souboru Page.
-// GeneratedContentBase je výchozí obsah stránky,
-// který řeší načítání transferů, přepočet hodnot a vykreslení Sunburst grafu.
-// Importuje komponentu PageItemBase ze souboru PageItemBase.
-// PageItemBase tvoří základní obal detailové stránky.
-// Stará se hlavně o načtení konkrétní entity podle ID z URL.
-
+// GeneratedContentBase představuje výchozí obsah stránky a zajišťuje
+// načtení transferů, přepočet finančních hodnot a vykreslení Sunburst diagramu.
 import { GeneratedContentBase } from "./Page"
-// PAVLE NAUČ SE ČÍST S POROZUMĚNÍM PROSÍM PAGEBASE A PAGE NEJSOU STEJNÉ SOUBORY :)
+
+// Importuje základní obal detailové stránky.
+// PageItemBase se stará o načtení entity podle ID a vytvoření základního
+// rozložení stránky.
 import { PageItemBase } from "./PageBase"
 
+
 /**
- * Komponenta PageReadItem slouží pro zobrazení detailu entity v režimu čtení.
+ * Displays the read-only detail page of a finance entity.
  *
- * Sama o sobě neřeší výpočty ani render grafu.
- * Pouze nastavuje, jaká vnitřní komponenta se má použít jako obsah stránky,
- * a vše předává do PageItemBase.
+ * The component acts as a lightweight wrapper around `PageItemBase`.
+ * It selects which component will be rendered as the page content and
+ * forwards all remaining properties to the underlying page implementation.
  *
- * Výchozí SubPage je GeneratedContentBase,
- * takže pokud nepředáme jinou komponentu,
- * stránka automaticky použije Sunburst graf a logiku finančních transferů.
+ * By default, the page uses `GeneratedContentBase`, which provides
+ * the finance detail, transfer visualization and Sunburst diagram.
  *
  * @component
- * @param {Object} props - Vlastnosti předané komponentě.
+ *
+ * @param {Object} props
+ * Component properties.
+ *
  * @param {React.ComponentType} [props.SubPage=GeneratedContentBase]
- * Komponenta, která se vykreslí jako vnitřní obsah stránky.
- * @param {...any} props
- * Další vlastnosti, které se beze změny předají do PageItemBase.
+ * Component rendered inside the detail page.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional child components forwarded to `PageItemBase`.
  *
  * @returns {JSX.Element}
- * Vrací detailovou stránku obalenou přes PageItemBase.
+ * Read-only finance detail page.
+ *
+ * @example
+ * <PageReadItem />
+ *
+ * @example
+ * <PageReadItem
+ *     SubPage={MyCustomContent}
+ * />
  */
 export const PageReadItem = ({
     // Pokud není SubPage předána zvenku,

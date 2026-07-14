@@ -1,6 +1,4 @@
-// Import formulářové komponenty Input ze sdílené šablony.
-// Používá se pro vytváření vstupních polí formuláře.
-import { Input } from "../../../../_template/src/Base/FormControls/Input";
+import { Input } from "../../../../_template/src/Base/FormControls/Input"; // Importuje univerzální formulářovou komponentu pro zadávání textových hodnot.
 
 /**
  * Renders an editable form for a finance entity.
@@ -11,7 +9,7 @@ import { Input } from "../../../../_template/src/Base/FormControls/Input";
  *
  * The edited values are propagated through the supplied event handlers.
  * Additional controls (such as Save or Cancel buttons) can be injected
- * through the `children` property.
+ * through the children property.
  *
  * @component
  *
@@ -54,97 +52,47 @@ import { Input } from "../../../../_template/src/Base/FormControls/Input";
  * </MediumEditableContent>
  */
 export const MediumEditableContent = ({
-    // Aktuálně editovaná finanční položka.
     item,
-
-    // Funkce volaná při každé změně hodnoty formulářového pole.
-    // Pokud není předána, použije se prázdná funkce.
-    onChange = () => null,
-
-    // Funkce volaná při opuštění formulářového pole.
-    // Ve většině případů zde dochází k uložení změn.
-    onBlur = () => null,
-
-    // Volitelný obsah (například tlačítka Uložit nebo Zrušit).
-    children
+    onChange = () => null, // Nastavuje výchozí obsluhu změny hodnoty vstupního pole.
+    onBlur = () => null, // Nastavuje výchozí obsluhu události po opuštění vstupního pole.
+    children // Přijímá volitelný obsah, který se vykreslí pod formulářem.
 }) => {
     return (
         <>
-            {/* Pole pro editaci českého názvu finanční položky. */}
+            {/* Pole pro zadání českého názvu finanční položky. */}
             <Input
-                // Identifikátor atributu, který se bude měnit.
                 id="name"
-
-                // Text zobrazený u vstupního pole.
                 label="Jméno"
-
-                // Bootstrap třída určující vzhled formulářového prvku.
                 className="form-control"
-
-                // Aktuální hodnota názvu.
-                // Pokud není vyplněna, použije se prázdný řetězec.
-                value={item?.name ?? ""}
-
-                // Text zobrazený při prázdném poli.
+                value={item?.name ?? ""} // Zobrazuje aktuální název nebo prázdný řetězec.
                 placeholder="Název"
-
-                // Handler reagující na změnu hodnoty.
                 onChange={onChange}
-
-                // Handler reagující na opuštění pole.
                 onBlur={onBlur}
             />
 
-            {/* Pole pro editaci anglického názvu finanční položky. */}
+            {/* Pole pro zadání anglického názvu finanční položky. */}
             <Input
-                // Identifikátor atributu v objektu finance.
                 id="nameEn"
-
-                // Popisek vstupního pole.
                 label="EN název"
-
-                // Bootstrap styl formulářového prvku.
                 className="form-control"
-
-                // Aktuální anglický název.
-                value={item?.nameEn ?? ""}
-
-                // Zástupný text při prázdné hodnotě.
+                value={item?.nameEn ?? ""} // Zobrazuje anglický název nebo prázdný řetězec.
                 placeholder="English name"
-
-                // Reakce na změnu hodnoty.
                 onChange={onChange}
-
-                // Reakce na opuštění pole.
                 onBlur={onBlur}
             />
 
-            {/* Pole pro editaci textového popisu finanční položky. */}
+            {/* Pole pro zadání popisu finanční položky. */}
             <Input
-                // Název atributu odpovídající objektu finance.
                 id="description"
-
-                // Text popisku formulářového pole.
                 label="Popis"
-
-                // Bootstrap vzhled vstupního pole.
                 className="form-control"
-
-                // Aktuální popis finance.
-                value={item?.description ?? ""}
-
-                // Zástupný text při prázdném popisu.
+                value={item?.description ?? ""} // Zobrazuje popis nebo prázdný řetězec.
                 placeholder="Popis"
-
-                // Handler změny hodnoty.
                 onChange={onChange}
-
-                // Handler opuštění pole.
                 onBlur={onBlur}
             />
 
-            {/* Vykreslení případných dalších prvků formuláře,
-                například tlačítek nebo doplňkových vstupů. */}
+            {/* Vykreslí dodatečné ovládací prvky (např. tlačítka Uložit nebo Zrušit). */}
             {children}
         </>
     );

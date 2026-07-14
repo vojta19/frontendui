@@ -31,6 +31,22 @@ import { AsyncStateIndicator } from "../../../../_template/src/Base/Helpers/Asyn
 // Importuje komponentu Collapsible zajišťující sbalování a rozbalování obsahu (např. editačního filtru)
 import { Collapsible } from "../../../../_template/src/Base/FormControls/Collapsible";
 
+/**
+ * Safely parses a JSON filter object stored in URL search parameters.
+ *
+ * The function reads the specified query parameter, attempts to parse it
+ * as JSON and returns the resulting object. Invalid, missing or malformed
+ * values result in `null` instead of throwing an exception.
+ *
+ * @param {URLSearchParams} sp
+ * URL search parameters.
+ *
+ * @param {string} [paramName="where"]
+ * Name of the query parameter containing the serialized filter.
+ *
+ * @returns {Object|null}
+ * Parsed filter object or `null` when no valid filter is available.
+ */
 // Pomocná funkce pro bezpečné vytažení a naparsování JSON objektu filtru (where) z URL adresy
 function safeParseWhere(sp, paramName = "where") {
     
@@ -56,9 +72,40 @@ function safeParseWhere(sp, paramName = "where") {
     } // Konec bloku try-catch
 } // Konec definice funkce safeParseWhere
 
+/**
+ * Name of the URL search parameter used for storing the serialized filter.
+ *
+ * @constant
+ * @type {string}
+ */
 // Definuje fixní název query parametru v URL, pod kterým bude struktura filtru uložena (např. ?gr_where={...})
 const filterParameterName = "gr_where";
 
+/**
+ * Displays a paginated list of finance entities with filtering support.
+ *
+ * The component combines the finance filter, infinite scrolling,
+ * asynchronous data loading and table rendering into a single page.
+ * Filter values are synchronized with the URL, allowing the current
+ * search state to be shared and restored.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional additional content rendered by the page.
+ *
+ * @param {Function} [props.queryAsyncAction=ReadPageAsyncAction]
+ * Asynchronous GraphQL action used to load pages of finance entities.
+ *
+ * @returns {JSX.Element}
+ * Finance list page with filtering and infinite scrolling.
+ *
+ * @example
+ * <PageVector />
+ */
 // Definuje a exportuje komponentu PageVector, která reprezentuje celostránkový přehled kolekce dat
 export const PageVector = ({ children, queryAsyncAction = ReadPageAsyncAction }) => {
     

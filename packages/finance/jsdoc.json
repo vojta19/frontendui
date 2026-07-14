@@ -3,17 +3,10 @@
     "include": [
       "./src/FinanceGQLModel/Components",
       "./src/FinanceGQLModel/Mutations",
-      "./src/FinanceGQLModel/Pages/Page.jsx",
-      "./src/FinanceGQLModel/Pages/PageBase.jsx",
-      "./src/FinanceGQLModel/Pages/PageNavbar.jsx",
-      "./src/FinanceGQLModel/Pages/PageReadItem.jsx",
-      "./src/FinanceGQLModel/Pages/PageReadItemEx.jsx",
-      "./src/FinanceGQLModel/Pages/PageUpdateItem.jsx",
-      "./src/FinanceGQLModel/Pages/RouterSegment.jsx",
       "./src/FinanceGQLModel/Queries",
+      "./src/FinanceGQLModel/Pages",
       "./src/FinanceGQLModel/Scalars",
-      "./src/FinanceGQLModel/Vectors",
-      "./src/FinanceGQLModel/"
+      "./src/FinanceGQLModel/Vectors"
     ],
     "includePattern": ".+\\.(js|jsx)$",
     "excludePattern": "(^|\\/|\\\\)(node_modules|dist|docs)(\\/|\\\\)"

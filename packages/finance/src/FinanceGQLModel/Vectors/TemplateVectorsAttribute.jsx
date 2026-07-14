@@ -11,11 +11,20 @@ import { useAsyncAction, createAsyncGraphQLAction, processVectorAttributeFromGra
 import { ErrorHandler, InfiniteScroll, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
 
 /**
- * Inserts a VectorGQLModel item into a template’s vectors array and dispatches an update.
+ * Inserts a vector item into the template's vector collection.
  *
- * @param {Object} template - The current template object containing a `vectors` array.
- * @param {Object} vectorItem - The item to insert; must have `__typename === "VectorGQLModel"`.
- * @param {Function} dispatch - Redux dispatch function (or similar) to call the update action.
+ * If the supplied object represents a valid `VectorGQLModel`, the vector
+ * is appended to the existing collection and the updated template entity
+ * is dispatched to the application store.
+ *
+ * @param {Object} template
+ * Template entity containing the current vector collection.
+ *
+ * @param {Object} vectorItem
+ * Vector entity to insert.
+ *
+ * @param {Function} dispatch
+ * Dispatch function used to update the application state.
  */
 // Pomocná funkce pro vložení nové vektorové položky do lokálního Redux/stavového stromu šablony
 const followUpTemplateVectorItemInsert = (template, vectorItem, dispatch) => {
@@ -41,11 +50,19 @@ const followUpTemplateVectorItemInsert = (template, vectorItem, dispatch) => {
 }; // Konec definice funkce followUpTemplateVectorItemInsert
 
 /**
- * Replaces an existing VectorGQLModel item in a template’s vectors array and dispatches an update.
+ * Updates an existing vector item inside the template.
  *
- * @param {Object} template - The current template object containing a `vectors` array.
- * @param {Object} vectorItem - The updated item; must have `__typename === "VectorGQLModel"` and an `id` field matching an existing item.
- * @param {Function} dispatch - Redux dispatch function (or similar) to call the update action.
+ * The vector having the same identifier is replaced with the supplied
+ * instance and the updated template entity is dispatched to the store.
+ *
+ * @param {Object} template
+ * Template entity containing the vector collection.
+ *
+ * @param {Object} vectorItem
+ * Updated vector entity.
+ *
+ * @param {Function} dispatch
+ * Dispatch function used to update the application state.
  */
 // Pomocná funkce pro aktualizaci a nahrazení stávajícího prvku novými daty uvnitř stavu šablony
 const followUpTemplateVectorItemUpdate = (template, vectorItem, dispatch) => {
@@ -73,11 +90,19 @@ const followUpTemplateVectorItemUpdate = (template, vectorItem, dispatch) => {
 }; // Konec definice funkce followUpTemplateVectorItemUpdate
 
 /**
- * Removes a VectorGQLModel item from a template’s vectors array by its `id` and dispatches an update.
+ * Removes a vector item from the template.
  *
- * @param {Object} template - The current template object containing a `vectors` array.
- * @param {Object} vectorItem - The item to delete; must have `__typename === "VectorGQLModel"` and an `id` field.
- * @param {Function} dispatch - Redux dispatch function (or similar) to call the update action.
+ * The vector identified by its identifier is removed from the collection
+ * and the updated template entity is dispatched to the application store.
+ *
+ * @param {Object} template
+ * Template entity containing the vector collection.
+ *
+ * @param {Object} vectorItem
+ * Vector entity to remove.
+ *
+ * @param {Function} dispatch
+ * Dispatch function used to update the application state.
  */
 // Pomocná funkce pro odstranění vymazané položky z lokálního stavového pole prvků šablony
 const followUpTemplateVectorItemDelete = (template, vectorItem, dispatch) => {
@@ -104,6 +129,15 @@ const followUpTemplateVectorItemDelete = (template, vectorItem, dispatch) => {
     } // Konec podmínky validace typu
 }; // Konec definice funkce followUpTemplateVectorItemDelete
 
+/**
+ * GraphQL query used for loading vector attributes of a template entity.
+ *
+ * The query retrieves a paginated collection of vectors belonging to
+ * the specified template.
+ *
+ * @constant
+ * @type {string}
+ */
 // Definuje čistý GraphQL dotaz pro načtení stránkovaných a filtrovaných položek pole vectors na základě ID šablony
 const TemplateVectorsAttributeQuery = `
 query TemplateQueryRead($id: UUID!, $where: VectorInputFilter, $skip: Int, $limit: Int) {
@@ -119,6 +153,14 @@ query TemplateQueryRead($id: UUID!, $where: VectorInputFilter, $skip: Int, $limi
 }
 `; // Konec definice GraphQL dotazu
 
+/**
+ * Asynchronous GraphQL action used for loading template vectors.
+ *
+ * The action executes the prepared GraphQL query and extracts the
+ * `vectors` collection from the response.
+ *
+ * @constant
+ */
 // Vytváří a exportuje asynchronní GraphQL akci kombinací lazy dotazu a procesoru odpovědi mapovaného na klíč "vectors"
 const TemplateVectorsAttributeAsyncAction = createAsyncGraphQLAction(
     createQueryStrLazy(TemplateVectorsAttributeQuery), // Vytvoří lazy načítaný řetězec dotazu (fragment zakomentován)
@@ -126,37 +168,30 @@ const TemplateVectorsAttributeAsyncAction = createAsyncGraphQLAction(
 ); // Konec inicializace akce
 
 /**
- * A component for displaying the `vectors` attribute of a template entity.
+ * Displays the vector collection of a template entity.
  *
- * This component checks if the `vectors` attribute exists on the `template` object. If `vectors` is undefined,
- * the component returns `null` and renders nothing. Otherwise, it maps over the (optionally filtered) `vectors` array
- * and displays a placeholder message and a JSON representation for each item.
+ * The component renders all vector items using the supplied visualiser
+ * component after applying an optional filter.
  *
  * @component
- * @param {Object} props - The props for the TemplateVectorsAttribute component.
- * @param {Object} props.template - The object representing the template entity.
- * @param {Array<Object>} [props.template.vectors] - An array of vector items associated with the template entity.
- * Each item is expected to have a unique `id` property.
- * @param {Function} [props.filter=Boolean] - (Optional) A function to filter the vectors array before rendering.
  *
- * @returns {JSX.Element|null} A JSX element displaying the (filtered) `vectors` items or `null` if the attribute is undefined or empty.
+ * @param {Object} props
+ * Component properties.
  *
- * @example
- * // Basic usage:
- * const templateEntity = { 
- * vectors: [
- * { id: 1, name: "Vector Item 1" }, 
- * { id: 2, name: "Vector Item 2" }
- * ] 
- * };
- * <TemplateVectorsAttribute template={templateEntity} />
+ * @param {Object} props.template
+ * Template entity containing the vector collection.
  *
- * @example
- * // With a custom filter:
- * <TemplateVectorsAttribute 
- * template={templateEntity}
- * filter={vector => vector.name.includes("1")}
- * />
+ * @param {Object[]} [props.template.vectors]
+ * Collection of vector entities.
+ *
+ * @param {Function} [props.filter=Boolean]
+ * Filter function applied before rendering.
+ *
+ * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv]
+ * Component used to render each vector.
+ *
+ * @returns {JSX.Element|null}
+ * Rendered vector collection or `null` when no vectors are available.
  */
 // Definuje starší verzi komponenty pro statické vykreslení pole prvků s definovaným vizualizérem
 export const TemplateVectorsAttribute_old = ({ template, filter = Boolean, Visualiser = TrivialVisualiserDiv }) => {
@@ -185,56 +220,42 @@ export const TemplateVectorsAttribute_old = ({ template, filter = Boolean, Visua
 }; // Konec definice komponenty TemplateVectorsAttribute_old
 
 /**
- * Visualiser component for displaying a list of vector items using `TemplateVectorsAttribute`.
- *
- * Wraps the `TemplateVectorsAttribute` component, passing the given `items` as the `vectors` attribute
- * on a synthetic `template` object. All other props are forwarded.
+ * Adapts a plain vector collection to the template attribute renderer.
  *
  * @component
- * @param {Object} props - Component props.
- * @param {Array<Object>} props.items - The array of vector items to be visualized.
- * @param {...any} [props] - Additional props forwarded to `TemplateVectorsAttribute` (e.g., `filter`).
  *
- * @returns {JSX.Element|null} Rendered list of vectors or `null` if none are provided.
+ * @param {Object} props
+ * Component properties.
  *
- * @example
- * <VectorsVisualiser
- * items={[
- * { id: 1, name: "Vector 1" },
- * { id: 2, name: "Vector 2" }
- * ]}
- * filter={v => v.name.includes("1")}
- * />
+ * @param {Object[]} props.items
+ * Collection of vector entities.
+ *
+ * @returns {JSX.Element|null}
+ * Rendered vector collection.
  */
 // Pomocná komponenta pro transformaci pole prvků na syntetický objekt vyžadovaný starou verzí atributu
 const VectorsVisualiser = ({ items, ...props }) => 
     <TemplateVectorsAttribute_old {...props} template={{ vectors: items }} />; // Vytvoří umělou strukturu a přeposílá props
 
 /**
- * Infinite-scrolling component for the `vectors` attribute of a template entity.
+ * Displays template vectors using infinite scrolling.
  *
- * Uses the generic `InfiniteScroll` component to fetch, merge, and display the `vectors` array
- * associated with the provided `template` object. It utilizes `VectorsVisualiser` for rendering,
- * and handles pagination, lazy-loading, and merging of items as the user scrolls.
+ * The component progressively loads vector items from the backend while
+ * preserving already loaded items.
  *
  * @component
- * @param {Object} props - Component props.
- * @param {Object} props.template - The template entity containing the `vectors` array.
- * @param {Array<Object>} [props.template.vectors] - (Optional) Preloaded vector items.
- * @param {Object} [props.actionParams={}] - Optional extra parameters for the async fetch action (merged with pagination).
- * @param {...any} [props] - Additional props passed to `InfiniteScroll` or `VectorsVisualiser`.
  *
- * @returns {JSX.Element} An infinite-scrolling list of vectors.
+ * @param {Object} props
+ * Component properties.
  *
- * @example
- * <TemplateVectorsAttributeInfinite
- * template={{
- * vectors: [
- * { id: 1, name: "Vector 1" },
- * { id: 2, name: "Vector 2" }
- * ]
- * }}
- * />
+ * @param {Object} props.template
+ * Template entity.
+ *
+ * @param {Object} [props.actionParams={}]
+ * Additional parameters passed to the GraphQL action.
+ *
+ * @returns {JSX.Element}
+ * Infinite scrolling list of vectors.
  */
 // Definuje a exportuje komponentu pro nekonečné scrollování a automatické stránkování prvků z GraphQL
 export const TemplateVectorsAttributeInfinite = ({ template, actionParams = {}, ...props }) => { 
@@ -255,30 +276,25 @@ export const TemplateVectorsAttributeInfinite = ({ template, actionParams = {}, 
 }; // Konec definice komponenty TemplateVectorsAttributeInfinite
 
 /**
- * A lazy-loading component for displaying filtered `vectors` from a `template` entity.
+ * Displays template vectors using lazy loading.
  *
- * This component uses the `TemplateVectorsAttributeAsyncAction` to asynchronously fetch
- * the `template.vectors` data. It shows a loading spinner while fetching, handles errors,
- * and filters the resulting list using a custom `filter` function (defaults to `Boolean` to remove falsy values).
- *
- * Each vector item is rendered as a `<div>` with its `id` as both the `key` and the `id` attribute,
- * and displays a formatted JSON preview using `<pre>`.
+ * The component loads vector data after mounting, displays a loading
+ * indicator while the request is in progress and renders an error message
+ * if loading fails.
  *
  * @component
- * @param {Object} props - The properties object.
- * @param {Object} props.template - The template entity or identifying query variables used to fetch it.
- * @param {Function} [props.filter=Boolean] - A filtering function applied to the `vectors` array before rendering.
  *
- * @returns {JSX.Element} A rendered list of filtered vectors or a loading/error placeholder.
+ * @param {Object} props
+ * Component properties.
  *
- * @example
- * <TemplateVectorsAttributeLazy template={{ id: "abc123" }} />
+ * @param {Object} props.template
+ * Template entity or object containing the template identifier.
  *
- * * @example
- * <TemplateVectorsAttributeLazy
- * template={{ id: "abc123" }}
- * filter={(v) => v.status === "active"}
- * />
+ * @param {Function} [props.filter=Boolean]
+ * Filter function applied before rendering.
+ *
+ * @returns {JSX.Element}
+ * Lazy-loaded vector collection.
  */
 // Definuje a exportuje komponentu, která spouští síťový dotaz až při svém zobrazení (lazy-loading)
 export const TemplateVectorsAttributeLazy = ({ template, filter = Boolean, ...props }) => {
@@ -301,6 +317,26 @@ export const TemplateVectorsAttributeLazy = ({ template, filter = Boolean, ...pr
     return <TemplateVectorsAttribute_old template={entity} filter={filter} {...props} />;    
 }; // Konec definice komponenty TemplateVectorsAttributeLazy
 
+/**
+ * Displays a simple JSON preview of a vector entity.
+ *
+ * The component serves as a fallback visualiser when no dedicated
+ * vector presentation component is available.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {Object} props.vector
+ * Vector entity to display.
+ *
+ * @param {React.ReactNode} [props.children]
+ * Optional additional content.
+ *
+ * @returns {JSX.Element}
+ * JSON preview of the vector entity.
+ */
 // Pomocná triviální komponenta pro zobrazení JSON dumpu a informativního textu o chybějící střední kartě
 const TrivialVisualiserDiv = ({ vector, children }) => (
     <div>
@@ -313,37 +349,37 @@ const TrivialVisualiserDiv = ({ vector, children }) => (
 ); // Konec definice TrivialVisualiserDiv
 
 /**
- * Component to render the filtered `vectors` attribute of a template entity.
+ * Displays the vector collection of a template entity.
  *
- * Applies an optional filter function to the vectors array before rendering.
- * Supports infinite scrolling to load more items lazily.
+ * Depending on the `infinite` property, the component either renders
+ * the vectors directly or loads them incrementally using the shared
+ * infinite scrolling mechanism.
  *
- * The `Layout` prop is used as a wrapper component for each rendered item and
- * is consistently applied in both static and infinite scroll rendering modes.
- * If different layouts are desired for infinite vs static modes,
- * consider conditionally passing different `Layout` props.
+ * @component
  *
- * @param {object} props - Component props.
- * @param {object} props.template - The template entity containing the `vectors` array.
- * @param {Array<object>} [props.template.vectors] - Array of vector items to render.
- * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv] - Component to render each vector item.
- * Receives `vector` and optionally other props.
- * @param {boolean} [props.infinite=true] - Whether to enable infinite scrolling.
- * @param {React.ComponentType|string} [props.Layout=Col] - Wrapper component for each rendered item.
- * This component is used consistently for both static rendering and infinite scroll loading.
- * @param {Function} [props.filter=Boolean] - Filter function to apply on vectors before rendering.
- * @param {...any} props - Additional props forwarded to `Visualiser` and `InfiniteScroll`.
+ * @param {Object} props
+ * Component properties.
  *
- * @returns {JSX.Element|null} Rendered list or infinite scroll component, or null if no vectors.
+ * @param {Object} props.template
+ * Template entity containing the vector collection.
  *
- * @example
- * <TemplateVectorsAttribute
- * template={template}
- * Visualiser={VectorMediumCard}
- * Layout={Col}
- * filter={(v) => v.active}
- * infinite={true}
- * />
+ * @param {Object[]} [props.template.vectors]
+ * Collection of vector entities.
+ *
+ * @param {React.ComponentType} [props.Visualiser=TrivialVisualiserDiv]
+ * Component used to render individual vector items.
+ *
+ * @param {boolean} [props.infinite=true]
+ * Enables incremental loading using infinite scrolling.
+ *
+ * @param {React.ComponentType|string} [props.Layout=Col]
+ * Wrapper component used for each rendered vector.
+ *
+ * @param {Function} [props.filter=Boolean]
+ * Filter function applied before rendering.
+ *
+ * @returns {JSX.Element|null}
+ * Rendered vector collection or `null` when no vectors are available.
  */
 // Definuje a exportuje univerzální komponentu, která sdružuje jak statické mapování mřížky, tak přepnutí do infinite scroll režimu
 export const TemplateVectorsAttribute = ({

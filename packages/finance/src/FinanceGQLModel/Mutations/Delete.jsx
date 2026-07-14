@@ -12,12 +12,36 @@ import {
     DeleteLink as BaseDeleteLink
 } from "../../../../_template/src/Base/Mutations/Delete";
 
+/**
+ * Default read-only content displayed before a finance entity is deleted.
+ *
+ * The component is used by the delete dialog and the full-page delete
+ * workflow to present the entity that is about to be removed.
+ *
+ * @constant
+ * @type {Function}
+ */
 // Nastavuje komponentu MediumContent jako výchozí read-only zobrazení entity před smazáním
 const DefaultContent = MediumContent;
 
+/**
+ * Default asynchronous GraphQL action used to delete finance entities.
+ *
+ * @constant
+ * @type {Function}
+ */
 // Přiřazuje asynchronní smazání (DeleteAsyncAction) do vnitřní konstanty MutationAsyncAction
 const MutationAsyncAction = DeleteAsyncAction;
 
+/**
+ * Permission configuration applied to all finance delete controls.
+ *
+ * Only users with the `administrátor` role are allowed to delete
+ * finance entities.
+ *
+ * @constant
+ * @type {{oneOfRoles: string[], mode: string}}
+ */
 // Konfiguruje objekt přístupových práv (RBAC) vyžadující roli administrátora v absolutním režimu kontroly
 const permissions = {
     oneOfRoles: ["administrátor"], // Pole povolených uživatelských rolí
@@ -25,19 +49,27 @@ const permissions = {
 }; // Konec definice oprávnění
 
 /**
- * Link na delete route pro konkrétní entitu.
+ * Renders a navigation link to the finance delete page.
  *
- * Wrapper nad `BaseDeleteLink`. Nastavuje výchozí `uriPattern` pro delete route a aplikuje RBAC
- * přes `permissions`. Ostatní props přeposílá do Base komponenty.
+ * The component wraps `BaseDeleteLink`, applies the default delete URI
+ * and enforces the configured role permissions.
  *
- * @param {Object} params
- * @param {string} [params.uriPattern=DeleteItemURI]
- * URI pattern pro delete route (typicky obsahuje `:id` nebo odpovídá routování aplikace).
- * @param {Object} params.props
- * Další props přeposílané do `BaseDeleteLink` (např. `children`, `className`,
- * `preserveSearch`, `preserveHash`, atd.).
+ * @component
+ *
+ * @param {Object} props
+ * Component properties.
+ *
+ * @param {string} [props.uriPattern=DeleteItemURI]
+ * URI pattern used for navigation to the delete page.
+ *
+ * @param {Object} [props.item]
+ * Finance entity to be deleted.
+ *
+ * @param {*} [props.children]
+ * Content rendered inside the link.
  *
  * @returns {JSX.Element}
+ * Permission-aware navigation link to the finance delete page.
  */
 // Definuje a exportuje komponentu DeleteLink přijímající uriPattern s defaultní hodnotou a zbytek parametrů
 export const DeleteLink = ({ 
@@ -56,34 +88,33 @@ export const DeleteLink = ({
 }; // Konec definice komponenty DeleteLink
 
 /**
- * Tlačítko pro smazání entity (obvykle otevře confirm dialog a spustí delete mutaci).
+ * Renders a button that opens the finance delete confirmation dialog.
  *
- * Wrapper nad `BaseDeleteButton`. Dodává výchozí `DefaultContent`, `mutationAsyncAction`
- * a `vectorItemsURI` (kam se naviguje po úspěšném smazání, pokud není použit `onOk`).
+ * The component wraps `BaseDeleteButton`, supplies the default preview
+ * component, delete mutation and permission configuration.
  *
- * Chování navigace / callback:
- * - Pokud je definované `onOk`, použije se pro “feedback”, že mazání proběhlo (tj. uživatel si
- * rozhodne, co dál).
- * - Pokud `onOk` definované není, Base implementace typicky naviguje na `vectorItemsURI`.
+ * @component
  *
- * @param {Object} params
- * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * @param {Object} props
+ * Component properties.
  *
- * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- * Komponenta pro zobrazení mazáné entity v confirm dialogu (read-only).
+ * @param {Function} [props.mutationAsyncAction=MutationAsyncAction]
+ * Asynchronous action used to delete the finance entity.
  *
- * @param {string} [params.vectorItemsURI=ListURI]
- * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component displaying the entity before deletion.
  *
- * @param {Function} [params.onOk]
- * Callback po úspěšném smazání. Pokud není zadán, Base implementace typicky použije navigaci na `vectorItemsURI`.
+ * @param {Function} [props.Dialog=DeleteDialog]
+ * Dialog component opened after clicking the button.
  *
- * @param {Object}} params.props
- * Další props přeposílané do `BaseDeleteButton` (např. `children`, `title`, `className`,
- * `rbacitem`, `item`, `disabled`, atd. – podle Base/General implementace).
+ * @param {string} [props.vectorItemsURI=ListURI]
+ * URI used after successful deletion.
+ *
+ * @param {Function} [props.onOk]
+ * Callback executed after successful deletion.
  *
  * @returns {JSX.Element}
+ * Permission-aware delete button.
  */
 // Definuje a exportuje tlačítko DeleteButton s kompletní destrukturalizací vlastností, dialogu a callbacků
 export const DeleteButton = ({
@@ -110,26 +141,28 @@ export const DeleteButton = ({
 }; // Konec definice komponenty DeleteButton
 
 /**
- * Confirm dialog pro smazání entity.
+ * Displays a confirmation dialog for deleting a finance entity.
  *
- * Wrapper nad `BaseDeleteDialog`. Dodává výchozí `DefaultContent` (read-only zobrazení entity),
- * `mutationAsyncAction` a `vectorItemsURI` pro návrat po úspěchu (dle Base/General implementace).
+ * The component wraps `BaseDeleteDialog`, injects the default entity
+ * preview, delete mutation and navigation target after successful
+ * deletion.
  *
- * @param {Object} params
- * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * @component
  *
- * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- * Komponenta pro zobrazení mazáné entity (read-only).
+ * @param {Object} props
+ * Component properties.
  *
- * @param {string} [params.vectorItemsURI=ListURI]
- * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * @param {Function} [props.mutationAsyncAction=MutationAsyncAction]
+ * Asynchronous action used to delete the finance entity.
  *
- * @param {Object}} params.props
- * Další props přeposílané do `BaseDeleteDialog` (např. `title`, `oklabel`, `cancellabel`,
- * `item`, `onOk`, `onCancel`, atd.).
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component displaying the entity before deletion.
+ *
+ * @param {string} [props.vectorItemsURI=ListURI]
+ * URI used after successful deletion.
  *
  * @returns {JSX.Element}
+ * Permission-aware finance delete dialog.
  */
 // Definuje a exportuje komponentu DeleteDialog, která vykresluje potvrzovací vyskakovací okno
 export const DeleteDialog = ({
@@ -152,26 +185,27 @@ export const DeleteDialog = ({
 }; // Konec definice komponenty DeleteDialog
 
 /**
- * “Page-level” delete workflow (mazání na celé stránce / v těle stránky).
+ * Renders the full-page workflow for deleting a finance entity.
  *
- * Wrapper nad `BaseDeleteBody`. Dodává výchozí `DefaultContent`, `mutationAsyncAction`
- * a `vectorItemsURI` a aplikuje RBAC přes `permissions`.
+ * The component wraps `BaseDeleteBody`, injects the default preview
+ * component, delete mutation and permission configuration.
  *
- * @param {Object} params
- * @param {Function} [params.mutationAsyncAction=MutationAsyncAction]
- * Async action (thunk) pro delete operaci (např. DeleteAsyncAction).
+ * @component
  *
- * @param {React.ComponentType<Object>} [params.DefaultContent=MediumContent]
- * Komponenta pro zobrazení mazáné entity (read-only).
+ * @param {Object} props
+ * Component properties.
  *
- * @param {string} [params.vectorItemsURI=ListURI]
- * URI pro návrat po úspěšném smazání (typicky list stránka / kolekce).
+ * @param {Function} [props.mutationAsyncAction=MutationAsyncAction]
+ * Asynchronous action used to delete the finance entity.
  *
- * @param {Object}} params.props
- * Další props přeposílané do `BaseDeleteBody` (např. `title`, `oklabel`, `cancellabel`,
- * `item`, `onOk`, `onCancel`, atd.).
+ * @param {Function} [props.DefaultContent=DefaultContent]
+ * Component displaying the entity before deletion.
+ *
+ * @param {string} [props.vectorItemsURI=ListURI]
+ * URI used after successful deletion.
  *
  * @returns {JSX.Element}
+ * Permission-aware full-page finance delete interface.
  */
 // Definuje a exportuje celostránkový mazací layout DeleteBody
 export const DeleteBody = ({ 

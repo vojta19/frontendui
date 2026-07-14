@@ -1,25 +1,22 @@
-// Import ikony osoby z knihovny react-bootstrap-icons.
-// Ikona je použita jako výchozí symbol v záhlaví karty.
+// Importuje ikonu osoby používanou ve výchozím záhlaví karty.
 import { PersonFill } from "react-bootstrap-icons";
 
-// Import lokální komponenty Link, která vytváří odkaz na detail finance.
+// Importuje komponentu pro vytvoření odkazu na detail finance.
 import { Link } from "./Link";
 
-// Import základní komponenty CardCapsule ze sdílené šablony.
-// Komponenta je přejmenována na CardCapsule_, aby nedošlo ke kolizi názvů
-// s komponentou definovanou v tomto souboru.
+// Importuje obecnou komponentu CardCapsule a přejmenuje ji kvůli odlišení od lokální komponenty.
 import {
     CardCapsule as CardCapsule_
 } from "../../../../_template/src/Base/Components";
 
 
 /**
- * Card container used throughout the finance module.
+ * Renders a finance-specific card container.
  *
- * The component extends the shared `CardCapsule` by automatically generating
- * a finance-specific header containing an icon and a link to the current
- * finance entity. A custom title may be provided to replace the default
- * header.
+ * This component wraps the shared `CardCapsule` and automatically creates
+ * a default header containing a finance icon together with a navigation
+ * link to the current finance entity. A custom title may be supplied to
+ * replace the generated header.
  *
  * @component
  *
@@ -27,17 +24,17 @@ import {
  * Component properties.
  *
  * @param {Object} props.item
- * Finance entity displayed by the card.
+ * Finance entity represented by the card.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Content rendered inside the card body.
  *
- * @param {React.ReactNode|null} [props.title=null]
- * Optional custom card title. When omitted, a default header containing
- * a finance icon and entity link is displayed.
+ * @param {*} [props.title=null]
+ * Optional custom card title. If omitted, a default title consisting of
+ * the finance icon and entity link is displayed.
  *
  * @returns {JSX.Element}
- * Rendered finance card.
+ * Finance card container.
  *
  * @example
  * <CardCapsule item={finance}>
@@ -45,35 +42,33 @@ import {
  * </CardCapsule>
  */
 export const CardCapsule = ({
-    // Aktuální finanční položka zobrazená v kartě.
+    // Finance entita reprezentovaná kartou.
     item,
 
-    // Obsah, který bude vykreslen uvnitř těla karty.
+    // Obsah vykreslený uvnitř těla karty.
     children,
 
-    // Volitelný vlastní nadpis karty.
-    // Pokud není předán, vytvoří se automaticky.
+    // Volitelný vlastní titulek karty.
     title = null
 }) => {
 
-    // Pokud volající nepředal vlastní záhlaví,
-    // vytvoří se výchozí záhlaví obsahující ikonu a odkaz na finance.
+    // Pokud nebyl zadán vlastní titulek, vytvoří výchozí záhlaví.
     if (!title) {
         title = (
             <>
-                {/* Ikona použitá jako vizuální označení finanční položky */}
+                {/* Zobrazí ikonu osoby. */}
                 <PersonFill />
 
-                {/* Odkaz na detail aktuální finanční entity */}
+                {/* Přidá odkaz na detail aktuální finance. */}
                 <Link item={item} />
             </>
         );
     }
 
-    // Vykreslení základní sdílené komponenty CardCapsule.
-    // Do záhlaví je předán připravený title a do těla veškerý obsah children.
+    // Vykreslí obecnou CardCapsule s připraveným titulkem.
     return (
         <CardCapsule_ title={title}>
+            {/* Vykreslí obsah vložený do karty. */}
             {children}
         </CardCapsule_>
     );

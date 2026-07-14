@@ -1,60 +1,57 @@
-// Importuje kořenovou URI adresu celého modulu financí,
-// od které se následně skládají všechny ostatní routy.
+// Importuje kořenovou URI adresu celého modulu Finance.
 import { URIRoot } from "../../uriroot";
 
-// Importuje registr odkazů, díky kterému lze komponentu Link
-// automaticky používat napříč celou aplikací.
+// Importuje registrační funkci pro propojení GraphQL modelu s komponentou odkazu.
 import { registerLink } from "../../../../_template/src/Base/Components/Link";
 
-// Importuje ProxyLink, který zajišťuje interní navigaci v React Routeru
-// bez znovunačtení celé stránky.
+// Importuje univerzální komponentu ProxyLink pro klientskou navigaci.
 import { ProxyLink } from "../../../../_template/src/Base/Components/ProxyLink";
 
 
-// Sestaví základní adresu všech rout pro model FinanceGQLModel.
+// Sestaví základní URI adresu modelu FinanceGQLModel.
 const modelURI = `${URIRoot}/FinanceGQLModel`;
 
-// URI pro zobrazení seznamu všech finančních položek.
+// Definuje URI adresu seznamu financí.
 export const ListURI = `${modelURI}/list/`;
 
-// URI pro stránku vytvoření nové finance.
+// Definuje URI adresu vytvoření nové finance.
 export const CreateURI = `${modelURI}/create/`;
 
-// URI pro zobrazení detailu finance.
+// Definuje URI adresu detailu finance.
 export const ReadURI = `${modelURI}/view/`;
 
-// URI pro editaci finance.
+// Definuje URI adresu editace finance.
 export const UpdateURI = `${modelURI}/edit/`;
 
-// URI pro odstranění finance.
+// Definuje URI adresu odstranění finance.
 export const DeleteURI = `${modelURI}/delete/`;
 
-// Výchozí URI používané komponentou Link.
+// Nastaví výchozí URI používanou při vytváření odkazů.
 export const LinkURI = ReadURI;
 
-// URI používané komponentami zobrazujícími kolekci financí.
+// Nastaví URI seznamu používanou napříč modulem.
 export const VectorItemsURI = ListURI;
 
-// Zástupný parametr reprezentující ID položky v routě.
+// Definuje parametr identifikátoru používaný v routách.
 const idParam = ":id";
 
-// Kompletní routa detailu jedné finance.
+// Sestaví URI detailu konkrétní finance.
 export const ReadItemURI = `${LinkURI}${idParam}`;
 
-// Kompletní routa editace jedné finance.
+// Sestaví URI editace konkrétní finance.
 export const UpdateItemURI = `${UpdateURI}${idParam}`;
 
-// Kompletní routa odstranění jedné finance.
+// Sestaví URI odstranění konkrétní finance.
 export const DeleteItemURI = `${DeleteURI}${idParam}`;
 
 
 /**
- * Renders a navigation link to a Finance entity.
+ * Renders a navigation link to a finance entity.
  *
  * The component automatically constructs the destination URL from the
  * configured route and the entity identifier. By default it navigates to
- * the detail page, but any supported action (such as edit or delete) can
- * be selected through the `action` property.
+ * the detail page, but any supported action (such as `edit` or `delete`)
+ * can be selected through the `action` property.
  *
  * @component
  *
@@ -68,12 +65,11 @@ export const DeleteItemURI = `${DeleteURI}${idParam}`;
  * Base URI used when constructing the navigation path.
  *
  * @param {string} [props.action="view"]
- * Target action appended to the generated route
- * (e.g. `view`, `edit`, `delete`).
+ * Target action appended to the generated route.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Optional custom link content. When omitted, the component displays
- * `fullname`, `name`, `id` or a fallback text.
+ * the finance name, identifier or a fallback text.
  *
  * @returns {JSX.Element}
  * Navigation link pointing to the selected finance entity.
@@ -87,54 +83,40 @@ export const DeleteItemURI = `${DeleteURI}${idParam}`;
  * </Link>
  */
 export const Link = ({
-    // Objekt aktuální finanční položky.
+    // Finance, pro kterou bude odkaz vytvořen.
     item,
 
-    // Výchozí URI lze v případě potřeby přepsat zvenčí.
+    // Výchozí základní URI pro navigaci.
     LinkURI: LinkURI_ = LinkURI,
 
     // Akce určující cílovou stránku (view, edit, delete...).
     action = "view",
 
-    // Vlastní obsah odkazu předaný rodičovskou komponentou.
+    // Volitelný vlastní obsah odkazu.
     children,
 
-    // Zachytí všechny ostatní props (className, style, title...).
+    // Ostatní vlastnosti předané komponentě ProxyLink.
     ...props
 }) => {
 
-    // Nahrazení části "view" požadovanou akcí.
-    // Díky tomu lze stejnou komponentu použít pro více typů navigace.
+    // Nahradí segment "view" požadovanou akcí.
     const targetURI = LinkURI_.replace("view", action);
 
-    // Vykreslí interní odkaz do aplikace.
+    // Vykreslí odkaz na požadovanou stránku finance.
     return (
         <ProxyLink
-            // K výsledné routě připojí ID aktuální finance.
+            // Připojí ID finance za cílovou adresu.
             to={targetURI + item?.id}
 
-            // Přepošle všechny ostatní vlastnosti komponentě ProxyLink.
+            // Předá ostatní vlastnosti komponentě ProxyLink.
             {...props}
         >
-            {
-                // Priorita zobrazeného textu odkazu:
-                // 1) vlastní children,
-                // 2) fullname,
-                // 3) name,
-                // 4) id,
-                // 5) záložní text.
-                children ||
-                item?.fullname ||
-                item?.name ||
-                item?.id ||
-                "Nevím"
-            }
+            {/* Pokud není zadán vlastní obsah, zobrazí jméno nebo identifikátor finance. */}
+            {children || item?.fullname || item?.name || item?.id || "Nevím"}
         </ProxyLink>
     );
 };
 
 
-// Registruje komponentu Link jako výchozí odkaz
-// pro všechny entity typu FinanceGQLModel.
-// Díky tomu ji mohou automaticky využívat ostatní části frameworku.
+// Zaregistruje komponentu Link jako výchozí odkaz pro model FinanceGQLModel.
 registerLink("FinanceGQLModel", Link);

@@ -1,21 +1,18 @@
-// Import hooku useCallback pro vytvoření memoizovaných funkcí,
-// které se zbytečně nevytvářejí při každém překreslení komponenty.
+// Importuje React hook pro vytváření memoizovaných callback funkcí.
 import { useCallback } from "react";
 
-// Import GraphQL mutace sloužící k uložení změn finanční entity.
+// Importuje GraphQL mutaci používanou pro aktualizaci finance.
 import { UpdateAsyncAction } from "../Queries";
 
-// Import formuláře obsahujícího editovatelná pole finance.
+// Importuje formulář s editovatelnými poli finance.
 import { MediumEditableContent } from "./MediumEditableContent";
 
-// Import vlastního hooku, který zajišťuje kompletní logiku editace
-// (pracovní kopii dat, ukládání, zrušení změn apod.).
+// Importuje hook zajišťující práci s draftem a potvrzovací editací.
 import {
     useEditAction
 } from "../../../../dynamic/src/Hooks/useEditAction";
 
-// Import GraphQL kontextu aktuálně otevřené entity.
-// Díky němu lze po uložení synchronizovat změny i do ostatních komponent.
+// Importuje GraphQL kontext aktuálně otevřené entity.
 import {
     useGQLEntityContext
 } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
@@ -29,9 +26,9 @@ import {
  * explicitly confirm or cancel the modifications using the provided action
  * buttons.
  *
- * After a successful update, the returned entity is propagated to the
- * surrounding GraphQL entity context so that other components can use the
- * current data.
+ * After a successful update, the returned finance entity is propagated to
+ * the surrounding GraphQL entity context so that other components can use
+ * the current data.
  *
  * @component
  *
@@ -53,7 +50,7 @@ import {
  * @param {string} [props.item.description]
  * Description of the finance entity.
  *
- * @param {React.ReactNode} [props.children]
+ * @param {*} [props.children]
  * Optional additional form fields or content rendered below the standard
  * editable finance fields.
  *
@@ -66,22 +63,19 @@ import {
  * </ConfirmEdit>
  */
 export const ConfirmEdit = ({
-    // Editovaná finanční položka.
+    // Finance entita určená k editaci.
     item,
 
-    // Volitelný dodatečný obsah vložený do formuláře.
+    // Volitelný obsah vykreslený pod formulářem.
     children
 }) => {
 
-    // Z GraphQL kontextu získává pouze funkci onChange,
-    // která slouží k aktualizaci sdílené entity po úspěšném uložení.
+    // Načte funkci pro synchronizaci změn do GraphQL kontextu.
     const {
         onChange: contextOnChange
     } = useGQLEntityContext();
 
-    // Inicializace vlastního hooku pro editaci.
-    // Hook vytváří pracovní kopii dat (draft), sleduje změny
-    // a poskytuje funkce pro jejich potvrzení nebo zrušení.
+    // Inicializuje potvrzovací režim editace.
     const {
         draft,
         dirty,
@@ -91,36 +85,36 @@ export const ConfirmEdit = ({
         onCancel,
         onConfirm
     } = useEditAction(
+        // GraphQL mutace používaná pro uložení změn.
         UpdateAsyncAction,
+
+        // Výchozí data formuláře.
         item,
+
         {
-            // Režim "confirm" znamená, že se změny odešlou
-            // až po stisku tlačítka "Uložit změny".
+            // Editace bude potvrzena až stiskem tlačítka.
             mode: "confirm"
         }
     );
 
 
     /**
-     * Persists the current finance draft and synchronizes the returned entity
-     * with the surrounding GraphQL context.
-     *
-     * @async
-     *
-     * @returns {Promise<Object|undefined>}
-     * Updated finance entity returned by the mutation, or `undefined` when
-     * the update was not completed.
-     */
-    // Funkce volaná po stisku tlačítka "Uložit změny".
-    // Nejprve odešle mutaci na server a následně synchronizuje
-    // vrácenou entitu se sdíleným GraphQL kontextem.
+    * Persists the current finance draft and synchronizes the returned entity
+    * with the surrounding GraphQL context.
+    *
+    * @async
+    *
+    * @returns {Promise<Object|undefined>}
+    * Updated finance entity returned by the mutation, or `undefined` when
+    * the update was not completed.
+    */
+    // Potvrdí změny a synchronizuje aktualizovanou entitu s okolním kontextem.
     const handleConfirm = useCallback(async () => {
 
-        // Odešle změny na backend.
+        // Odešle změny na server.
         const result = await onConfirm();
 
-        // Pokud bylo uložení úspěšné a existuje callback kontextu,
-        // aktualizuje data i v ostatních komponentách aplikace.
+        // Pokud bylo uložení úspěšné, aktualizuje GraphQL kontext.
         if (
             result &&
             typeof contextOnChange === "function"
@@ -132,67 +126,52 @@ export const ConfirmEdit = ({
             });
         }
 
-        // Vrací aktualizovanou entitu volající komponentě.
+        // Vrátí uloženou entitu volající komponentě.
         return result;
-
     }, [
         contextOnChange,
         onConfirm
     ]);
 
 
-    // Vykreslení editačního formuláře.
+    // Vykreslí potvrzovací formulář editace.
     return (
         <MediumEditableContent
-
-            // Pokud existuje pracovní kopie (draft),
-            // zobrazí se právě ta. Jinak původní objekt.
+            // Zobrazuje lokální draft nebo původní data.
             item={draft ?? item}
 
-            // Handler reagující na změnu hodnot formuláře.
+            // Obsluha změn formulářových polí.
             onChange={onChange}
 
-            // Handler reagující na opuštění vstupního pole.
+            // Obsluha opuštění formulářového pole.
             onBlur={onBlur}
         >
-            {/* Dodatečný obsah předaný rodičovskou komponentou */}
+            {/* Vykreslí případný dodatečný obsah. */}
             {children}
 
-            {/* Vizuální oddělení formuláře od akčních tlačítek */}
             <hr />
 
+            {/* Tlačítko pro zrušení všech neuložených změn. */}
             <button
                 type="button"
                 className="btn btn-warning form-control"
-
-                // Obnoví původní hodnoty a zahodí všechny neuložené změny.
                 onClick={onCancel}
-
-                // Tlačítko je aktivní pouze pokud existují změny
-                // a zároveň právě neprobíhá ukládání.
                 disabled={!dirty || saving}
             >
                 Zrušit změny
             </button>
 
+            {/* Tlačítko pro potvrzení a uložení změn. */}
             <button
                 type="button"
                 className="btn btn-primary form-control"
-
-                // Spustí uložení změn na server.
                 onClick={handleConfirm}
-
-                // Po dobu ukládání nebo pokud nejsou žádné změny
-                // není možné tlačítko použít.
                 disabled={!dirty || saving}
             >
-                {/* Během ukládání se změní text tlačítka,
-                    aby měl uživatel zpětnou vazbu o probíhající operaci. */}
                 {saving
                     ? "Ukládám změny..."
                     : "Uložit změny"}
             </button>
-
         </MediumEditableContent>
     );
 };
