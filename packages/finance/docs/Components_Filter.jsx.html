@@ -26,21 +26,25 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import {
+            <pre class="prettyprint source linenums"><code>// Import React hooků pro stav, memoizaci, stabilní callbacky a vedlejší efekty.
+import {
     useCallback,
     useEffect,
     useMemo,
     useState
 } from "react";
 
+// Import základního filtru a hooku, který zpřístupňuje jeho sdílený kontext.
 import {
     Filter as BaseFilter,
     useFilterDesigner
 } from "../../../../_template/src/Base/FormControls/Filter";
 
+// Import layoutových komponent pro rozmístění vstupních polí.
 import { Row } from "../../../../_template/src/Base/Components/Row";
 import { Col } from "../../../../_template/src/Base/Components/Col";
 
+// Import karty, která vizuálně odděluje jednotlivé filtrační prvky.
 import {
     SimpleCardCapsule
 } from "../../../../_template/src/Base/Components/CardCapsule";
@@ -52,6 +56,7 @@ import {
  * @constant
  * @type {RegExp}
  */
+// Regulární výraz ověřuje, zda má vstup platný formát UUID verze 1 až 5.
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -67,6 +72,7 @@ const UUID_RE =
  * Lowercase text without diacritical marks.
  */
 const normalizeText = (value) => {
+    // Hodnota se převede na řetězec, sjednotí se velikost písmen a odstraní diakritika.
     return String(value ?? "")
         .toLowerCase()
         .normalize("NFD")
@@ -95,13 +101,16 @@ const normalizeText = (value) => {
  * // Returns: true
  */
 const matchText = (itemText, searchInput) => {
+    // Prázdný text položky nemůže odpovídat hledanému výrazu.
     if (!itemText) {
         return false;
     }
 
+    // Oba řetězce se převedou do stejného normalizovaného tvaru.
     const normalizedItem = normalizeText(itemText);
     const normalizedSearch = normalizeText(searchInput);
 
+    // Návrh se považuje za shodu, pokud začíná hledaným textem.
     return normalizedItem.startsWith(normalizedSearch);
 };
 
@@ -146,23 +155,29 @@ export const CustomUUIDFilter = ({
     label,
     suggestions = []
 }) => {
+    // Získání kontextu nadřazeného BaseFilteru pro odesílání GraphQL podmínek.
     const filterContext = useFilterDesigner();
 
+    // Komponenta musí být vložena uvnitř BaseFilteru, jinak nemá kam podmínku odeslat.
     if (!filterContext) {
         throw new Error(
             "&lt;CustomUUIDFilter /> must be placed inside &lt;Filter />"
         );
     }
 
+    // Lokální stav uchovává aktuální hodnotu řízeného vstupního pole.
     const [text, setText] = useState("");
 
+    // Memoizovaný výpočet omezuje seznam UUID podle právě zadaného textu.
     const filteredIDSuggestions = useMemo(() => {
         const searchValue = text.trim().toLowerCase();
 
+        // Při prázdném vstupu jsou dostupné všechny návrhy.
         if (!searchValue) {
             return suggestions;
         }
 
+        // Částečný vstup se hledá kdekoliv uvnitř UUID.
         return suggestions.filter((suggestion) =>
             suggestion
                 .toLowerCase()
@@ -177,6 +192,7 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const clearFilter = useCallback(() => {
+        // Hodnota null odstraní podmínku daného pole ze společného filtru.
         filterContext.handleChange({
             target: {
                 id,
@@ -195,6 +211,7 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const applyUUIDFilter = useCallback((uuid) => {
+        // Vytvoření GraphQL podmínky s operátorem přesné shody _eq.
         filterContext.handleChange({
             target: {
                 id,
@@ -223,13 +240,16 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const submitFilter = useCallback((currentText) => {
+        // Odstranění okolních mezer před vyhodnocením vstupu.
         const value = currentText.trim();
 
+        // Prázdný vstup znamená zrušení aktivního filtru.
         if (!value) {
             clearFilter();
             return;
         }
 
+        // Kompletní UUID lze odeslat přímo bez hledání v návrzích.
         if (UUID_RE.test(value)) {
             applyUUIDFilter(value);
             return;
@@ -237,6 +257,7 @@ export const CustomUUIDFilter = ({
 
         const normalizedValue = value.toLowerCase();
 
+        // U neúplného ID se najde první odpovídající kompletní UUID.
         const exactMatch = suggestions.find((suggestion) => {
             const normalizedSuggestion =
                 suggestion.toLowerCase();
@@ -251,11 +272,13 @@ export const CustomUUIDFilter = ({
             );
         });
 
+        // Nalezený návrh se použije jako přesná hodnota filtru.
         if (exactMatch) {
             applyUUIDFilter(exactMatch);
             return;
         }
 
+        // Nenalezený nebo neplatný vstup se na backend neposílá.
         clearFilter();
     }, [
         applyUUIDFilter,
@@ -275,10 +298,12 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const handleChangeText = useCallback((event) => {
+        // Načtení nové hodnoty z HTML inputu a aktualizace lokálního stavu.
         const nextValue = event.target.value;
 
         setText(nextValue);
 
+        // Po úplném vymazání pole se filtr okamžitě odstraní.
         if (!nextValue.trim()) {
             clearFilter();
         }
@@ -291,10 +316,12 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const handleBlur = useCallback(() => {
+        // Po opuštění pole se aktuální hodnota vyhodnotí a odešle.
         submitFilter(text);
     }, [submitFilter, text]);
 
 
+    // Jakmile uživatel zadá celé UUID, filtr se aplikuje automaticky.
     useEffect(() => {
         const value = text.trim();
 
@@ -305,19 +332,23 @@ export const CustomUUIDFilter = ({
 
 
     return (
+        // Každý filtrační prvek je zobrazen v samostatné kartě.
         &lt;SimpleCardCapsule title={label || id}>
             &lt;Row>
                 &lt;Col>
                     &lt;input
+                        // Bootstrap třída zajišťuje jednotný vzhled formulářového pole.
                         className="form-control"
                         value={text}
                         onChange={handleChangeText}
                         onBlur={handleBlur}
                         placeholder="Vložte ID nebo jeho část..."
                         autoComplete="off"
+                        // Propojení vstupu s nativním seznamem návrhů.
                         list={`${id}-suggestions`}
                     />
 
+                    {/* Datalist nabízí maximálně deset odpovídajících hodnot. */}
                     &lt;datalist id={`${id}-suggestions`}>
                         {filteredIDSuggestions
                             .slice(0, 10)
@@ -368,6 +399,7 @@ export const CustomUUIDFilter = ({
  *     suggestions={financeNames}
  * />
  */
+// Textový filtr používá operátor _ilike a našeptávání názvů bez ohledu na diakritiku.
 export const CustomStringFilter = ({
     id,
     label,
@@ -383,6 +415,7 @@ export const CustomStringFilter = ({
 
     const [text, setText] = useState("");
 
+    // Memoizovaný seznam názvů odpovídajících aktuálnímu vstupu.
     const filteredNameSuggestions = useMemo(() => {
         const searchValue = text.trim();
 
@@ -390,6 +423,7 @@ export const CustomStringFilter = ({
             return suggestions;
         }
 
+        // Porovnání názvů využívá normalizaci bez diakritiky.
         return suggestions.filter((name) =>
             matchText(name, searchValue)
         );
@@ -430,10 +464,12 @@ export const CustomStringFilter = ({
             return;
         }
 
+        // Znak % je zástupný symbol operátoru _ilike; bez něj se doplní z obou stran.
         const filterValue = trimmedValue.includes("%")
             ? trimmedValue
             : `%${trimmedValue}%`;
 
+        // Odeslání částečné, case-insensitive GraphQL podmínky.
         filterContext.handleChange({
             target: {
                 id,
@@ -551,16 +587,19 @@ export const CustomStringFilter = ({
  *     onChange={handleFilterChange}
  * />
  */
+// Hlavní komponenta skládá UUID a textový filtr do jednoho formuláře.
 export const Filter = ({
     id,
     data = [],
     onChange: handleChange,
     children
 }) => {
+    // Ochrana proti předání jiné hodnoty než pole.
     const actualData = Array.isArray(data)
         ? data
         : [];
 
+    // Extrakce unikátních neprázdných UUID pro autocomplete.
     const idSuggestions = useMemo(() => {
         return [
             ...new Set(
@@ -571,6 +610,7 @@ export const Filter = ({
         ];
     }, [actualData]);
 
+    // Extrakce unikátních názvů pro textové našeptávání.
     const nameSuggestions = useMemo(() => {
         return [
             ...new Set(
@@ -582,23 +622,27 @@ export const Filter = ({
     }, [actualData]);
 
     return (
+        // BaseFilter vytváří kontext a spojuje podmínky všech vnořených filtrů.
         &lt;BaseFilter
             id={id}
             onChange={handleChange}
             label="FinanceGQLModel"
         >
+            {/* Filtr podle celého nebo částečného UUID. */}
             &lt;CustomUUIDFilter
                 id="id"
                 label="ID"
                 suggestions={idSuggestions}
             />
 
+            {/* Filtr názvu pomocí GraphQL operátoru _ilike. */}
             &lt;CustomStringFilter
                 id="name"
                 label="Název"
                 suggestions={nameSuggestions}
             />
 
+            {/* Prostor pro další volitelné filtrační komponenty. */}
             {children}
         &lt;/BaseFilter>
     );
@@ -612,13 +656,13 @@ export const Filter = ({
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ALLOWED_SORT_KEYS">ALLOWED_SORT_KEYS</a></li><li><a href="global.html#COLORS">COLORS</a></li><li><a href="global.html#CardCapsule">CardCapsule</a></li><li><a href="global.html#Children">Children</a></li><li><a href="global.html#ConfirmEdit">ConfirmEdit</a></li><li><a href="global.html#CreateBody">CreateBody</a></li><li><a href="global.html#CreateButton">CreateButton</a></li><li><a href="global.html#CreateDialog">CreateDialog</a></li><li><a href="global.html#CreateLink">CreateLink</a></li><li><a href="global.html#CustomStringFilter">CustomStringFilter</a></li><li><a href="global.html#CustomUUIDFilter">CustomUUIDFilter</a></li><li><a href="global.html#DefaultContent">DefaultContent</a></li><li><a href="global.html#DeleteBody">DeleteBody</a></li><li><a href="global.html#DeleteButton">DeleteButton</a></li><li><a href="global.html#DeleteDialog">DeleteDialog</a></li><li><a href="global.html#DeleteLink">DeleteLink</a></li><li><a href="global.html#Filter">Filter</a></li><li><a href="global.html#FinanceGQLModelRouterSegments">FinanceGQLModelRouterSegments</a></li><li><a href="global.html#FinanceTransferInsertAsyncAction">FinanceTransferInsertAsyncAction</a></li><li><a href="global.html#FinanceTransferInsertMutation">FinanceTransferInsertMutation</a></li><li><a href="global.html#FinanceTransferInsertMutationStr">FinanceTransferInsertMutationStr</a></li><li><a href="global.html#FinanceTransferSunburst">FinanceTransferSunburst</a></li><li><a href="global.html#GeneratedContentBase">GeneratedContentBase</a></li><li><a href="global.html#InsertAsyncAction">InsertAsyncAction</a></li><li><a href="global.html#InsertMutation">InsertMutation</a></li><li><a href="global.html#InsertMutationStr">InsertMutationStr</a></li><li><a href="global.html#InteractiveMutations">InteractiveMutations</a></li><li><a href="global.html#LargeCard">LargeCard</a></li><li><a href="global.html#LargeFragment">LargeFragment</a></li><li><a href="global.html#LargeFragmentStr">LargeFragmentStr</a></li><li><a href="global.html#Link">Link</a></li><li><a href="global.html#LinkFragment">LinkFragment</a></li><li><a href="global.html#LinkFragmentStr">LinkFragmentStr</a></li><li><a href="global.html#LiveEdit">LiveEdit</a></li><li><a href="global.html#LiveEditWrapper">LiveEditWrapper</a></li><li><a href="global.html#LiveEdit_">LiveEdit_</a></li><li><a href="global.html#MediumCard">MediumCard</a></li><li><a href="global.html#MediumContent">MediumContent</a></li><li><a href="global.html#MediumEditableContent">MediumEditableContent</a></li><li><a href="global.html#MediumFragment">MediumFragment</a></li><li><a href="global.html#MediumFragmentStr">MediumFragmentStr</a></li><li><a href="global.html#MutationAsyncAction">MutationAsyncAction</a></li><li><a href="global.html#MyNavDropdown">MyNavDropdown</a></li><li><a href="global.html#Page">Page</a></li><li><a href="global.html#PageContent">PageContent</a></li><li><a href="global.html#PageItemBase">PageItemBase</a></li><li><a href="global.html#PageItemInnerStructure">PageItemInnerStructure</a></li><li><a href="global.html#PageLink">PageLink</a></li><li><a href="global.html#PageReadItem">PageReadItem</a></li><li><a href="global.html#PageReadItemRolesOn">PageReadItemRolesOn</a></li><li><a href="global.html#PageUpdateItem">PageUpdateItem</a></li><li><a href="global.html#RBACFragment">RBACFragment</a></li><li><a href="global.html#RBACFragmentStr">RBACFragmentStr</a></li><li><a href="global.html#ReadAsyncAction">ReadAsyncAction</a></li><li><a href="global.html#RoleFragment">RoleFragment</a></li><li><a href="global.html#RoleFragmentStr">RoleFragmentStr</a></li><li><a href="global.html#SunburstDiagram">SunburstDiagram</a></li><li><a href="global.html#Table">Table</a></li><li><a href="global.html#TemplateScalarAttribute">TemplateScalarAttribute</a></li><li><a href="global.html#TemplateScalarAttributeLazy">TemplateScalarAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute">TemplateVectorsAttribute</a></li><li><a href="global.html#TemplateVectorsAttributeInfinite">TemplateVectorsAttributeInfinite</a></li><li><a href="global.html#TemplateVectorsAttributeLazy">TemplateVectorsAttributeLazy</a></li><li><a href="global.html#TemplateVectorsAttribute_old">TemplateVectorsAttribute_old</a></li><li><a href="global.html#UUID_RE">UUID_RE</a></li><li><a href="global.html#UpdateBody">UpdateBody</a></li><li><a href="global.html#UpdateButton">UpdateButton</a></li><li><a href="global.html#UpdateDialog">UpdateDialog</a></li><li><a href="global.html#UpdateLink">UpdateLink</a></li><li><a href="global.html#VectorsVisualiser">VectorsVisualiser</a></li><li><a href="global.html#WANTED_COLUMNS">WANTED_COLUMNS</a></li><li><a href="global.html#applyTransfersToFinanceTree">applyTransfersToFinanceTree</a></li><li><a href="global.html#buildParentMap">buildParentMap</a></li><li><a href="global.html#buildSunburstNodes">buildSunburstNodes</a></li><li><a href="global.html#canTransferBetween">canTransferBetween</a></li><li><a href="global.html#collectFinanceIds">collectFinanceIds</a></li><li><a href="global.html#collectTransfers">collectTransfers</a></li><li><a href="global.html#defaultitem">defaultitem</a></li><li><a href="global.html#describeArc">describeArc</a></li><li><a href="global.html#filterRelevantTransfers">filterRelevantTransfers</a></li><li><a href="global.html#followUpTemplateVectorItemDelete">followUpTemplateVectorItemDelete</a></li><li><a href="global.html#followUpTemplateVectorItemInsert">followUpTemplateVectorItemInsert</a></li><li><a href="global.html#followUpTemplateVectorItemUpdate">followUpTemplateVectorItemUpdate</a></li><li><a href="global.html#formatCurrency">formatCurrency</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#getFinanceName">getFinanceName</a></li><li><a href="global.html#getLastNumberFromId">getLastNumberFromId</a></li><li><a href="global.html#getNodeChildren">getNodeChildren</a></li><li><a href="global.html#getNodeLabel">getNodeLabel</a></li><li><a href="global.html#getNodeUrl">getNodeUrl</a></li><li><a href="global.html#getTransferDestinationId">getTransferDestinationId</a></li><li><a href="global.html#getTransferSourceId">getTransferSourceId</a></li><li><a href="global.html#isAncestor">isAncestor</a></li><li><a href="global.html#matchText">matchText</a></li><li><a href="global.html#mutationAsyncAction">mutationAsyncAction</a></li><li><a href="global.html#normalizeText">normalizeText</a></li><li><a href="global.html#normalizeTransfer">normalizeTransfer</a></li><li><a href="global.html#patchFinanceItem">patchFinanceItem</a></li><li><a href="global.html#permissions">permissions</a></li><li><a href="global.html#polarToCartesian">polarToCartesian</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Jul 13 2026 19:35:09 GMT+0200 (středoevropský letní čas)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 14 2026 09:09:35 GMT+0200 (středoevropský letní čas)
 </footer>
 
 <script> prettyPrint(); </script>

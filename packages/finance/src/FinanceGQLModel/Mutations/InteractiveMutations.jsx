@@ -1,17 +1,22 @@
+// Importuje kartu používanou pro seskupení ovládacích prvků a základní URI seznamu financí.
 import {
     CardCapsule,
     VectorItemsURI
 } from "../Components";
 
+// Import tlačítka pro vytvoření nové finance.
 import { CreateButton } from "./Create";
 
+// Import komponent pro úpravu finance.
 import {
     UpdateButton,
     UpdateLink
 } from "./Update";
 
+// Import tlačítka pro odstranění finance.
 import { DeleteButton } from "./Delete";
 
+// Import komponenty zajišťující interní navigaci v aplikaci.
 import {
     ProxyLink
 } from "../../../../_template/src/Base/Components/ProxyLink";
@@ -46,18 +51,34 @@ import {
  * </PageLink>
  */
 export const PageLink = ({
+    // Text nebo obsah odkazu.
     children,
+
+    // Zachování části URL za znakem #.
     preserveHash = true,
+
+    // Zachování parametrů URL (?param=value).
     preserveSearch = true,
+
+    // Ostatní vlastnosti komponenty.
     ...props
 }) => {
     return (
+        // ProxyLink zajistí interní přechod na stránku seznamu financí.
         <ProxyLink
+            // Cílová adresa seznamu financí.
             to={VectorItemsURI}
+
+            // Zachová hash původní adresy.
             preserveHash={preserveHash}
+
+            // Zachová query parametry původní adresy.
             preserveSearch={preserveSearch}
+
+            // Přepošle ostatní vlastnosti (např. className).
             {...props}
         >
+            {/* Obsah odkazu zadaný při použití komponenty. */}
             {children}
         </ProxyLink>
     );
@@ -108,19 +129,26 @@ export const PageLink = ({
  * />
  */
 export const InteractiveMutations = ({
+    // Aktuální finance, nad kterou budou prováděny jednotlivé operace.
     item
 }) => {
     return (
+        // Obalová karta seskupující všechny dostupné akce.
         <CardCapsule
+            // Předání aktuální finance kartě.
             item={item}
+
+            // Vlastní nadpis karty místo automatického titulku.
             title="Nástroje"
         >
+            {/* Odkaz zpět na seznam všech financí. */}
             <PageLink
                 className="btn btn-outline-success"
             >
                 Stránka
             </PageLink>
 
+            {/* Přechod na samostatnou stránku editace finance. */}
             <UpdateLink
                 className="btn btn-outline-success"
                 item={item}
@@ -128,6 +156,7 @@ export const InteractiveMutations = ({
                 Upravit
             </UpdateLink>
 
+            {/* Otevření modálního dialogu pro editaci finance. */}
             <UpdateButton
                 className="btn btn-outline-success"
                 item={item}
@@ -135,13 +164,17 @@ export const InteractiveMutations = ({
                 Upravit dialog
             </UpdateButton>
 
+            {/* Otevření dialogu pro vytvoření nové finance. */}
             <CreateButton
                 className="btn btn-outline-success"
+
+                // Prázdný RBAC objekt sloužící jako výchozí kontext pro vytvoření nové entity.
                 rbacitem={{}}
             >
                 Vytvořit nový
             </CreateButton>
 
+            {/* Tlačítko pro odstranění aktuální finance. */}
             <DeleteButton
                 className="btn btn-outline-danger"
                 item={item}

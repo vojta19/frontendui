@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: Components/Children.jsx</title>
+    <title>JSDoc: Source: Scalars/TemplateScalarAttribute.jsx</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: Components/Children.jsx</h1>
+    <h1 class="page-title">Source: Scalars/TemplateScalarAttribute.jsx</h1>
 
     
 
@@ -26,62 +26,116 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>// Import komponenty ChildWrapper ze sdílené knihovny.
-// Tato komponenta zajišťuje předání společných vlastností všem vnořeným komponentám.
-import { ChildWrapper } from "@hrbolek/uoisfrontend-shared";
+            <pre class="prettyprint source linenums"><code>// Importuje tvůrce asynchronních GraphQL akcí a hook pro správu dotazů ze sdíleného balíčku @hrbolek/uoisfrontend-gql-shared
+import { createAsyncGraphQLAction, useAsyncAction } from "@hrbolek/uoisfrontend-gql-shared";
 
+// Importuje komponenty pro vykreslení chyb a indikátoru načítání ze sdíleného balíčku @hrbolek/uoisfrontend-shared
+import { ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared";
 
 /**
- * Wraps child components and automatically injects the current finance entity
- * into all descendants.
+ * A component for displaying the `scalar` attribute of an template entity.
  *
- * This helper component eliminates the need to manually pass the same
- * `item` property to every nested component. All additional properties are
- * forwarded to `ChildWrapper`.
+ * This component checks if the `scalar` attribute exists on the `template` object. If `scalar` is undefined,
+ * the component returns `null` and renders nothing. Otherwise, it displays a placeholder message
+ * and a JSON representation of the `scalar` attribute.
  *
  * @component
+ * @param {Object} props - The props for the TemplateScalarAttribute component.
+ * @param {Object} props.template - The object representing the template entity.
+ * @param {*} [props.template.scalar] - The scalar attribute of the template entity to be displayed, if defined.
  *
- * @param {Object} props
- * Component properties.
- *
- * @param {Object} props.item
- * Finance entity that will be propagated to all child components.
- *
- * @param {React.ReactNode} props.children
- * Child components rendered inside the wrapper.
- *
- * @param {...Object} props
- * Additional properties forwarded to `ChildWrapper`.
- *
- * @returns {JSX.Element}
- * Wrapper providing the current finance entity to all nested components.
+ * @returns {JSX.Element|null} A JSX element displaying the `scalar` attribute or `null` if the attribute is undefined.
  *
  * @example
- * &lt;Children item={finance}>
- *     &lt;MediumContent />
- *     &lt;InteractiveMutations />
- * &lt;/Children>
+ * // Example usage:
+ * const templateEntity = { scalar: { id: 1, name: "Sample Scalar" } };
+ *
+ * &lt;TemplateScalarAttribute template={templateEntity} />
  */
-export const Children = ({
-    // Aktuální finanční entita, která bude zpřístupněna všem potomkům.
-    item,
+// Definuje a exportuje komponentu TemplateScalarAttribute pro statické zobrazení detailu skalární relace
+export const TemplateScalarAttribute = ({ template }) => {
+    
+    // Destrukturalizací bezpečně vytáhne vlastnost scalar ze zadaného objektu šablony
+    const { scalar } = template;
+    
+    // Podmínka: Pokud je vlastnost scalar zcela nedefinovaná (undefined), komponenta nic nevykreslí
+    if (typeof scalar === 'undefined') return null;
+    
+    // Vrací JSX fragment obsahující textový náhled a formátovaný JSON výpis objektu
+    return (
+        &lt;>
+            {/* PŮVODNÍ ZAKOMENTOVANÝ KÓD: &lt;ScalarMediumCard scalar={scalar} /> */}
+            {/* PŮVODNÍ ZAKOMENTOVANÝ KÓD: &lt;ScalarLink scalar={scalar} /> */}
+            
+            {/* Vykresluje textový řetězec informující o chybějící sub-komponentě */}
+            Probably {'&lt;ScalarMediumCard scalar={scalar} />'} &lt;br />
+            
+            {/* Vykresluje lidsky čitelnou podobu JSON struktury objektu scalar se čtyřmi mezerami odsazení */}
+            &lt;pre>{JSON.stringify(scalar, null, 4)}&lt;/pre>
+        &lt;/>
+    ); // Konec návratové hodnoty JSX fragmentu
+}; // Konec definice komponenty TemplateScalarAttribute
 
-    // Komponenty vložené mezi otevírací a uzavírací značku &lt;Children>.
-    children,
+// Definuje řetězec čistého GraphQL dotazu (Query) pro stažení skalárního objektu podle ID mateřské entity
+const TemplateScalarAttributeQuery = `
+query TemplateQueryRead($id: UUID!) {
+    result: templateById(id: $id) {
+        __typename
+        id
+        scalar {
+            __typename
+            id
+        }
+    }
+}
+`; // Konec definice GraphQL dotazu
 
-    // Zachytí všechny ostatní vlastnosti a přepošle je do ChildWrapper.
-    ...props
-}) => (
-    // ChildWrapper zajistí předání objektu item všem vnořeným komponentám,
-    // takže jej není nutné ručně předávat přes několik úrovní komponent.
-    &lt;ChildWrapper
-        item={item}
-        {...props}
-    >
-        {/* Vykreslení všech potomků obalených tímto wrapperem */}
-        {children}
-    &lt;/ChildWrapper>
-);</code></pre>
+// Vytváří a přiřazuje asynchronní síťovou akci (thunk) pro provádění GraphQL operace na základě definovaného dotazu
+const TemplateScalarAttributeAsyncAction = createAsyncGraphQLAction(
+    TemplateScalarAttributeQuery
+); // Konec inicializace akce
+
+/**
+ * A lazy-loading component for displaying filtered `scalar` from a `template` entity.
+ *
+ * This component uses the `TemplateScalarAttributeAsyncAction` to asynchronously fetch
+ * the `template.scalar` data. It shows a loading spinner while fetching, handles errors,
+ * and filters the resulting list using a custom `filter` function (defaults to `Boolean` to remove falsy values).
+ *
+ * Each vector item is rendered as a `&lt;div>` with its `id` as both the `key` and the `id` attribute,
+ * and displays a formatted JSON preview using `&lt;pre>`.
+ *
+ * @component
+ * @param {Object} props - The properties object.
+ * @param {Object} props.template - The template entity or identifying query variables used to fetch it.
+ * @param {Function} [props.filter=Boolean] - A filtering function applied to the `scalar` array before rendering.
+ *
+ * @returns {JSX.Element} A rendered list of filtered scalar or a loading/error placeholder.
+ *
+ * @example
+ * &lt;TemplateScalarAttributeLazy template={{ id: "abc123" }} />
+ *
+ * * @example
+ * &lt;TemplateScalarAttributeLazy
+ * template={{ id: "abc123" }}
+ * filter={(v) => v.status === "active"}
+ * />
+ */
+// Definuje a exportuje komponentu TemplateScalarAttributeLazy, která automaticky spouští a řídí síťový dotaz při svém mountu
+export const TemplateScalarAttributeLazy = ({ template }) => {
+    
+    // Inicializuje hook useAsyncAction pro automatickou správu stavů loading, error, dat (entity) a spouštěcí funkce (fetch)
+    const { loading, error, entity, fetch } = useAsyncAction(TemplateScalarAttributeAsyncAction, template);
+
+    // Podmínka: Pokud síťové stahování dat z backendu stále probíhá, vrátí komponentu načítacího spinneru
+    if (loading) return &lt;LoadingSpinner />;
+    
+    // Podmínka: Pokud během GraphQL dotazu nastala chyba, předá pole chyb komponentě ErrorHandler pro zobrazení uživateli
+    if (error) return &lt;ErrorHandler errors={error} />;
+
+    // Po úspěšném dokončení dotazu vyrenderuje standardní zobrazení a předá mu stažená data (entity) z kontextu dotazu
+    return &lt;TemplateScalarAttribute template={entity} />;    
+}; // Konec definice komponenty TemplateScalarAttributeLazy</code></pre>
         </article>
     </section>
 

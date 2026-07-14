@@ -62,11 +62,13 @@ const ALLOWED_SORT_KEYS = [
  * // Returns: "250 000 Kč"
  */
 const formatCurrency = (value) => {
+    // Ověří, zda je hodnota číslo, pokud ne, převede ji na číslo, případně použije 0 jako fallback
     const numericValue =
         typeof value === "number"
             ? value
             : Number(value) || 0;
 
+    // Vrátí zformátované číslo podle české lokalizace s připojenou měnou "Kč"
     return `${numericValue.toLocaleString("cs-CZ")} Kč`;
 };
 
@@ -90,20 +92,25 @@ const formatCurrency = (value) => {
  * // Returns a localized Czech date and time.
  */
 const formatDate = (dateString) => {
+    // Pokud datum není definováno, vrátí pomlčku
     if (!dateString) {
         return "-";
     }
 
     try {
+        // Vytvoří novou instanci Date z předaného řetězce
         const date = new Date(dateString);
 
+        // Pokud je vytvořené datum neplatné, vrátí původní řetězec
         if (Number.isNaN(date.getTime())) {
             return dateString;
         }
 
+        // Převede datum na český formát zápisu (DD. MM. YYYY)
         const localizedDate =
             date.toLocaleDateString("cs-CZ");
 
+        // Převede čas na český formát se specifikací dvouciferných hodin a minut
         const localizedTime =
             date.toLocaleTimeString(
                 "cs-CZ",
@@ -113,8 +120,10 @@ const formatDate = (dateString) => {
                 }
             );
 
+        // Spojí zformátované datum a čas mezerou do jednoho řetězce
         return `${localizedDate} ${localizedTime}`;
     } catch {
+        // V případě neočekávané chyby při parsování vrátí původní řetězec
         return dateString;
     }
 };
@@ -141,13 +150,17 @@ const formatDate = (dateString) => {
  * // Returns: 3
  */
 const getLastNumberFromId = (idValue) => {
+    // Pokud ID neexistuje, vrátí výchozí hodnotu 0
     if (!idValue) {
         return 0;
     }
 
+    // Rozdělí řetězec identifikátoru na části podle pomlček
     const parts = String(idValue).split("-");
+    // Získá poslední prvek z rozděleného pole
     const lastPart = parts.at(-1);
 
+    // Převede poslední část na celé číslo v desítkové soustavě, v případě neúspěchu vrátí 0
     return Number.parseInt(lastPart, 10) || 0;
 };
 
@@ -191,10 +204,12 @@ const getLastNumberFromId = (idValue) => {
 export const Table = ({
     data
 }) => {
+    // Pokud předaná data nejsou pole nebo je pole prázdné, komponenta nevykreslí nic
     if (!Array.isArray(data) || data.length === 0) {
         return null;
     }
 
+    // Stav pro uložení aktuálního klíče řazení a směru (výchozí je vzestupně podle "id")
     const [sortConfig, setSortConfig] = useState({
         key: "id",
         direction: "asc"
@@ -214,16 +229,19 @@ export const Table = ({
      * @returns {void}
      */
     const handleSort = (key) => {
+        // Ignoruje řazení, pokud vybraný sloupec není v seznamu povolených klíčů pro řazení
         if (!ALLOWED_SORT_KEYS.includes(key)) {
             return;
         }
 
+        // Určí nový směr řazení: pokud se kliklo na již aktivní klíč s 'asc', změní ho na 'desc', jinak nastaví 'asc'
         const direction =
             sortConfig.key === key &&
             sortConfig.direction === "asc"
                 ? "desc"
                 : "asc";
 
+        // Aktualizuje stav s novým klíčem a směrem řazení
         setSortConfig({
             key,
             direction
@@ -231,63 +249,82 @@ export const Table = ({
     };
 
 
+    // Memoizované seřazení dat, které se přepočítá pouze při změně dat nebo konfigurace řazení
     const sortedData = useMemo(() => {
+        // Vytvoří mělkou kopii dat, aby se neupravovalo původní pole (immutable přístup)
         const sortableItems = [...data];
 
+        // Pokud není nastaven klíč pro řazení, vrátí neupravenou kopii dat
         if (!sortConfig.key) {
             return sortableItems;
         }
 
+        // Seřadí položky v poli na základě aktuální konfigurace
         sortableItems.sort((firstItem, secondItem) => {
+            // Získá hodnotu pro řazení z prvního porovnávaného objektu podle nastaveného klíče
             let firstValue =
                 firstItem?.[sortConfig.key];
 
+            // Získá hodnotu pro řazení z druhého porovnávaného objektu podle nastaveného klíče
             let secondValue =
                 secondItem?.[sortConfig.key];
 
+            // Specifické řazení pro sloupec "id" (např. UUID, kde porovnáváme koncové číslo)
             if (sortConfig.key === "id") {
+                // Vytáhne koncové číslo z prvního ID
                 const firstNumber =
                     getLastNumberFromId(firstValue);
 
+                // Vytáhne koncové číslo z druhého ID
                 const secondNumber =
                     getLastNumberFromId(secondValue);
 
+                // Porovná čísla podle směru řazení (vzestupně / sestupně)
                 return sortConfig.direction === "asc"
                     ? firstNumber - secondNumber
                     : secondNumber - firstNumber;
             }
 
+            // Specifické řazení pro číselný sloupec "value" (částka)
             if (sortConfig.key === "value") {
+                // Převede hodnotu prvního prvku na číslo s fallbackem na nulu
                 const firstNumber =
                     Number(firstValue) || 0;
 
+                // Převede hodnotu druhého prvku na číslo s fallbackem na nulu
                 const secondNumber =
                     Number(secondValue) || 0;
 
+                // Porovná číselné hodnoty podle nastaveného směru řazení
                 return sortConfig.direction === "asc"
                     ? firstNumber - secondNumber
                     : secondNumber - firstNumber;
             }
 
+            // Výchozí textové řazení pro ostatní sloupce (např. "name") převedené na malá písmena
             firstValue =
                 String(firstValue ?? "")
                     .toLocaleLowerCase("cs-CZ");
 
+            // Převod hodnoty druhého textu na malá písmena s českým nastavením
             secondValue =
                 String(secondValue ?? "")
                     .toLocaleLowerCase("cs-CZ");
 
+            // Porovná řetězce s respektováním českých pravidel řazení (např. správné řazení "Ch")
             const comparison =
                 firstValue.localeCompare(
                     secondValue,
                     "cs-CZ"
                 );
 
+            // Vrátí výsledek porovnání textů s ohledem na směr řazení (při sestupném invertuje znaménko)
             return sortConfig.direction === "asc"
                 ? comparison
                 : -comparison;
         });
 
+        // Vrátí nově seřazené pole
         return sortableItems;
     }, [
         data,
@@ -295,34 +332,44 @@ export const Table = ({
     ]);
 
 
+    // Memoizované sestavení definice tabulky (sloupců, labelů a komponent pro buňky)
     const customTableDef = useMemo(() => {
+        // Vygeneruje základní definici tabulky z připravených seřazených dat
         const baseDefinition =
             buildTableDef(sortedData);
 
+        // Objekt pro uložení výsledné upravené a vyfiltrované definice sloupců
         const filteredDefinition = {};
 
+        // Projde všechny klíče definované v požadovaných sloupcích (WANTED_COLUMNS)
         Object.keys(WANTED_COLUMNS).forEach((key) => {
+            // Pokud požadovaný sloupec v základní definici tabulky neexistuje, přeskočí se
             if (!baseDefinition[key]) {
                 return;
             }
 
+            // Načte výchozí český překlad záhlaví sloupce
             let label = WANTED_COLUMNS[key];
 
+            // Pokud je sloupec aktuálně aktivní pro řazení a řazení v něm je povoleno
             if (
                 sortConfig.key === key &&
                 ALLOWED_SORT_KEYS.includes(key)
             ) {
+                // Připojí k názvu sloupce šipku nahoru pro vzestupný směr, nebo šipku dolů pro sestupný
                 label +=
                     sortConfig.direction === "asc"
                         ? " ▲"
                         : " ▼";
             }
 
+            // Vytvoří novou definici sloupce, zkopíruje původní a přepíše její popisek (label)
             filteredDefinition[key] = {
                 ...baseDefinition[key],
                 label
             };
 
+            // Pokud jde o sloupec finanční hodnoty, nastaví vlastní komponentu pro formátování měny
             if (key === "value") {
                 filteredDefinition[key].component =
                     ({ row }) => (
@@ -332,6 +379,7 @@ export const Table = ({
                     );
             }
 
+            // Pokud jde o sloupce s datem změny nebo vytvoření, nastaví komponentu s formátováním data
             if (
                 key === "lastchange" ||
                 key === "created"
@@ -345,6 +393,7 @@ export const Table = ({
             }
         });
 
+        // Vrátí finální definici tabulky obsahující pouze vybrané a upravené sloupce
         return filteredDefinition;
     }, [
         sortedData,
@@ -364,8 +413,10 @@ export const Table = ({
      * @returns {void}
      */
     const handleTableClick = (event) => {
+        // Získá element, na který uživatel skutečně kliknul
         const clickedElement = event.target;
 
+        // Pokud kliknutí proběhlo uvnitř kontextového menu nebo na tlačítko, řazení se ignoruje
         if (
             clickedElement.closest("[role='menu']") ||
             clickedElement.closest("button")
@@ -373,19 +424,23 @@ export const Table = ({
             return;
         }
 
+        // Najde nejbližší nadřazený element hlavičky tabulky (th) od místa kliknutí
         const headerCell =
             clickedElement.closest("th");
 
+        // Pokud se nekliklo uvnitř žádné hlavičky sloupce, funkce končí
         if (!headerCell) {
             return;
         }
 
+        // Získá text z hlavičky, odstraní z něj případné indikační šipky řazení a ořízne bílé znaky
         const clickedLabel =
             headerCell.innerText
                 .replace(" ▲", "")
                 .replace(" ▼", "")
                 .trim();
 
+        // Najde odpovídající datový klíč sloupce, jehož překlad odpovídá textu kliknutého záhlaví
         const columnKey =
             Object.keys(WANTED_COLUMNS).find(
                 (key) =>
@@ -393,12 +448,14 @@ export const Table = ({
                     clickedLabel
             );
 
+        // Pokud byl klíč sloupce úspěšně nalezen, spustí na něm logiku řazení
         if (columnKey) {
             handleSort(columnKey);
         }
     };
 
 
+    // Vykreslí responzivní obal tabulky s delegovaným onClick eventem a samotnou základní tabulku
     return (
         <div
             className="table-responsive"

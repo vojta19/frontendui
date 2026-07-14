@@ -1,3 +1,6 @@
+// Import základních komponent pro aktualizaci entity ze sdílené šablony.
+// Každá komponenta je přejmenována pomocí aliasu Base,
+// aby bylo zřejmé, že v tomto souboru vzniká finance varianta.
 import {
     UpdateBody as BaseUpdateBody,
     UpdateButton as BaseUpdateButton,
@@ -5,11 +8,13 @@ import {
     UpdateLink as BaseUpdateLink
 } from "../../../../_template/src/Base/Mutations/Update";
 
+// Import formuláře pro editaci finance a URI adresy stránky úprav.
 import {
     MediumEditableContent,
     UpdateItemURI
 } from "../Components";
 
+// Import GraphQL async akce, která ukládá změny finanční entity.
 import { UpdateAsyncAction } from "../Queries";
 
 
@@ -22,6 +27,8 @@ import { UpdateAsyncAction } from "../Queries";
  * @returns {JSX.Element}
  * Editable finance form.
  */
+// Výchozí formulářový obsah používaný všemi variantami aktualizace.
+// Všechny přijaté vlastnosti se bez změny předají do MediumEditableContent.
 const DefaultContent = (props) => (
     <MediumEditableContent {...props} />
 );
@@ -33,6 +40,7 @@ const DefaultContent = (props) => (
  * @constant
  * @type {Function}
  */
+// Výchozí async GraphQL akce pro uložení změn finance.
 const mutationAsyncAction = UpdateAsyncAction;
 
 
@@ -44,8 +52,13 @@ const mutationAsyncAction = UpdateAsyncAction;
  * @constant
  * @type {{oneOfRoles: string[], mode: string}}
  */
+// Společná konfigurace oprávnění pro všechny aktualizační komponenty.
 const permissions = {
+    // Aktualizaci může provést pouze uživatel s rolí administrátor.
     oneOfRoles: ["administrátor"],
+
+    // Režim absolute znamená globální kontrolu oprávnění,
+    // nikoli kontrolu vůči konkrétní položce.
     mode: "absolute"
 };
 
@@ -82,13 +95,22 @@ const permissions = {
  * </UpdateLink>
  */
 export const UpdateLink = ({
+    // URI vzor stránky pro úpravu konkrétní finance.
     uriPattern = UpdateItemURI,
+
+    // Ostatní vlastnosti odkazu, například item, children nebo className.
     ...props
 }) => {
     return (
+        // Základní odkaz ze šablony zajišťuje navigaci na editační stránku.
         <BaseUpdateLink
+            // Přeposlání všech ostatních vlastností.
             {...props}
+
+            // Nastavení cílové URI úprav.
             uriPattern={uriPattern}
+
+            // Aplikace společné kontroly oprávnění.
             {...permissions}
         />
     );
@@ -135,16 +157,30 @@ export const UpdateLink = ({
  * />
  */
 export const UpdateDialog = ({
+    // Formulářová komponenta použitá uvnitř dialogu.
+    // Alias DefaultContent_ zabraňuje kolizi s lokální konstantou.
     DefaultContent: DefaultContent_ = DefaultContent,
+
+    // Async akce provádějící GraphQL mutaci.
     mutationAsyncAction: mutationAsyncAction_ =
         mutationAsyncAction,
+
+    // Ostatní vlastnosti dialogu, například item, title, onOk nebo onCancel.
     ...props
 }) => {
     return (
+        // Základní modální dialog ze sdílené šablony.
         <BaseUpdateDialog
+            // Přeposlání ostatních parametrů dialogu.
             {...props}
+
+            // Vložení formuláře pro editaci finanční položky.
             DefaultContent={DefaultContent_}
+
+            // Nastavení async akce použité při potvrzení změn.
             mutationAsyncAction={mutationAsyncAction_}
+
+            // Omezení přístupu na uživatele s požadovanou rolí.
             {...permissions}
         />
     );
@@ -189,18 +225,36 @@ export const UpdateDialog = ({
  * </UpdateButton>
  */
 export const UpdateButton = ({
+    // Výchozí formulářová komponenta uvnitř dialogu.
     DefaultContent: DefaultContent_ = DefaultContent,
+
+    // Dialog otevřený po kliknutí na tlačítko.
     Dialog = UpdateDialog,
+
+    // Async GraphQL akce použitá při uložení.
     mutationAsyncAction: mutationAsyncAction_ =
         mutationAsyncAction,
+
+    // Ostatní vlastnosti tlačítka, například item, children nebo className.
     ...props
 }) => {
     return (
+        // Základní tlačítko ze šablony spravuje otevření dialogu
+        // a následné spuštění aktualizační akce.
         <BaseUpdateButton
+            // Přeposlání standardních vlastností tlačítka.
             {...props}
+
+            // Formulář zobrazený uvnitř dialogu.
             DefaultContent={DefaultContent_}
+
+            // Komponenta dialogu otevřená po kliknutí.
             Dialog={Dialog}
+
+            // Async akce odesílající změny na backend.
             mutationAsyncAction={mutationAsyncAction_}
+
+            // Kontrola oprávnění uživatele.
             {...permissions}
         />
     );
@@ -246,16 +300,30 @@ export const UpdateButton = ({
  * />
  */
 export const UpdateBody = ({
+    // Komponenta obsahující editovatelná pole finance.
     DefaultContent: DefaultContent_ = DefaultContent,
+
+    // Async akce použitá pro uložení změn.
     mutationAsyncAction: mutationAsyncAction_ =
         mutationAsyncAction,
+
+    // Ostatní vlastnosti celostránkového workflow.
     ...props
 }) => {
     return (
+        // BaseUpdateBody zajišťuje kompletní aktualizační proces
+        // přímo na samostatné stránce.
         <BaseUpdateBody
+            // Přeposlání ostatních parametrů.
             {...props}
+
+            // Vložení finance formuláře.
             DefaultContent={DefaultContent_}
+
+            // Nastavení GraphQL async akce pro uložení změn.
             mutationAsyncAction={mutationAsyncAction_}
+
+            // Aplikace společného nastavení oprávnění.
             {...permissions}
         />
     );

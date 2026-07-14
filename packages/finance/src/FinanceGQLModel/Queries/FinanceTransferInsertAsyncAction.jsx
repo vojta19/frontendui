@@ -12,6 +12,7 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
  * @constant
  * @type {string}
  */
+// Definice textového řetězce s GraphQL mutací pro vložení nového finančního přesunu
 const FinanceTransferInsertMutationStr = `
 mutation financeTransferInsert(
   $financeTransfer_financeSourceId: UUID!
@@ -57,6 +58,7 @@ mutation financeTransferInsert(
  *
  * @constant
  */
+// Převede statický řetězec mutace na líně (lazy) vyhodnocovaný GraphQL dotaz pomocí sdílené helper funkce
 const FinanceTransferInsertMutation =
     createQueryStrLazy(
         FinanceTransferInsertMutationStr
@@ -81,6 +83,7 @@ const FinanceTransferInsertMutation =
  *     })
  * );
  */
+// Vytvoří a exportuje spustitelnou asynchronní akci (Thunk) pro odeslání mutace na backend a uložení výsledku
 export const FinanceTransferInsertAsyncAction =
     createAsyncGraphQLAction2(
         FinanceTransferInsertMutation

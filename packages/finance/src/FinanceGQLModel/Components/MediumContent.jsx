@@ -1,11 +1,17 @@
+// Import lokální komponenty Link přejmenované na ItemLink,
+// která vytváří odkazy na detail finanční položky.
 import { Link as ItemLink } from "./Link";
 
+// Import sdílených komponent pro vykreslení atributů,
+// formátování data a generování odkazů na systémové entity.
 import {
     Attribute,
     formatDateTime,
     Link
 } from "../../../../_template/src/Base/Components";
 
+// Import komponenty ProxyLink přejmenované na ProjectLink,
+// která slouží pro navigaci na detail projektu.
 import {
     ProxyLink as ProjectLink
 } from "../../../../_template/src/Base/Components/ProxyLink";
@@ -29,202 +35,165 @@ import {
  * @param {Object} props.item
  * Finance entity to display.
  *
- * @param {string} props.item.id
- * Unique identifier of the finance entity.
- *
- * @param {string} [props.item.name]
- * Czech name of the finance entity.
- *
- * @param {string} [props.item.nameEn]
- * English name of the finance entity.
- *
- * @param {string|number} [props.item.order]
- * Optional order or alternative display identifier.
- *
- * @param {string} [props.item.description]
- * Textual description of the finance entity.
- *
- * @param {number} [props.item.value]
- * Current financial amount assigned to the entity.
- *
- * @param {string} [props.item.lastchange]
- * Date and time of the most recent modification.
- *
- * @param {string} [props.item.created]
- * Date and time when the finance entity was created.
- *
- * @param {string} [props.item.masterfinanceId]
- * Identifier of the parent finance entity.
- *
- * @param {Object} [props.item.masterfinance]
- * Parent finance entity.
- *
- * @param {string} [props.item.masterfinance.id]
- * Identifier of the parent finance.
- *
- * @param {string} [props.item.masterfinance.name]
- * Display name of the parent finance.
- *
- * @param {Object} [props.item.createdby]
- * User who created the finance record.
- *
- * @param {string} [props.item.createdby.id]
- * Identifier of the creating user.
- *
- * @param {string} [props.item.createdby.fullname]
- * Full name of the creating user.
- *
- * @param {Object} [props.item.changedby]
- * User who last modified the finance record.
- *
- * @param {string} [props.item.changedby.id]
- * Identifier of the modifying user.
- *
- * @param {string} [props.item.changedby.fullname]
- * Full name of the modifying user.
- *
- * @param {Object} [props.item.project]
- * Project associated with the finance entity.
- *
- * @param {string} [props.item.project.id]
- * Unique identifier of the associated project.
- *
- * @param {string} [props.item.project.name]
- * Display name of the associated project.
- *
- * @param {React.ReactNode} [props.children]
- * Optional additional content rendered after the finance attributes.
- *
- * @returns {JSX.Element}
- * Structured presentation of the finance entity.
- *
- * @example
- * const finance = {
- *     id: "30000000-0000-0000-0000-000000000003",
- *     name: "Rozpočet WP2",
- *     nameEn: "WP2 Budget",
- *     description: "Rozpočet pracovního balíčku WP2",
- *     value: 900000,
- *     masterfinanceId: "30000000-0000-0000-0000-000000000001",
- *     masterfinance: {
- *         id: "30000000-0000-0000-0000-000000000001",
- *         name: "Celkový rozpočet programu"
- *     },
- *     project: {
- *         id: "project-id",
- *         name: "Projekt modernizace"
- *     }
- * };
- *
- * <MediumContent item={finance} />
+ * ...
  */
 export const MediumContent = ({
+    // Aktuální finanční položka zobrazená na stránce.
     item,
+
+    // Volitelný obsah připojený za standardní výpis atributů.
     children
 }) => {
     return (
         <>
+            {/* Český název finanční položky s odkazem na její detail. */}
             <Attribute label="Název">
                 <ItemLink item={item} />
             </Attribute>
 
+            {/* Anglický název finance.
+                Pokud není vyplněn, zobrazí se pomlčka. */}
             <Attribute label="EN název">
                 <ItemLink item={item}>
                     {item?.nameEn || "-"}
                 </ItemLink>
             </Attribute>
 
+            {/* Primární identifikátor finance.
+                Pokud existuje pořadové číslo (order), zobrazí se přednostně. */}
             <Attribute label="ID">
                 <ItemLink item={item}>
                     {item?.order || item?.id || "Data Error"}
                 </ItemLink>
             </Attribute>
 
+            {/* Informace o nadřazené finanční položce. */}
             <Attribute label="Nadřazená finance">
                 {item?.masterfinanceId ? (
+                    // Pokud nadřazená finance existuje,
+                    // zobrazí se jako klikací odkaz.
                     <ItemLink item={item?.masterfinance}>
+
+                        {/* Název nadřazené finance,
+                            případně pouze její ID. */}
                         {item?.masterfinance?.name ||
                             item?.masterfinanceId}
+
                         {" "}
+
+                        {/* V závorce se vždy vypíše ID nadřazené finance. */}
                         ({item?.masterfinanceId})
                     </ItemLink>
                 ) : (
+                    // Pokud finance nemá rodiče, zobrazí se pomlčka.
                     "-"
                 )}
             </Attribute>
 
+            {/* Oddělení základních identifikačních údajů
+                od auditních a doplňkových informací. */}
             <hr />
 
+            {/* Datum poslední změny a uživatel,
+                který změnu provedl. */}
             <Attribute label="Poslední změna">
-                {item?.lastchange
-                    ? formatDateTime(item.lastchange)
-                    : "-"}
-                {item?.changedby?.fullname
-                    ? ` – ${item.changedby.fullname}`
-                    : ""}
+                {
+                    item?.lastchange
+                        ? formatDateTime(item.lastchange)
+                        : "-"
+                }
             </Attribute>
 
+            {/* Datum vytvoření finanční položky. */}
             <Attribute label="Vytvořeno">
-                {item?.created
-                    ? formatDateTime(item.created)
-                    : "-"}
+                {
+                    item?.created
+                        ? formatDateTime(item.created)
+                        : "-"
+                }
             </Attribute>
 
+            {/* Textový popis finanční položky. */}
             <Attribute label="Popis">
                 {item?.description || "-"}
             </Attribute>
 
+            {/* Finanční částka.
+                Číselná hodnota se naformátuje podle české lokalizace
+                a doplní měnovou jednotkou Kč. */}
             <Attribute label="Částka">
-                {typeof item?.value === "number"
-                    ? `${item.value.toLocaleString("cs-CZ")} Kč`
-                    : item?.value ?? "-"}
+                {
+                    typeof item?.value === "number"
+                        ? `${item.value.toLocaleString("cs-CZ")} Kč`
+                        : item?.value ?? "-"
+                }
             </Attribute>
 
+            {/* Uživatel, který finanční položku vytvořil. */}
             <Attribute label="Vytvořil">
-                {item?.createdby ? (
-                    <Link item={item.createdby}>
-                        {item?.createdby?.fullname}
-                    </Link>
-                ) : (
-                    "-"
-                )}
-            </Attribute>
-
-            <Attribute label="Změnil">
-                {item?.changedby ? (
-                    <>
-                        <Link item={item.changedby}>
-                            {item?.changedby?.fullname}
+                {
+                    item?.createdby ? (
+                        <Link item={item.createdby}>
+                            {item?.createdby?.fullname}
                         </Link>
-
-                        {item?.lastchange && (
-                            <>
-                                {" / "}
-                                {formatDateTime(item.lastchange)}
-                            </>
-                        )}
-                    </>
-                ) : (
-                    "-"
-                )}
+                    ) : (
+                        "-"
+                    )
+                }
             </Attribute>
 
+            {/* Uživatel, který provedl poslední změnu,
+                společně s časem změny. */}
+            <Attribute label="Změnil">
+                {
+                    item?.changedby ? (
+                        <>
+                            {/* Klikací odkaz na uživatele,
+                                který finance naposledy upravil. */}
+                            <Link item={item.changedby}>
+                                {item?.changedby?.fullname}
+                            </Link>
+
+                            {/* Pokud existuje datum změny,
+                                vypíše se za lomítkem. */}
+                            {item?.lastchange && (
+                                <>
+                                    {" / "}
+                                    {formatDateTime(item.lastchange)}
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        "-"
+                    )
+                }
+            </Attribute>
+
+            {/* Navázaný projekt,
+                pokud je finanční položka přiřazena k projektu. */}
             <Attribute label="Projekt">
-                {item?.project?.id &&
-                item?.project?.name ? (
-                    <ProjectLink
-                        to={
-                            `/projekt/ProjectGQLModel/view/` +
-                            `${item.project.id}`
-                        }
-                    >
-                        {item.project.name}
-                    </ProjectLink>
-                ) : (
-                    "-"
-                )}
+                {
+                    item?.project?.id &&
+                    item?.project?.name ? (
+                        <ProjectLink
+                            // Dynamicky sestavená cesta
+                            // na detail konkrétního projektu.
+                            to={
+                                `/projekt/ProjectGQLModel/view/` +
+                                `${item.project.id}`
+                            }
+                        >
+                            {/* Název propojeného projektu. */}
+                            {item.project.name}
+                        </ProjectLink>
+                    ) : (
+                        "-"
+                    )
+                }
             </Attribute>
 
+            {/* Doplňkový obsah předaný z nadřazené komponenty,
+                například další atributy nebo vlastní sekce. */}
             {children}
         </>
     );

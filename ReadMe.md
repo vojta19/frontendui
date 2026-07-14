@@ -3,7 +3,7 @@
 ## 13.7.2026
 **Co bylo změněno**
 - Sjednocena dokumentace hlavních komponent pomocí JSDoc.
-- Doplněny popisy komponent v adresářích `finance/Components` , `finance/Mutations` , `finance/Queries` , `finance/Pages`.¨
+- Doplněny popisy komponent v adresářích `finance/Components` , `finance/Mutations` , `finance/Queries` , `finance/Pages`.
 - Vytvořen konfigurační soubor `jsdoc.json`.
 - Doplnění `package.json` o podporu generování dokumentace.
 - Úspěšně vygenerovaná HTML dokumentace projektu do složky `packages/finance/docs`.

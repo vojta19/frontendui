@@ -1,7 +1,10 @@
+// Importuje pomocnou funkci pro skládání GraphQL dotazů a jejich fragmentů.
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 
+// Importuje největší GraphQL fragment obsahující kompletní definici entity.
 import { LargeFragment } from "./Fragments";
 
+// Importuje generátor asynchronních GraphQL akcí používaný napříč aplikací.
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
 
 
@@ -14,6 +17,7 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
  * @constant
  * @type {string}
  */
+// Definice GraphQL mutace pro vytvoření nové entity typu RoleType.
 const InsertMutationStr = `
 mutation roleTypeInsert(
   $mastertypeId: UUID,
@@ -59,6 +63,7 @@ fragment InsertError on InsertError {
  *
  * @constant
  */
+// Vytvoření výsledné GraphQL mutace včetně všech závislých fragmentů.
 const InsertMutation = createQueryStrLazy(
     InsertMutationStr,
     LargeFragment
@@ -76,6 +81,7 @@ const InsertMutation = createQueryStrLazy(
  * @example
  * dispatch(InsertAsyncAction(newEntity));
  */
+// Vytvoření asynchronní akce (thunku), která odešle GraphQL mutaci na server.
 export const InsertAsyncAction =
     createAsyncGraphQLAction2(
         InsertMutation

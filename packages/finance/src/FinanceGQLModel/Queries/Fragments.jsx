@@ -1,3 +1,4 @@
+// Importuje pomocnou funkci pro skládání GraphQL fragmentů se závislostmi.
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 
 
@@ -12,6 +13,7 @@ import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
  * @constant
  * @type {string}
  */
+// Definice základního GraphQL fragmentu používaného ve většině dotazů nad financemi.
 const LinkFragmentStr = `
 fragment Link on FinanceGQLModel {
   __typename
@@ -70,6 +72,7 @@ fragment Link on FinanceGQLModel {
  * @constant
  * @type {string}
  */
+// Rozšířený fragment doplňující základní data o RBAC oprávnění.
 const MediumFragmentStr = `
 fragment Medium on FinanceGQLModel {
   ...Link
@@ -90,6 +93,7 @@ fragment Medium on FinanceGQLModel {
  * @constant
  * @type {string}
  */
+// Největší fragment načítající finance včetně jejich podřízených financí.
 const LargeFragmentStr = `
 fragment Large on FinanceGQLModel {
   ...Medium
@@ -109,6 +113,7 @@ fragment Large on FinanceGQLModel {
  * @constant
  * @type {string}
  */
+// Fragment reprezentující jednu uživatelskou roli.
 const RoleFragmentStr = `
 fragment Role on RoleGQLModel {
   __typename
@@ -144,6 +149,7 @@ fragment Role on RoleGQLModel {
  * @constant
  * @type {string}
  */
+// Fragment načítající oprávnění aktuálního uživatele k danému objektu.
 const RBACFragmentStr = `
 fragment RBRoles on RBACObjectGQLModel {
   __typename
@@ -180,6 +186,7 @@ fragment RBRoles on RBACObjectGQLModel {
  *
  * @constant
  */
+// Vytvoření lazy fragmentu pro RoleFragment.
 export const RoleFragment =
     createQueryStrLazy(RoleFragmentStr);
 
@@ -189,6 +196,7 @@ export const RoleFragment =
  *
  * @constant
  */
+// Vytvoření lazy fragmentu pro RBAC informace.
 export const RBACFragment =
     createQueryStrLazy(RBACFragmentStr);
 
@@ -198,6 +206,7 @@ export const RBACFragment =
  *
  * @constant
  */
+// Vytvoření lazy fragmentu obsahujícího základní informace o financích.
 export const LinkFragment =
     createQueryStrLazy(LinkFragmentStr);
 
@@ -212,6 +221,7 @@ export const LinkFragment =
  *
  * @constant
  */
+// Sestavení středního fragmentu včetně všech jeho závislostí.
 export const MediumFragment =
     createQueryStrLazy(
         MediumFragmentStr,
@@ -229,6 +239,7 @@ export const MediumFragment =
  *
  * @constant
  */
+// Nejvyšší fragment používaný pro detail finance a Sunburst diagram.
 export const LargeFragment =
     createQueryStrLazy(
         LargeFragmentStr,

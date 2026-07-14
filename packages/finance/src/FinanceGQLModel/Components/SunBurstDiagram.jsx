@@ -1,6 +1,17 @@
-import { useMemo } from "react";
+// Import hooku useMemo, který zabraňuje zbytečnému opakovanému
+// přepočítávání sektorů diagramu při každém renderu.
+import {
+    useMemo,
+    useRef,
+    useState
+} from "react";
 
+// Import sdílené komponenty CardCapsule,
+// která vytvoří vizuální obal diagramu se záhlavím.
 import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsule";
+
+// Import funkce pro převod SVG diagramu na PNG obrázek.
+import { toPng } from "html-to-image";
 
 
 /**
@@ -9,6 +20,8 @@ import { CardCapsule } from "../../../../_template/src/Base/Components/CardCapsu
  * @constant
  * @type {string[]}
  */
+// Pole barev používaných pro jednotlivé sektory diagramu.
+// Pokud je sektorů více než barev, paleta se opakuje cyklicky.
 const COLORS = [
     "#0d6efd",
     "#198754",
@@ -48,14 +61,24 @@ const COLORS = [
  * // Returns a point located 100 pixels to the right of the center.
  */
 const polarToCartesian = (
+    // Vodorovná souřadnice středu diagramu.
     centerX,
+
+    // Svislá souřadnice středu diagramu.
     centerY,
+
+    // Vzdálenost bodu od středu diagramu.
     radius,
+
+    // Úhel bodu ve stupních.
     angle
 ) => {
+    // Převod stupňů na radiány.
+    // Odečtení 90 stupňů posouvá počátek diagramu do horní části kruhu.
     const angleInRadians =
         ((angle - 90) * Math.PI) / 180;
 
+    // Výpočet kartézských souřadnic bodu na kružnici.
     return {
         x: centerX + radius * Math.cos(angleInRadians),
         y: centerY + radius * Math.sin(angleInRadians)
@@ -91,16 +114,30 @@ const polarToCartesian = (
  * SVG path definition suitable for the `d` attribute of a path element.
  */
 const describeArc = (
+    // Vodorovná souřadnice středu diagramu.
     centerX,
+
+    // Svislá souřadnice středu diagramu.
     centerY,
+
+    // Vnitřní poloměr prstencového sektoru.
     innerRadius,
+
+    // Vnější poloměr prstencového sektoru.
     outerRadius,
+
+    // Počáteční úhel sektoru.
     startAngle,
+
+    // Koncový úhel sektoru.
     endAngle
 ) => {
+    // SVG oblouk potřebuje určit, zda je jeho rozsah větší než 180 stupňů.
+    // Hodnota 1 označuje velký oblouk, hodnota 0 malý oblouk.
     const largeArcFlag =
         endAngle - startAngle <= 180 ? "0" : "1";
 
+    // Výpočet koncového bodu vnějšího oblouku.
     const outerEnd = polarToCartesian(
         centerX,
         centerY,
@@ -108,6 +145,7 @@ const describeArc = (
         endAngle
     );
 
+    // Výpočet počátečního bodu vnějšího oblouku.
     const outerStart = polarToCartesian(
         centerX,
         centerY,
@@ -115,6 +153,7 @@ const describeArc = (
         startAngle
     );
 
+    // Výpočet počátečního bodu vnitřního oblouku.
     const innerStart = polarToCartesian(
         centerX,
         centerY,
@@ -122,6 +161,7 @@ const describeArc = (
         startAngle
     );
 
+    // Výpočet koncového bodu vnitřního oblouku.
     const innerEnd = polarToCartesian(
         centerX,
         centerY,
@@ -129,11 +169,21 @@ const describeArc = (
         endAngle
     );
 
+    // Sestavení SVG příkazů do jednoho řetězce.
     return [
+        // Přesun kreslicího bodu na konec vnějšího oblouku.
         `M ${outerEnd.x} ${outerEnd.y}`,
+
+        // Vykreslení vnějšího kruhového oblouku.
         `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 0 ${outerStart.x} ${outerStart.y}`,
+
+        // Spojení vnějšího a vnitřního oblouku přímkou.
         `L ${innerStart.x} ${innerStart.y}`,
+
+        // Vykreslení vnitřního oblouku opačným směrem.
         `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 1 ${innerEnd.x} ${innerEnd.y}`,
+
+        // Uzavření výsledného tvaru sektoru.
         "Z"
     ].join(" ");
 };
@@ -152,6 +202,8 @@ const describeArc = (
  * Human-readable node label.
  */
 const getNodeLabel = (node) => {
+    // Vrací první dostupnou textovou hodnotu podle priority.
+    // Funkce tím podporuje více různých datových struktur.
     return (
         node?.name ||
         node?.nameEn ||
@@ -179,27 +231,42 @@ const getNodeLabel = (node) => {
  * Resolved application URL, or `null` when the node cannot be linked.
  */
 const getNodeUrl = (node) => {
+    // Neplatný nebo chybějící objekt nelze převést na navigační adresu.
     if (!node || typeof node !== "object") {
         return null;
     }
 
+    // Pokud uzel obsahuje explicitně definovanou URL,
+    // použije se přednostně bez dalšího skládání.
     if (node.url) return node.url;
+
+    // Alternativní běžný název vlastnosti odkazu.
     if (node.href) return node.href;
+
+    // Alternativní vlastnost obsahující cestu.
     if (node.path) return node.path;
+
+    // Další podporovaný název vlastnosti odkazu.
     if (node.link) return node.link;
 
+    // Pokud uzel obsahuje typename a ID,
+    // vytvoří se detailní cesta podle GraphQL typu.
     if (node.typename && node.id) {
         return `/finance/${node.typename}/view/${node.id}`;
     }
 
+    // Stejný postup pro standardní GraphQL vlastnost __typename.
     if (node.__typename && node.id) {
         return `/finance/${node.__typename}/view/${node.id}`;
     }
 
+    // Pokud je k dispozici pouze ID,
+    // použije se výchozí model FinanceGQLModel.
     if (node.id) {
         return `/finance/FinanceGQLModel/view/${node.id}`;
     }
 
+    // Uzel bez identifikátoru nelze propojit s detailní stránkou.
     return null;
 };
 
@@ -218,28 +285,36 @@ const getNodeUrl = (node) => {
  * Normalized collection of direct child nodes.
  */
 const getNodeChildren = (node) => {
+    // Neplatný uzel nemůže obsahovat žádné potomky.
     if (!node || typeof node !== "object") {
         return [];
     }
 
+    // Standardní vlastnost children má nejvyšší prioritu.
     if (Array.isArray(node.children)) {
         return node.children;
     }
 
+    // Podpora alternativní struktury s vlastností items.
     if (Array.isArray(node.items)) {
         return node.items;
     }
 
+    // Podpora alternativní struktury s vlastností nodes.
     if (Array.isArray(node.nodes)) {
         return node.nodes;
     }
 
+    // Pokud standardní vlastnosti neexistují,
+    // projdou se všechny atributy objektu.
     return Object.entries(node)
         .filter(([key, value]) => {
+            // Interní vlastnosti začínající podtržítkem se ignorují.
             if (key.startsWith("_")) {
                 return false;
             }
 
+            // Základní skalární vlastnosti entity se nepovažují za potomky.
             if (
                 [
                     "id",
@@ -253,11 +328,17 @@ const getNodeChildren = (node) => {
                 return false;
             }
 
+            // Jako potomci se použijí pouze vlastnosti obsahující pole.
             return Array.isArray(value);
         })
         .flatMap(([key, value]) => {
+            // Všechna nalezená pole se spojí do jednoho seznamu potomků.
             return value.map((child) => ({
+                // Zachování všech původních vlastností potomka.
                 ...child,
+
+                // Doplnění zobrazovaného názvu.
+                // Název klíče slouží jako záložní hodnota.
                 name: getNodeLabel(child) || key
             }));
         });
@@ -283,69 +364,110 @@ const getNodeChildren = (node) => {
  *   depth: number,
  *   startAngle: number,
  *   endAngle: number,
- *   colorIndex: number
+ *   colorIndex: number,
+ *   parentNode: Object|null
  * }>}
  * Flat collection of renderable Sunburst sectors.
  */
 const buildSunburstNodes = (
+    // Kořenový uzel finanční hierarchie.
     root,
+
+    // Maximální počet vykreslených úrovní stromu.
     maxDepth = 4
 ) => {
+    // Výsledné pole bude obsahovat všechny uzly
+    // převedené na plochou strukturu vhodnou pro vykreslení.
     const result = [];
 
+    // Rekurzivní funkce pro průchod finančním stromem.
     const walk = (
+        // Aktuálně zpracovávaný uzel.
         node,
+
+        // Hloubka uzlu ve stromové struktuře.
         depth,
+
+        // Počáteční úhel přidělený uzlu.
         startAngle,
+
+        // Koncový úhel přidělený uzlu.
         endAngle,
-        colorIndex
+
+        // Index barvy z definované palety.
+        colorIndex,
+
+        // Nadřazený uzel používaný pro informační tooltip.
+        parentNode = null
     ) => {
+        // Neplatné uzly a uzly překračující maximální hloubku se ignorují.
         if (!node || depth > maxDepth) {
             return;
         }
 
+        // Uložení aktuálního uzlu společně s údaji potřebnými pro vykreslení.
         result.push({
             node,
             depth,
             startAngle,
             endAngle,
-            colorIndex
+            colorIndex,
+            parentNode
         });
 
+        // Načtení přímých potomků aktuálního uzlu.
         const children = getNodeChildren(node);
 
+        // Listový uzel neobsahuje potomky,
+        // proto není nutné pokračovat v rekurzi.
         if (!children.length) {
             return;
         }
 
+        // Výpočet celkové váhy potomků.
+        // Pokud hodnota chybí nebo je nulová, použije se váha 1,
+        // aby uzel zůstal v diagramu viditelný.
         const totalValue = children.reduce(
             (sum, child) =>
                 sum + (Number(child.value) || 1),
             0
         );
 
+        // První potomek začíná na počátečním úhlu rodiče.
         let currentAngle = startAngle;
+
+        // Celkový úhlový prostor dostupný pro potomky.
         const availableAngle = endAngle - startAngle;
 
+        // Rozdělení úhlového prostoru mezi všechny potomky.
         children.forEach((child, index) => {
+            // Číselná hodnota potomka určuje velikost jeho sektoru.
             const childValue = Number(child.value) || 1;
+
+            // Poměrná velikost úhlového výseku potomka.
             const slice =
                 (childValue / totalValue) * availableAngle;
 
+            // Rekurzivní zpracování potomka v další úrovni diagramu.
             walk(
                 child,
                 depth + 1,
                 currentAngle,
                 currentAngle + slice,
-                colorIndex + index + 1
+                colorIndex + index + 1,
+                node
             );
 
+            // Posunutí počátečního úhlu pro následujícího potomka.
             currentAngle += slice;
         });
     };
 
+    // Spuštění rekurzivního průchodu od kořene.
+    // Kořen využívá celý kruh od 0 do 360 stupňů.
     walk(root, 0, 0, 360, 0);
 
+    // Vrácení plochého seznamu všech sektorů.
     return result;
 };
 
@@ -401,36 +523,202 @@ const buildSunburstNodes = (
  * />
  */
 export const SunburstDiagram = ({
+    // Kořenová finanční entita zobrazená uprostřed diagramu.
     item,
+
+    // Nadpis komponenty a přístupný název SVG prvku.
     header = "Sunburst diagram",
+
+    // Základní velikost a výška SVG diagramu.
     size = 600,
+
+    // Nejvyšší povolená hloubka vykreslené hierarchie.
     maxDepth = 4,
+
+    // Callback volaný po kliknutí na uzel diagramu.
     onSelect,
+
+    // ID finance označené jako zdroj převodu.
     selectedSourceId = null,
+
+    // ID finance označené jako cíl převodu.
     selectedTargetId = null
 }) => {
+    // Výpočet souřadnice středu SVG diagramu.
     const center = size / 2;
+
+    // Šířka každé prstencové úrovně diagramu.
     const ringWidth = 85;
 
+    // Uchovává obsah a pozici vlastního informačního tooltipu.
+    const [tooltip, setTooltip] = useState(null);
+
+    // Reference na SVG prvek používaná při exportu diagramu do PNG.
+    const diagramRef = useRef(null);
+
+    // Převod hierarchických dat na seznam vykreslitelných sektorů.
+    // Výpočet se opakuje pouze při změně dat nebo maximální hloubky.
     const nodes = useMemo(() => {
         return buildSunburstNodes(item, maxDepth);
     }, [item, maxDepth]);
 
+    /**
+     * Zobrazí informační okno pro aktuální segment diagramu.
+     *
+     * @param {React.MouseEvent<SVGGElement>} event
+     * Událost najetí myši na SVG skupinu.
+     *
+     * @param {Object} node
+     * Aktuální finanční uzel.
+     *
+     * @param {Object|null} parentNode
+     * Nadřazený finanční uzel.
+     *
+     * @returns {void}
+     */
+    const showTooltip = (event, node, parentNode) => {
+        const container = event.currentTarget.ownerSVGElement?.parentElement?.getBoundingClientRect();
+        if (!container) return;
+        setTooltip({
+            x: event.clientX - container.left + 16,
+            y: event.clientY - container.top + 16,
+            name: getNodeLabel(node),
+            value: Number(node?.value || 0),
+            parentName:
+                node?.masterfinance?.name ||
+                (parentNode ? getNodeLabel(parentNode) : null)
+        });
+    };
+
+    /**
+     * Aktualizuje pozici tooltipu při pohybu myši nad segmentem.
+     *
+     * @param {React.MouseEvent<SVGGElement>} event
+     * Událost pohybu myši.
+     *
+     * @returns {void}
+     */
+    const moveTooltip = (event) => {
+        if (!tooltip) return;
+        const container = event.currentTarget.ownerSVGElement?.parentElement?.getBoundingClientRect();
+        if (!container) return;
+        setTooltip((currentTooltip) => ({
+            ...currentTooltip,
+            x: event.clientX - container.left + 16,
+            y: event.clientY - container.top + 16
+        }));
+    };
+
+    /**
+     * Skryje informační okno po opuštění segmentu.
+     *
+     * @returns {void}
+     */
+    const hideTooltip = () => {
+        setTooltip(null);
+    };
+
+    /**
+     * Exports the currently rendered Sunburst diagram into a PNG file.
+     *
+     * The SVG is rendered at double pixel density to improve the readability
+     * of labels in reports and presentations.
+     *
+     * @async
+     *
+     * @returns {Promise<void>}
+     * Promise resolved after the PNG file has been generated.
+     */
+    const exportDiagramToPng = async () => {
+        // Bez dostupného SVG prvku není možné export provést.
+        if (!diagramRef.current) {
+            return;
+        }
+
+        try {
+            // Převod aktuálního SVG diagramu na PNG data URL.
+            const dataUrl = await toPng(
+                diagramRef.current,
+                {
+                    // Zamezí použití zastaralých položek z cache prohlížeče.
+                    cacheBust: true,
+
+                    // Vyšší pixel ratio vytváří ostřejší obrázek.
+                    pixelRatio: 2,
+
+                    // Bílé pozadí zajistí čitelnost i mimo aplikaci.
+                    backgroundColor: "#ffffff"
+                }
+            );
+
+            // Bezpečné vytvoření názvu souboru z názvu aktuální finance.
+            const safeName = getNodeLabel(item)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9_-]+/g, "_")
+                .replace(/^_+|_+$/g, "");
+
+            // Vytvoření dočasného odkazu pro stažení vygenerovaného obrázku.
+            const downloadLink =
+                document.createElement("a");
+
+            downloadLink.download =
+                `${safeName || "FinanceDiagram"}.png`;
+
+            downloadLink.href = dataUrl;
+
+            // Programové spuštění stažení souboru.
+            downloadLink.click();
+        } catch (error) {
+            // Technická chyba zůstane dostupná ve vývojářské konzoli.
+            console.error(
+                "Diagram se nepodařilo exportovat:",
+                error
+            );
+
+            // Uživateli se zobrazí srozumitelné upozornění.
+            window.alert(
+                "Diagram se nepodařilo exportovat do PNG."
+            );
+        }
+    };
+
+
+    // Bez kořenové položky nelze diagram vykreslit.
     if (!item) {
         return null;
     }
 
     return (
+        // Obalová karta diagramu s předaným záhlavím.
         <CardCapsule header={header}>
-            <div className="d-flex justify-content-center align-items-center">
+            {/* Flexbox zajistí vodorovné a svislé vystředění diagramu. */}
+            <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ position: "relative" }}
+            >
                 <svg
+                    // Reference umožňuje převést právě tento SVG prvek na PNG.
+                    ref={diagramRef}
+
+                    // SVG se přizpůsobí šířce svého rodičovského prvku.
                     width="100%"
+
+                    // Výška SVG odpovídá parametru size.
                     height={size}
+
+                    // Rozšířený viewBox ponechává prostor kolem vnějších sektorů.
                     viewBox={`-120 -120 ${size + 240} ${size + 240}`}
+
+                    // Role img zpřístupňuje diagram asistivním technologiím.
                     role="img"
+
+                    // Přístupný název diagramu.
                     aria-label={header}
                 >
+                    {/* Definice opakovaně použitelných SVG vzorů a filtrů. */}
                     <defs>
+                        {/* Šrafovací vzor používaný pro označení zdrojové finance. */}
                         <pattern
                             id="diagonalHatch"
                             patternUnits="userSpaceOnUse"
@@ -449,12 +737,15 @@ export const SunburstDiagram = ({
                             />
                         </pattern>
 
+                        {/* Filtr vytvářející světelný efekt kolem cílové finance. */}
                         <filter id="glow">
+                            {/* Rozmazání zdrojového tvaru. */}
                             <feGaussianBlur
                                 stdDeviation="4"
                                 result="coloredBlur"
                             />
 
+                            {/* Spojení rozmazané a původní grafiky. */}
                             <feMerge>
                                 <feMergeNode in="coloredBlur" />
                                 <feMergeNode in="SourceGraphic" />
@@ -462,50 +753,72 @@ export const SunburstDiagram = ({
                         </filter>
                     </defs>
 
+                    {/* Vykreslení každého uzlu převedeného na samostatný sektor. */}
                     {nodes.map((entry, index) => {
+                        // Rozbalení geometrických a datových informací sektoru.
                         const {
                             node,
                             depth,
                             startAngle,
                             endAngle,
-                            colorIndex
+                            colorIndex,
+                            parentNode
                         } = entry;
 
+                        // Získání čitelného názvu uzlu.
                         const label = getNodeLabel(node);
+
+                        // Načtení přímých potomků uzlu.
                         const children = getNodeChildren(node);
+
+                        // Určení, zda jde o listový uzel bez dalších potomků.
                         const isLeaf = children.length === 0;
+
+                        // Kontrola, zda je uzel aktuálně vybraným zdrojem.
                         const isSource =
                             node?.id === selectedSourceId;
+
+                        // Kontrola, zda je uzel aktuálně vybraným cílem.
                         const isTarget =
                             node?.id === selectedTargetId;
 
+                        // Handler kliknutí na konkrétní sektor.
                         const handleClick = (event) => {
+                            // Zabrání probublání události do rodičovských SVG prvků.
                             event.stopPropagation();
 
+                            // Uzel bez ID není možné vybrat.
                             if (!node?.id) {
                                 return;
                             }
 
+                            // Bezpečné zavolání callbacku s vybraným uzlem.
                             onSelect?.(node);
                         };
 
+                        // Výpočet vnitřního poloměru podle hloubky uzlu.
+                        // Kořen začíná přímo ve středu.
                         const innerRadius =
                             depth === 0
                                 ? 0
                                 : depth * ringWidth;
 
+                        // Výpočet vnějšího poloměru sektoru.
                         const outerRadius =
                             depth === 0
                                 ? ringWidth
                                 : (depth + 1) * ringWidth;
 
+                        // Umístění textu přibližně doprostřed šířky sektoru.
                         const labelRadius =
                             innerRadius +
                             (outerRadius - innerRadius) * 0.5;
 
+                        // Výpočet středového úhlu sektoru.
                         const angle =
                             (startAngle + endAngle) / 2;
 
+                        // Převod polární pozice textu na SVG souřadnice.
                         const labelPoint =
                             polarToCartesian(
                                 center,
@@ -514,17 +827,27 @@ export const SunburstDiagram = ({
                                 angle
                             );
 
+                        // Kořenový uzel se vykresluje jako samostatný kruh.
                         if (depth === 0) {
                             return (
                                 <g
+                                    // ID uzlu je preferovaný React klíč.
                                     key={node?.id || index}
+
+                                    // Kliknutí na skupinu vybere kořenovou finance.
                                     onClick={handleClick}
+                                    onMouseEnter={(event) => showTooltip(event, node, parentNode)}
+                                    onMouseMove={moveTooltip}
+                                    onMouseLeave={hideTooltip}
+
+                                    // Kurzor ukazuje možnost kliknutí pouze u uzlů s ID.
                                     style={{
                                         cursor: node?.id
                                             ? "pointer"
                                             : "default"
                                     }}
                                 >
+                                    {/* Centrální kruh představující kořenovou finance. */}
                                     <circle
                                         cx={center}
                                         cy={center}
@@ -532,9 +855,11 @@ export const SunburstDiagram = ({
                                         fill={COLORS[0]}
                                         opacity="0.9"
                                     >
-                                        <title>{label}</title>
+                                        {/* Nativní SVG tooltip zobrazovaný při najetí myší. */}
+                                        <title>{`${label}: ${Number(node?.value || 0).toLocaleString("cs-CZ")} Kč`}</title>
                                     </circle>
 
+                                    {/* Text umístěný do středu kořenového kruhu. */}
                                     <text
                                         x={center}
                                         y={center}
@@ -544,12 +869,16 @@ export const SunburstDiagram = ({
                                         fill="white"
                                         pointerEvents="none"
                                     >
+                                        {/* Rozdělení delšího názvu na řádky o přibližně 14 znacích. */}
                                         {String(label)
                                             .match(/.{1,14}(\s|$)/g)
                                             ?.map((line, lineIndex) => (
                                                 <tspan
                                                     key={lineIndex}
                                                     x={center}
+
+                                                    // První řádek se posune mírně nahoru,
+                                                    // ostatní se řadí pod něj.
                                                     dy={
                                                         lineIndex === 0
                                                             ? "-0.6em"
@@ -564,10 +893,14 @@ export const SunburstDiagram = ({
                             );
                         }
 
+                        // Ostatní uzly se vykreslují jako prstencové výseče.
                         return (
                             <g
                                 key={node?.id || index}
                                 onClick={handleClick}
+                                onMouseEnter={(event) => showTooltip(event, node, parentNode)}
+                                onMouseMove={moveTooltip}
+                                onMouseLeave={hideTooltip}
                                 style={{
                                     cursor: node?.id
                                         ? "pointer"
@@ -575,6 +908,7 @@ export const SunburstDiagram = ({
                                 }}
                             >
                                 <path
+                                    // Vytvoření geometrie prstencového sektoru.
                                     d={describeArc(
                                         center,
                                         center,
@@ -583,6 +917,9 @@ export const SunburstDiagram = ({
                                         startAngle,
                                         endAngle
                                     )}
+
+                                    // Zdrojová finance používá šrafování,
+                                    // ostatní uzly barvu z cyklické palety.
                                     fill={
                                         isSource
                                             ? "url(#diagonalHatch)"
@@ -590,34 +927,51 @@ export const SunburstDiagram = ({
                                                 colorIndex % COLORS.length
                                             ]
                                     }
+
+                                    // Cílová finance má černý zvýrazněný okraj.
                                     stroke={
                                         isTarget
                                             ? "#000000"
                                             : "black"
                                     }
+
+                                    // Cílový sektor má výrazně silnější obrys.
                                     strokeWidth={
                                         isTarget ? "10" : "4"
                                     }
+
+                                    // Vybrané uzly jsou plně neprůhledné.
                                     opacity={
                                         isSource || isTarget
                                             ? "1"
                                             : "0.88"
                                     }
+
+                                    // Na cílovou finance se aplikuje světelný efekt.
                                     filter={
                                         isTarget
                                             ? "url(#glow)"
                                             : undefined
                                     }
                                 >
-                                    <title>{label}</title>
+                                    {/* Tooltip s úplným názvem sektoru. */}
+                                    <title>{`${label}: ${Number(node?.value || 0).toLocaleString("cs-CZ")} Kč`}</title>
                                 </path>
 
+                                {/* Text se zobrazí pouze v dostatečně širokém sektoru. */}
                                 {endAngle - startAngle > 8 && (
                                     <text
+                                        // Pozice textu vypočítaná uvnitř sektoru.
                                         x={labelPoint.x}
                                         y={labelPoint.y}
+
+                                        // Zarovnání textu na jeho střed.
                                         textAnchor="middle"
                                         dominantBaseline="central"
+
+                                        // Natočení textu podle směru sektoru.
+                                        // Text na spodní polovině se otočí o 180 stupňů,
+                                        // aby zůstal čitelný.
                                         transform={
                                             `rotate(${ 
                                                 angle > 90 && angle < 270
@@ -625,18 +979,31 @@ export const SunburstDiagram = ({
                                                     : angle
                                             } ${labelPoint.x} ${labelPoint.y})`
                                         }
+
+                                        // Hlubší úrovně používají menší písmo.
                                         fontSize={
                                             depth >= 2 ? "13" : "15"
                                         }
+
+                                        // Na šrafovaném zdroji se použije černý text,
+                                        // na barevných sektorech bílý.
                                         fill={
                                             isSource
                                                 ? "#000000"
                                                 : "white"
                                         }
+
+                                        // Text neblokuje kliknutí na sektor pod ním.
                                         pointerEvents="none"
+
+                                        // Text je skrytý asistivním technologiím,
+                                        // protože název je dostupný přes title a aria-label diagramu.
                                         aria-hidden="true"
+
+                                        // Pomocný atribut označující listový uzel.
                                         data-leaf={isLeaf}
                                     >
+                                        {/* Rozdělení názvu na maximálně tři kratší řádky. */}
                                         {String(label)
                                             .match(/.{1,12}/g)
                                             ?.slice(0, 3)
@@ -644,6 +1011,9 @@ export const SunburstDiagram = ({
                                                 <tspan
                                                     key={lineIndex}
                                                     x={labelPoint.x}
+
+                                                    // První řádek se posune nahoru,
+                                                    // další se zobrazí postupně pod ním.
                                                     dy={
                                                         lineIndex === 0
                                                             ? "-0.5em"
@@ -659,10 +1029,55 @@ export const SunburstDiagram = ({
                         );
                     })}
                 </svg>
+
+                {/* Vlastní informační okno zobrazené u kurzoru. */}
+                {tooltip && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: tooltip.x,
+                            top: tooltip.y,
+                            zIndex: 1000,
+                            minWidth: "230px",
+                            maxWidth: "320px",
+                            padding: "12px 14px",
+                            background: "rgba(255, 255, 255, 0.97)",
+                            border: "1px solid #adb5bd",
+                            borderRadius: "8px",
+                            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.22)",
+                            pointerEvents: "none"
+                        }}
+                    >
+                        <div style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "6px" }}>
+                            {tooltip.name}
+                        </div>
+                        <div>
+                            <strong>Částka:</strong>{" "}
+                            {tooltip.value.toLocaleString("cs-CZ")} Kč
+                        </div>
+                        <div>
+                            <strong>Nadřazená finance:</strong>{" "}
+                            {tooltip.parentName || "Bez nadřazené finance"}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Ovládací prvek pro export aktuální vizualizace do PNG. */}
+            <div className="d-flex justify-content-center mt-3">
+                <button
+                    type="button"
+                    className="btn btn-outline-primary"
+                    onClick={exportDiagramToPng}
+                >
+                    Export diagramu do PNG
+                </button>
             </div>
         </CardCapsule>
     );
 };
 
-// Kept available for future navigation support and documentation tooling.
+// Funkce getNodeUrl zatím není aktivně používána při vykreslování,
+// ale zůstává v souboru připravena pro budoucí navigaci a dokumentační nástroje.
+// Příkaz void zároveň zabraňuje upozornění na nepoužitou funkci.
 void getNodeUrl;

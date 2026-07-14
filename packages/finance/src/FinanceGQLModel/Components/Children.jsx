@@ -1,3 +1,5 @@
+// Import komponenty ChildWrapper ze sdílené knihovny.
+// Tato komponenta zajišťuje předání společných vlastností všem vnořeným komponentám.
 import { ChildWrapper } from "@hrbolek/uoisfrontend-shared";
 
 
@@ -33,14 +35,22 @@ import { ChildWrapper } from "@hrbolek/uoisfrontend-shared";
  * </Children>
  */
 export const Children = ({
+    // Aktuální finanční entita, která bude zpřístupněna všem potomkům.
     item,
+
+    // Komponenty vložené mezi otevírací a uzavírací značku <Children>.
     children,
+
+    // Zachytí všechny ostatní vlastnosti a přepošle je do ChildWrapper.
     ...props
 }) => (
+    // ChildWrapper zajistí předání objektu item všem vnořeným komponentám,
+    // takže jej není nutné ručně předávat přes několik úrovní komponent.
     <ChildWrapper
         item={item}
         {...props}
     >
+        {/* Vykreslení všech potomků obalených tímto wrapperem */}
         {children}
     </ChildWrapper>
 );

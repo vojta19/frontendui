@@ -1,3 +1,4 @@
+// Import React hooků pro stav, memoizaci, stabilní callbacky a vedlejší efekty.
 import {
     useCallback,
     useEffect,
@@ -5,14 +6,17 @@ import {
     useState
 } from "react";
 
+// Import základního filtru a hooku, který zpřístupňuje jeho sdílený kontext.
 import {
     Filter as BaseFilter,
     useFilterDesigner
 } from "../../../../_template/src/Base/FormControls/Filter";
 
+// Import layoutových komponent pro rozmístění vstupních polí.
 import { Row } from "../../../../_template/src/Base/Components/Row";
 import { Col } from "../../../../_template/src/Base/Components/Col";
 
+// Import karty, která vizuálně odděluje jednotlivé filtrační prvky.
 import {
     SimpleCardCapsule
 } from "../../../../_template/src/Base/Components/CardCapsule";
@@ -24,6 +28,7 @@ import {
  * @constant
  * @type {RegExp}
  */
+// Regulární výraz ověřuje, zda má vstup platný formát UUID verze 1 až 5.
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -39,6 +44,7 @@ const UUID_RE =
  * Lowercase text without diacritical marks.
  */
 const normalizeText = (value) => {
+    // Hodnota se převede na řetězec, sjednotí se velikost písmen a odstraní diakritika.
     return String(value ?? "")
         .toLowerCase()
         .normalize("NFD")
@@ -67,13 +73,16 @@ const normalizeText = (value) => {
  * // Returns: true
  */
 const matchText = (itemText, searchInput) => {
+    // Prázdný text položky nemůže odpovídat hledanému výrazu.
     if (!itemText) {
         return false;
     }
 
+    // Oba řetězce se převedou do stejného normalizovaného tvaru.
     const normalizedItem = normalizeText(itemText);
     const normalizedSearch = normalizeText(searchInput);
 
+    // Návrh se považuje za shodu, pokud začíná hledaným textem.
     return normalizedItem.startsWith(normalizedSearch);
 };
 
@@ -118,23 +127,29 @@ export const CustomUUIDFilter = ({
     label,
     suggestions = []
 }) => {
+    // Získání kontextu nadřazeného BaseFilteru pro odesílání GraphQL podmínek.
     const filterContext = useFilterDesigner();
 
+    // Komponenta musí být vložena uvnitř BaseFilteru, jinak nemá kam podmínku odeslat.
     if (!filterContext) {
         throw new Error(
             "<CustomUUIDFilter /> must be placed inside <Filter />"
         );
     }
 
+    // Lokální stav uchovává aktuální hodnotu řízeného vstupního pole.
     const [text, setText] = useState("");
 
+    // Memoizovaný výpočet omezuje seznam UUID podle právě zadaného textu.
     const filteredIDSuggestions = useMemo(() => {
         const searchValue = text.trim().toLowerCase();
 
+        // Při prázdném vstupu jsou dostupné všechny návrhy.
         if (!searchValue) {
             return suggestions;
         }
 
+        // Částečný vstup se hledá kdekoliv uvnitř UUID.
         return suggestions.filter((suggestion) =>
             suggestion
                 .toLowerCase()
@@ -149,6 +164,7 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const clearFilter = useCallback(() => {
+        // Hodnota null odstraní podmínku daného pole ze společného filtru.
         filterContext.handleChange({
             target: {
                 id,
@@ -167,6 +183,7 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const applyUUIDFilter = useCallback((uuid) => {
+        // Vytvoření GraphQL podmínky s operátorem přesné shody _eq.
         filterContext.handleChange({
             target: {
                 id,
@@ -195,13 +212,16 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const submitFilter = useCallback((currentText) => {
+        // Odstranění okolních mezer před vyhodnocením vstupu.
         const value = currentText.trim();
 
+        // Prázdný vstup znamená zrušení aktivního filtru.
         if (!value) {
             clearFilter();
             return;
         }
 
+        // Kompletní UUID lze odeslat přímo bez hledání v návrzích.
         if (UUID_RE.test(value)) {
             applyUUIDFilter(value);
             return;
@@ -209,6 +229,7 @@ export const CustomUUIDFilter = ({
 
         const normalizedValue = value.toLowerCase();
 
+        // U neúplného ID se najde první odpovídající kompletní UUID.
         const exactMatch = suggestions.find((suggestion) => {
             const normalizedSuggestion =
                 suggestion.toLowerCase();
@@ -223,11 +244,13 @@ export const CustomUUIDFilter = ({
             );
         });
 
+        // Nalezený návrh se použije jako přesná hodnota filtru.
         if (exactMatch) {
             applyUUIDFilter(exactMatch);
             return;
         }
 
+        // Nenalezený nebo neplatný vstup se na backend neposílá.
         clearFilter();
     }, [
         applyUUIDFilter,
@@ -247,10 +270,12 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const handleChangeText = useCallback((event) => {
+        // Načtení nové hodnoty z HTML inputu a aktualizace lokálního stavu.
         const nextValue = event.target.value;
 
         setText(nextValue);
 
+        // Po úplném vymazání pole se filtr okamžitě odstraní.
         if (!nextValue.trim()) {
             clearFilter();
         }
@@ -263,10 +288,12 @@ export const CustomUUIDFilter = ({
      * @returns {void}
      */
     const handleBlur = useCallback(() => {
+        // Po opuštění pole se aktuální hodnota vyhodnotí a odešle.
         submitFilter(text);
     }, [submitFilter, text]);
 
 
+    // Jakmile uživatel zadá celé UUID, filtr se aplikuje automaticky.
     useEffect(() => {
         const value = text.trim();
 
@@ -277,19 +304,23 @@ export const CustomUUIDFilter = ({
 
 
     return (
+        // Každý filtrační prvek je zobrazen v samostatné kartě.
         <SimpleCardCapsule title={label || id}>
             <Row>
                 <Col>
                     <input
+                        // Bootstrap třída zajišťuje jednotný vzhled formulářového pole.
                         className="form-control"
                         value={text}
                         onChange={handleChangeText}
                         onBlur={handleBlur}
                         placeholder="Vložte ID nebo jeho část..."
                         autoComplete="off"
+                        // Propojení vstupu s nativním seznamem návrhů.
                         list={`${id}-suggestions`}
                     />
 
+                    {/* Datalist nabízí maximálně deset odpovídajících hodnot. */}
                     <datalist id={`${id}-suggestions`}>
                         {filteredIDSuggestions
                             .slice(0, 10)
@@ -340,6 +371,7 @@ export const CustomUUIDFilter = ({
  *     suggestions={financeNames}
  * />
  */
+// Textový filtr používá operátor _ilike a našeptávání názvů bez ohledu na diakritiku.
 export const CustomStringFilter = ({
     id,
     label,
@@ -355,6 +387,7 @@ export const CustomStringFilter = ({
 
     const [text, setText] = useState("");
 
+    // Memoizovaný seznam názvů odpovídajících aktuálnímu vstupu.
     const filteredNameSuggestions = useMemo(() => {
         const searchValue = text.trim();
 
@@ -362,6 +395,7 @@ export const CustomStringFilter = ({
             return suggestions;
         }
 
+        // Porovnání názvů využívá normalizaci bez diakritiky.
         return suggestions.filter((name) =>
             matchText(name, searchValue)
         );
@@ -402,10 +436,12 @@ export const CustomStringFilter = ({
             return;
         }
 
+        // Znak % je zástupný symbol operátoru _ilike; bez něj se doplní z obou stran.
         const filterValue = trimmedValue.includes("%")
             ? trimmedValue
             : `%${trimmedValue}%`;
 
+        // Odeslání částečné, case-insensitive GraphQL podmínky.
         filterContext.handleChange({
             target: {
                 id,
@@ -523,16 +559,19 @@ export const CustomStringFilter = ({
  *     onChange={handleFilterChange}
  * />
  */
+// Hlavní komponenta skládá UUID a textový filtr do jednoho formuláře.
 export const Filter = ({
     id,
     data = [],
     onChange: handleChange,
     children
 }) => {
+    // Ochrana proti předání jiné hodnoty než pole.
     const actualData = Array.isArray(data)
         ? data
         : [];
 
+    // Extrakce unikátních neprázdných UUID pro autocomplete.
     const idSuggestions = useMemo(() => {
         return [
             ...new Set(
@@ -543,6 +582,7 @@ export const Filter = ({
         ];
     }, [actualData]);
 
+    // Extrakce unikátních názvů pro textové našeptávání.
     const nameSuggestions = useMemo(() => {
         return [
             ...new Set(
@@ -554,23 +594,27 @@ export const Filter = ({
     }, [actualData]);
 
     return (
+        // BaseFilter vytváří kontext a spojuje podmínky všech vnořených filtrů.
         <BaseFilter
             id={id}
             onChange={handleChange}
             label="FinanceGQLModel"
         >
+            {/* Filtr podle celého nebo částečného UUID. */}
             <CustomUUIDFilter
                 id="id"
                 label="ID"
                 suggestions={idSuggestions}
             />
 
+            {/* Filtr názvu pomocí GraphQL operátoru _ilike. */}
             <CustomStringFilter
                 id="name"
                 label="Název"
                 suggestions={nameSuggestions}
             />
 
+            {/* Prostor pro další volitelné filtrační komponenty. */}
             {children}
         </BaseFilter>
     );

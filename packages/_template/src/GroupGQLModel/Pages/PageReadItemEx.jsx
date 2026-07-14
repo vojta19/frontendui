@@ -28,7 +28,7 @@ export const MembershipsURI = ReadItemURI.replace("view", "memberships")
  * @param {Object<string, any>} [props]
  *   Další props předané do `ReadWithComponent` (např. `Component`, layout props).
  *
- * @returns {import("react").JSX.Element}
+ * @returns {JSX.Element}
  */
 export const PageReadItemRolesOn = ({ queryAsyncAction=ReadAsyncAction}) => (
     <PageReadItem queryAsyncAction={queryAsyncAction} SubPage={GroupRolesOn}/>

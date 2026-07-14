@@ -1,7 +1,13 @@
+// Import ikony osoby z knihovny react-bootstrap-icons.
+// Ikona je použita jako výchozí symbol v záhlaví karty.
 import { PersonFill } from "react-bootstrap-icons";
 
+// Import lokální komponenty Link, která vytváří odkaz na detail finance.
 import { Link } from "./Link";
 
+// Import základní komponenty CardCapsule ze sdílené šablony.
+// Komponenta je přejmenována na CardCapsule_, aby nedošlo ke kolizi názvů
+// s komponentou definovanou v tomto souboru.
 import {
     CardCapsule as CardCapsule_
 } from "../../../../_template/src/Base/Components";
@@ -39,20 +45,33 @@ import {
  * </CardCapsule>
  */
 export const CardCapsule = ({
+    // Aktuální finanční položka zobrazená v kartě.
     item,
+
+    // Obsah, který bude vykreslen uvnitř těla karty.
     children,
+
+    // Volitelný vlastní nadpis karty.
+    // Pokud není předán, vytvoří se automaticky.
     title = null
 }) => {
 
+    // Pokud volající nepředal vlastní záhlaví,
+    // vytvoří se výchozí záhlaví obsahující ikonu a odkaz na finance.
     if (!title) {
         title = (
             <>
+                {/* Ikona použitá jako vizuální označení finanční položky */}
                 <PersonFill />
+
+                {/* Odkaz na detail aktuální finanční entity */}
                 <Link item={item} />
             </>
         );
     }
 
+    // Vykreslení základní sdílené komponenty CardCapsule.
+    // Do záhlaví je předán připravený title a do těla veškerý obsah children.
     return (
         <CardCapsule_ title={title}>
             {children}

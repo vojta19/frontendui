@@ -44,14 +44,14 @@ export const GeneratedContentBase = ({ item }) => {
  * @param {object} props
  * @param {import("react").ComponentType<{item:any}>} [props.PageNavbar=PageNavbar]
  *   Komponenta navigace/hlavičky stránky. Dostane prop `item`.
- * @param {import("react").ComponentType<{item:any, children?:import("react").ReactNode}>} [props.ItemLayout=LargeCard]
+ * @param {import("react").ComponentType<{item:any, children?:React.ReactNode}>} [props.ItemLayout=LargeCard]
  *   Obalová layout komponenta pro zobrazení entity (např. karta). Dostane `item` a obvykle renderuje `children`.
- * @param {import("react").ComponentType<{item:any, children?:import("react").ReactNode}>} [props.SubPage=GeneratedContentBase]
+ * @param {import("react").ComponentType<{item:any, children?:React.ReactNode}>} [props.SubPage=GeneratedContentBase]
  *   Vnitřní obsah stránky (např. generované sekce, detail, taby). Dostane `item` a renderuje `children`.
- * @param {import("react").ReactNode} [props.children]
+ * @param {React.ReactNode} [props.children]
  *   Dodatečný obsah vložený do `SubPage` (např. extra sekce, akční tlačítka, custom bloky).
  *
- * @returns {import("react").JSX.Element|null}
+ * @returns {JSX.Element|null}
  *   Struktura stránky (navbar + layout + subpage) nebo `null`, pokud `item` není dostupný.
  */
 const PageItemInnerStructure = ({
@@ -103,13 +103,13 @@ const PageItemInnerStructure = ({
  *
  * @component
  * @param {object} props
- * @param {import("react").ReactNode} props.children
+ * @param {React.ReactNode} props.children
  *   Obsah stránky, který se má vyrenderovat uvnitř `AsyncActionProvider`.
  * @param {Function} [props.queryAsyncAction=ReadAsyncAction]
  *   Async action (např. thunk) použitá pro načtení entity z GraphQL endpointu.
  *   Dostane `item` s `id` (a případně další parametry podle implementace provideru).
  *
- * @returns {import("react").JSX.Element}
+ * @returns {JSX.Element}
  *   Provider s navigací (`PageNavbar`) a obsahem stránky (`children`).
  */
 export const PageItemBase = ({ 
